@@ -22,6 +22,9 @@ var satnav = (function ($) {
 			
 			// Enable tilt and direction
 			satnav.enableTilt ();
+			
+			// Add a geolocation control
+			satnav.geolocation ();
 		},
 		
 		
@@ -70,6 +73,25 @@ var satnav = (function ($) {
 			}).catch (function (errorMessage) { // Device Orientation Events are not supported
 				console.log (errorMessage);
 			});
+		},
+		
+		
+		// Function to add a geolocation control
+		// https://www.mapbox.com/mapbox-gl-js/example/locate-user/
+		// https://github.com/mapbox/mapbox-gl-js/issues/5464
+		geolocation: function ()
+		{
+			// Create a tracking control
+			var geolocate = new mapboxgl.GeolocateControl({
+				positionOptions: {
+					enableHighAccuracy: true
+				},
+				trackUserLocation: true
+			});
+			
+			// Add to the map
+			_map.addControl(geolocate);
+
 		}
 	};
 	
