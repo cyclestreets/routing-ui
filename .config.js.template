@@ -1,4 +1,7 @@
 var config = {};
 
+// CycleStreets API key
+config.cyclestreetsApiKey = 'YOUR_CYCLESTREETS_API_KEY';
+
 // Mapbox API key
-config.mapboxApiKey = 'YOUR_API_KEY';
+config.mapboxApiKey = 'YOUR_MAPBOX_API_KEY';

@@ -11,8 +11,11 @@ var satnav = (function ($) {
 	// Settings defaults
 	var _settings = {
 		
+		// CycleStreets API key
+		cyclestreetsApiKey: 'YOUR_CYCLESTREETS_API_KEY',
+		
 		// Mapbox API key
-		mapboxApiKey: 'YOUR_API_KEY',
+		mapboxApiKey: 'YOUR_MAPBOX_API_KEY',
 		
 		// Initial lat/lon/zoom of map and tile layer
 		defaultLocation: {
@@ -47,6 +50,9 @@ var satnav = (function ($) {
 			
 			// Add a geolocation control
 			satnav.geolocation ();
+			
+			// Add routing
+			satnav.routing ();
 		},
 		
 		
@@ -112,8 +118,37 @@ var satnav = (function ($) {
 			});
 			
 			// Add to the map
-			_map.addControl(geolocate);
+			_map.addControl (geolocate);
 
+		},
+		
+		
+		// Function to add routing
+		routing: function ()
+		{
+			// For now, obtain a fixed GeoJSON string
+			var url = 'https://api.cyclestreets.net/v2/journey.retrieve?itinerary=63238303&plans=balanced&key=' + _settings.cyclestreetsApiKey;
+			
+			// https://www.mapbox.com/mapbox-gl-js/example/geojson-line/
+			_map.on ('load', function () {
+				
+				_map.addLayer ({
+					"id": "route",
+					"type": "line",
+					"source": {
+						"type": "geojson",
+						"data": url,
+					},
+					"layout": {
+						"line-join": "round",
+						"line-cap": "round"
+					},
+					"paint": {
+						"line-color": "purple",
+						"line-width": 8
+					}
+				});
+			});
 		}
 	};
 	
