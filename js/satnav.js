@@ -8,6 +8,11 @@ var satnav = (function ($) {
 	'use strict';
 	
 	
+	// Settings defaults
+	var _settings = {
+	};
+	
+	
 	// Internal class properties
 	var _map = null;
 	
@@ -15,8 +20,15 @@ var satnav = (function ($) {
 	return {
 		
 		// Main entry point
-		initialise: function ()
+		initialise: function (config)
 		{
+			// Merge the configuration into the settings
+			$.each (_settings, function (setting, value) {
+				if (config.hasOwnProperty(setting)) {
+					_settings[setting] = config[setting];
+				}
+			});
+			
 			// Create the map
 			satnav.createMap ();
 			
