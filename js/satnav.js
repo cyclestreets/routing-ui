@@ -12,7 +12,14 @@ var satnav = (function ($) {
 	var _settings = {
 		
 		// Mapbox API key
-		mapboxApiKey: 'YOUR_API_KEY'
+		mapboxApiKey: 'YOUR_API_KEY',
+		
+		// Initial lat/lon/zoom of map and tile layer
+		defaultLocation: {
+			latitude: 54.235,
+			longitude: -1.582,
+			zoom: 5
+		}
 	};
 	
 	
@@ -51,8 +58,8 @@ var satnav = (function ($) {
 			_map = new mapboxgl.Map ({
 				container: 'map',
 				style: 'mapbox://styles/mapbox/streets-v9',
-				center: [0.12, 52.2],
-				zoom: 14
+				center: [_settings.defaultLocation.longitude, _settings.defaultLocation.latitude],
+				zoom: _settings.defaultLocation.zoom
 			});
 		},
 		
