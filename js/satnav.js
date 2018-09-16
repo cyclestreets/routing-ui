@@ -10,6 +10,9 @@ var satnav = (function ($) {
 	
 	// Settings defaults
 	var _settings = {
+		
+		// Mapbox API key
+		mapboxApiKey: 'YOUR_API_KEY'
 	};
 	
 	
@@ -43,8 +46,8 @@ var satnav = (function ($) {
 		// Create map; see: https://www.mapbox.com/mapbox-gl-js/example/simple-map/
 		createMap: function ()
 		{
-			mapboxgl.accessToken = '<your access token here>';
-			var map = new mapboxgl.Map ({
+			// Create map, specifying the access token
+			mapboxgl.accessToken = _settings.mapboxApiKey;
 			_map = new mapboxgl.Map ({
 				container: 'map',
 				style: 'mapbox://styles/mapbox/streets-v9',

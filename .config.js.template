@@ -1,2 +1,4 @@
 var config = {};
 
+// Mapbox API key
+config.mapboxApiKey = 'YOUR_API_KEY';
