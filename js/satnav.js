@@ -25,7 +25,6 @@ var satnav = (function ($) {
 		}
 	};
 	
-	
 	// Internal class properties
 	var _map = null;
 	
@@ -50,6 +49,9 @@ var satnav = (function ($) {
 			
 			// Add a geolocation control
 			satnav.geolocation ();
+			
+			// Add layer switching
+			satnav.layerSwitcher ();
 			
 			// Add routing
 			satnav.routing ();
@@ -121,6 +123,33 @@ var satnav = (function ($) {
 			// Add to the map
 			_map.addControl (geolocate);
 
+		},
+		
+		
+		// Function to add layer switching
+		// https://www.mapbox.com/mapbox-gl-js/example/setstyle/
+		// https://bl.ocks.org/ryanbaumann/7f9a353d0a1ae898ce4e30f336200483/96bea34be408290c161589dcebe26e8ccfa132d7
+		layerSwitcher: function ()
+		{
+			// Define the available layers
+			var layers = {
+				"streets": 'mapbox://styles/mapbox/streets-v9',
+				"bright": 'mapbox://styles/mapbox/bright-v9',
+				"dark": 'mapbox://styles/mapbox/dark-v9',
+				"satellite": 'mapbox://styles/mapbox/satellite-v9',
+			}
+			
+			// Switch to selected layer
+			var layerList = document.getElementById('menu');
+			var inputs = layerList.getElementsByTagName('input');
+			function switchLayer (layer) {
+				var layerId = layer.target.id;
+				var style = layers[layerId];
+				_map.setStyle (style);
+			};
+			for (var i = 0; i < inputs.length; i++) {
+				inputs[i].onclick = switchLayer;
+			}
 		},
 		
 		
