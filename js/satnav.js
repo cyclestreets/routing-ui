@@ -244,8 +244,10 @@ var satnav = (function ($) {
 								"source": "route",
 								"type": "line",
 								"layout": {
+									// LineString features
 									"line-join": "round",
 									"line-cap": "round",
+									// Point features: handled below in "geojson.features.forEach"
 								},
 								"paint": {
 									"line-color": "purple",
@@ -257,6 +259,19 @@ var satnav = (function ($) {
 						// https://bl.ocks.org/ryanbaumann/7f9a353d0a1ae898ce4e30f336200483/96bea34be408290c161589dcebe26e8ccfa132d7
 						_map.addSource (route.layer.source, route.source);
 						_map.addLayer (route.layer);
+						
+						// Add markers; see: https://www.mapbox.com/help/custom-markers-gl-js/
+						// Unfortunately Mapbox GL makes this much more difficult than Leaflet.js and has to be done at DOM level; see: https://github.com/mapbox/mapbox-gl-js/issues/656
+						geojson.features.forEach (function (marker) {
+							if (marker.geometry.type == 'Point') {	// Apply only to points
+								var wisp = document.createElement('div');
+								wisp.className = 'wisp';
+								wisp.style.backgroundImage = "url('/images/itinerarymarkers/waypoint-large.png')";
+								new mapboxgl.Marker({element: wisp, offset: [0, -22]})	// See: https://www.mapbox.com/mapbox-gl-js/api/#marker
+									.setLngLat(marker.geometry.coordinates)
+									.addTo(_map);
+							}
+						});
 					},
 					error: function (jqXHR, textStatus, errorThrown) {
 						console.log (errorThrown);
