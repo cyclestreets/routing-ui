@@ -27,6 +27,7 @@ var satnav = (function ($) {
 	
 	// Internal class properties
 	var _map = null;
+	var _itineraryId = null;
 	
 	
 	return {
@@ -216,8 +217,13 @@ var satnav = (function ($) {
 		// Function to add routing
 		routing: function ()
 		{
+			// For now, request an itinerary ID if not already entered
+			if (!_itineraryId) {
+				_itineraryId = prompt ("CycleStreets journey number?", "63238303");
+			}
+			
 			// For now, obtain a fixed GeoJSON string
-			var url = 'https://api.cyclestreets.net/v2/journey.retrieve?itinerary=63238303&plans=balanced&key=' + _settings.cyclestreetsApiKey;
+			var url = 'https://api.cyclestreets.net/v2/journey.retrieve?itinerary=' + _itineraryId + '&plans=balanced&key=' + _settings.cyclestreetsApiKey;
 			
 			// https://www.mapbox.com/mapbox-gl-js/example/geojson-line/
 			var route = {
