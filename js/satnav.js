@@ -219,7 +219,7 @@ var satnav = (function ($) {
 		{
 			// For now, request an itinerary ID if not already entered
 			if (!_itineraryId) {
-				_itineraryId = prompt ("CycleStreets journey number?", "63238303");
+				_itineraryId = prompt ("CycleStreets journey number?", "63248473");
 			}
 			
 			// For now, obtain a fixed GeoJSON string
@@ -260,13 +260,33 @@ var satnav = (function ($) {
 						_map.addSource (route.layer.source, route.source);
 						_map.addLayer (route.layer);
 						
+						// Determine the number of waypoints
+						var totalWaypoints = 0;
+						geojson.features.forEach (function (marker) {
+							if (marker.properties.hasOwnProperty('waypoint')) {
+								totalWaypoints++;
+							}
+						});
+						
 						// Add markers; see: https://www.mapbox.com/help/custom-markers-gl-js/
 						// Unfortunately Mapbox GL makes this much more difficult than Leaflet.js and has to be done at DOM level; see: https://github.com/mapbox/mapbox-gl-js/issues/656
 						geojson.features.forEach (function (marker) {
 							if (marker.geometry.type == 'Point') {	// Apply only to points
+								
+								// Determine the image to use
+								var image;
+								switch (marker.properties.waypoint) {
+									case 1: image = 'start'; break;
+									case totalWaypoints: image = 'finish'; break;
+									default: image = 'waypoint'; break;
+								}
+								
+								// Assemble the image as a DOM element
 								var wisp = document.createElement('div');
 								wisp.className = 'wisp';
-								wisp.style.backgroundImage = "url('/images/itinerarymarkers/waypoint-large.png')";
+								wisp.style.backgroundImage = "url('/images/itinerarymarkers/" + image + "-large.png')";
+								
+								// Add the marker
 								new mapboxgl.Marker({element: wisp, offset: [0, -22]})	// See: https://www.mapbox.com/mapbox-gl-js/api/#marker
 									.setLngLat(marker.geometry.coordinates)
 									.addTo(_map);
