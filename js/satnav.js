@@ -273,12 +273,22 @@ var satnav = (function ($) {
 						geojson.features.forEach (function (marker) {
 							if (marker.geometry.type == 'Point') {	// Apply only to points
 								
-								// Determine the image to use
+								// Determine the image and text to use
 								var image;
+								var text;
 								switch (marker.properties.waypoint) {
-									case 1: image = 'start'; break;
-									case totalWaypoints: image = 'finish'; break;
-									default: image = 'waypoint'; break;
+									case 1:
+										image = 'start';
+										text = 'Start at: <strong>' + satnav.htmlspecialchars (geojson.properties.start) + '</strong>';
+										break;
+									case totalWaypoints:
+										image = 'finish';
+										text = 'Finish at: <strong>' + satnav.htmlspecialchars (geojson.properties.finish) + '</strong>';
+										break;
+									default:
+										image = 'waypoint';
+										text = 'Via: Waypoint #' + (marker.properties.waypoint - 1);	// #!# API needs to provide street location name
+										break;
 								}
 								
 								// Assemble the image as a DOM element
@@ -289,6 +299,7 @@ var satnav = (function ($) {
 								// Add the marker
 								new mapboxgl.Marker({element: wisp, offset: [0, -22]})	// See: https://www.mapbox.com/mapbox-gl-js/api/#marker
 									.setLngLat(marker.geometry.coordinates)
+									.setPopup( new mapboxgl.Popup({ offset: 25 }).setHTML(text) )
 									.addTo(_map);
 							}
 						});
@@ -344,6 +355,14 @@ var satnav = (function ($) {
 					}
 				}, labelLayerId);
 			});
+		},
+		
+		
+		// Function to make data entity-safe
+		htmlspecialchars: function (string)
+		{
+			if (typeof string !== 'string') {return string;}
+			return string.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 		}
 	};
 	
