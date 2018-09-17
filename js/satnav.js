@@ -225,31 +225,43 @@ var satnav = (function ($) {
 			// For now, obtain a fixed GeoJSON string
 			var url = 'https://api.cyclestreets.net/v2/journey.retrieve?itinerary=' + _itineraryId + '&plans=balanced&key=' + _settings.cyclestreetsApiKey;
 			
-			// https://www.mapbox.com/mapbox-gl-js/example/geojson-line/
-			var route = {
-				"source": {
-					"type": "geojson",
-					"data": url,
-				},
-				"layer": {
-					"id": "route",
-					"source": "route",
-					"type": "line",
-					"layout": {
-						"line-join": "round",
-						"line-cap": "round"
-					},
-					"paint": {
-						"line-color": "purple",
-						"line-width": 8
-					}
-				}
-			}
-				
-			// https://bl.ocks.org/ryanbaumann/7f9a353d0a1ae898ce4e30f336200483/96bea34be408290c161589dcebe26e8ccfa132d7
 			_map.on ('style.load', function () {
-				_map.addSource (route.layer.source, route.source);
-				_map.addLayer (route.layer);
+			
+				// Load over AJAX; see: https://stackoverflow.com/a/48655332/180733
+				$.ajax({
+					dataType: 'json',
+					url: url,
+					success: function (geojson) {
+						
+						// https://www.mapbox.com/mapbox-gl-js/example/geojson-line/
+						var route = {
+							"source": {
+								"type": "geojson",
+								"data": geojson,
+							},
+							"layer": {
+								"id": "route",
+								"source": "route",
+								"type": "line",
+								"layout": {
+									"line-join": "round",
+									"line-cap": "round",
+								},
+								"paint": {
+									"line-color": "purple",
+									"line-width": 8
+								}
+							}
+						}
+						
+						// https://bl.ocks.org/ryanbaumann/7f9a353d0a1ae898ce4e30f336200483/96bea34be408290c161589dcebe26e8ccfa132d7
+						_map.addSource (route.layer.source, route.source);
+						_map.addLayer (route.layer);
+					},
+					error: function (jqXHR, textStatus, errorThrown) {
+						console.log (errorThrown);
+					}
+				});
 			});
 		},
 		
@@ -260,6 +272,7 @@ var satnav = (function ($) {
 		{
 			// The 'building' layer in the mapbox-streets vector source contains building-height data from OpenStreetMap.
 			_map.on('style.load', function() {
+				
 				// Insert the layer beneath any symbol layer.
 				var layers = _map.getStyle().layers;
 				
