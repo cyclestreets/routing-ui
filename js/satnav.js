@@ -131,15 +131,15 @@ var satnav = (function ($) {
 			var url = 'https://api.cyclestreets.net/v2/journey.retrieve?itinerary=63238303&plans=balanced&key=' + _settings.cyclestreetsApiKey;
 			
 			// https://www.mapbox.com/mapbox-gl-js/example/geojson-line/
-			_map.on ('load', function () {
-				
-				_map.addLayer ({
+			var route = {
+				"source": {
+					"type": "geojson",
+					"data": url,
+				},
+				"layer": {
 					"id": "route",
+					"source": "route",
 					"type": "line",
-					"source": {
-						"type": "geojson",
-						"data": url,
-					},
 					"layout": {
 						"line-join": "round",
 						"line-cap": "round"
@@ -148,7 +148,13 @@ var satnav = (function ($) {
 						"line-color": "purple",
 						"line-width": 8
 					}
-				});
+				}
+			}
+				
+			// https://bl.ocks.org/ryanbaumann/7f9a353d0a1ae898ce4e30f336200483/96bea34be408290c161589dcebe26e8ccfa132d7
+			_map.on ('style.load', function () {
+				_map.addSource (route.layer.source, route.source);
+				_map.addLayer (route.layer);
 			});
 		}
 	};
