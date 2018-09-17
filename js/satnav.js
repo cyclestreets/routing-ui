@@ -47,6 +47,9 @@ var satnav = (function ($) {
 			// Enable tilt and direction
 			satnav.enableTilt ();
 			
+			// Geolocate the user initially
+			satnav.geolocateInitial ();
+			
 			// Add a geolocation control
 			satnav.geolocation ();
 			
@@ -107,6 +110,34 @@ var satnav = (function ($) {
 			}).catch (function (errorMessage) { // Device Orientation Events are not supported
 				console.log (errorMessage);
 			});
+		},
+		
+		
+		// Function to geolocate the user initially
+		// https://stackoverflow.com/a/46340826/180733
+		geolocateInitial: function ()
+		{
+			// Define geolocation options
+			var options = {
+				enableHighAccuracy: true,
+				timeout: 5000,
+				maximumAge: 0
+			};
+			
+			function success (pos) {
+				var crd = pos.coords;
+				_map.flyTo ({
+					center: [crd.longitude, crd.latitude],
+					zoom: 15
+				});
+			};
+			
+			function error (err) {
+				console.log (err);
+			}
+
+			navigator.geolocation.getCurrentPosition (success, error, options);
+			
 		},
 		
 		
