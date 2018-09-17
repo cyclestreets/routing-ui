@@ -75,6 +75,7 @@ var satnav = (function ($) {
 				style: 'mapbox://styles/mapbox/streets-v9',
 				center: [_settings.defaultLocation.longitude, _settings.defaultLocation.latitude],
 				zoom: _settings.defaultLocation.zoom,
+				maxZoom: 21,
 				hash: true
 			});
 		},
