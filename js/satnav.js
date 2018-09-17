@@ -144,6 +144,7 @@ var satnav = (function ($) {
 				"satellite": 'mapbox://styles/mapbox/satellite-v9',
 				
 				// Raster styles; see: https://www.mapbox.com/mapbox-gl-js/example/map-tiles/
+				// NB If using only third-party sources, a Mapbox API key is not needed: see: https://github.com/mapbox/mapbox-gl-native/issues/2996#issuecomment-155483811
 				"opencyclemap": {
 					"version": 8,
 					"sources": {
