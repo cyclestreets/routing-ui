@@ -133,10 +133,35 @@ var satnav = (function ($) {
 		{
 			// Define the available layers
 			var layers = {
+				
+				// Mapbox vector styles
 				"streets": 'mapbox://styles/mapbox/streets-v9',
 				"bright": 'mapbox://styles/mapbox/bright-v9',
 				"dark": 'mapbox://styles/mapbox/dark-v9',
 				"satellite": 'mapbox://styles/mapbox/satellite-v9',
+				
+				// Raster styles; see: https://www.mapbox.com/mapbox-gl-js/example/map-tiles/
+				"opencyclemap": {
+					"version": 8,
+					"sources": {
+						"simple-tiles": {
+							"type": "raster",
+							"tiles": [
+								"https://a.tile.cyclestreets.net/opencyclemap/{z}/{x}/{y}.png",
+								"https://b.tile.cyclestreets.net/opencyclemap/{z}/{x}/{y}.png",
+								"https://c.tile.cyclestreets.net/opencyclemap/{z}/{x}/{y}.png",
+							],
+							"tileSize": 256
+						}
+					},
+					"layers": [{
+						"id": "simple-tiles",
+						"type": "raster",
+						"source": "simple-tiles",
+						"minzoom": 0,
+						"maxzoom": 22
+					}]
+				}
 			}
 			
 			// Switch to selected layer
