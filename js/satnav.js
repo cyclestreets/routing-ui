@@ -27,6 +27,7 @@ var satnav = (function ($) {
 	
 	// Internal class properties
 	var _map = null;
+	var _styles = {};
 	var _itineraryId = null;
 	var _markers = [];
 	var _routeLoaded = false;
@@ -43,6 +44,9 @@ var satnav = (function ($) {
 					_settings[setting] = config[setting];
 				}
 			});
+			
+			// Load styles
+			satnav.getStyles ();
 			
 			// Create the map
 			satnav.createMap ();
@@ -160,17 +164,14 @@ var satnav = (function ($) {
 			
 			// Add to the map
 			_map.addControl (geolocate);
-
 		},
 		
 		
-		// Function to add layer switching
-		// https://www.mapbox.com/mapbox-gl-js/example/setstyle/
-		// https://bl.ocks.org/ryanbaumann/7f9a353d0a1ae898ce4e30f336200483/96bea34be408290c161589dcebe26e8ccfa132d7
-		layerSwitcher: function ()
+		// Define styles
+		getStyles: function ()
 		{
-			// Define the available layers
-			var layers = {
+			// Define the available background styles
+			_styles = {
 				
 				// Mapbox vector styles
 				"streets": 'mapbox://styles/mapbox/streets-v9',
@@ -202,13 +203,20 @@ var satnav = (function ($) {
 					}]
 				}
 			}
-			
+		},
+		
+		
+		// Function to add layer switching
+		// https://www.mapbox.com/mapbox-gl-js/example/setstyle/
+		// https://bl.ocks.org/ryanbaumann/7f9a353d0a1ae898ce4e30f336200483/96bea34be408290c161589dcebe26e8ccfa132d7
+		layerSwitcher: function ()
+		{
 			// Switch to selected layer
 			var layerList = document.getElementById('menu');
 			var inputs = layerList.getElementsByTagName('input');
 			function switchLayer (layer) {
 				var layerId = layer.target.id;
-				var style = layers[layerId];
+				var style = _styles[layerId];
 				_map.setStyle (style);
 			};
 			for (var i = 0; i < inputs.length; i++) {
