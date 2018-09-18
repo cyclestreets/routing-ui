@@ -33,7 +33,7 @@ var satnav = (function ($) {
 	var _styles = {};
 	var _itineraryId = null;
 	var _markers = [];
-	var _routeLoaded = false;
+	var _routeGeojson = false;
 	
 	
 	return {
@@ -246,6 +246,10 @@ var satnav = (function ($) {
 				// Load the route
 				satnav.loadRoute (url);
 */
+				// If the route is already loaded, show it
+				if (_routeGeojson) {
+					satnav.showRoute (_routeGeojson);
+				}
 				
 				// Get map locations
 				// https://www.mapbox.com/mapbox-gl-js/example/mouse-position/
@@ -254,8 +258,8 @@ var satnav = (function ($) {
 				var totalWaypoints;
 				_map.on ('click', function (e) {
 					
-					// Take no action if a route is loaded
-					if (_routeLoaded) {return;}
+					// Take no action on the click handler if a route is loaded
+					if (_routeGeojson) {return;}
 					
 					// Register the waypoint
 					waypoint = parseFloat(e.lngLat.lng).toFixed(6) + ',' + parseFloat(e.lngLat.lat).toFixed(6);
@@ -291,7 +295,8 @@ var satnav = (function ($) {
 				dataType: 'json',
 				url: url,
 				success: function (geojson) {
-					satnav.showRoute (geojson);
+					_routeGeojson = geojson;	// Register the GeoJSON to enable the state to persist between map layer changes and to set that the route is loaded
+					satnav.showRoute (_routeGeojson);
 				},
 				error: function (jqXHR, textStatus, errorThrown) {
 					console.log (errorThrown);
@@ -325,9 +330,6 @@ var satnav = (function ($) {
 					}
 				}
 			}
-			
-			// Set that the route is loaded
-			_routeLoaded = true;
 			
 			// https://bl.ocks.org/ryanbaumann/7f9a353d0a1ae898ce4e30f336200483/96bea34be408290c161589dcebe26e8ccfa132d7
 			_map.addSource (route.layer.source, route.source);
