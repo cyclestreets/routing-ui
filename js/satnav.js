@@ -72,6 +72,9 @@ var satnav = (function ($) {
 			// Add route clearing
 			satnav.routeClearing ();
 			
+			// Add load route ID functionality
+			satnav.loadRouteId ();
+			
 			// Add buildings
 			satnav.addBuildings ();
 			
@@ -282,6 +285,7 @@ var satnav = (function ($) {
 			// Construct HTML for layer switcher
 			var html = '<ul id="toolbox">';
 			html += '<li><a id="clearroute" href="#">Clear route &hellip;</a></li>';
+			html += '<li><a id="loadrouteid" href="#">Load route ID &hellip;</a></li>';
 			html += '</ul>';
 			$('#toolbox').append (html);
 		},
@@ -303,24 +307,41 @@ var satnav = (function ($) {
 		},
 		
 		
-		// Function to add routing
-		routing: function ()
+		// Function to add route loading
+		loadRouteId: function ()
 		{
-			// Load routing when style ready
-			_map.on ('style.load', function () {
+			$('#loadrouteid').click (function (e) {
 				
-/*
-				// For now, request an itinerary ID if not already entered
-				if (!_itineraryId) {
-					_itineraryId = prompt ("CycleStreets journey number?", "63248473");
+				// If a route is already loaded, prompt to remove it
+				if (_routeGeojson) {
+					if (!confirm ('Clear existing route?')) {
+						return;
+					}
+					satnav.removeRoute ();
 				}
+				
+				// For now, request an itinerary ID if not already entered, or end
+				_itineraryId = prompt ('CycleStreets journey number?', '63248473');
+				if (!_itineraryId) {return;}
 				
 				// For now, obtain a fixed GeoJSON string
 				var url = 'https://api.cyclestreets.net/v2/journey.retrieve?itinerary=' + _itineraryId + '&plans=balanced&key=' + _settings.cyclestreetsApiKey;
 				
 				// Load the route
 				satnav.loadRoute (url);
-*/
+				
+				// Prevent link following
+				e.preventDefault ();
+			});
+		},
+		
+		
+		// Function to add routing
+		routing: function ()
+		{
+			// Load routing when style ready
+			_map.on ('style.load', function () {
+				
 				// If the route is already loaded, show it
 				if (_routeGeojson) {
 					satnav.showRoute (_routeGeojson);
