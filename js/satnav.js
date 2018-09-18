@@ -28,6 +28,8 @@ var satnav = (function ($) {
 	// Internal class properties
 	var _map = null;
 	var _itineraryId = null;
+	var _markers = [];
+	var _routeLoaded = false;
 	
 	
 	return {
@@ -221,6 +223,7 @@ var satnav = (function ($) {
 			// Load routing when style ready
 			_map.on ('style.load', function () {
 				
+/*
 				// For now, request an itinerary ID if not already entered
 				if (!_itineraryId) {
 					_itineraryId = prompt ("CycleStreets journey number?", "63248473");
@@ -231,7 +234,41 @@ var satnav = (function ($) {
 				
 				// Load the route
 				satnav.loadRoute (url);
+*/
+				
+				// Get map locations
+				// https://www.mapbox.com/mapbox-gl-js/example/mouse-position/
+				var waypoints = [];
+				var waypoint;
+				var totalWaypoints;
+				_map.on ('click', function (e) {
+					
+					// Take no action if a route is loaded
+					if (_routeLoaded) {return;}
+					
+					// Register the waypoint
+					waypoint = parseFloat(e.lngLat.lng).toFixed(6) + ',' + parseFloat(e.lngLat.lat).toFixed(6);
+					waypoints.push (waypoint);
+					totalWaypoints = waypoints.length;
+					
+					// Obtain the label
+					// #!# Replace to using nearestpoint
+					var label = (totalWaypoints == 1 ? 'Start' : 'Finish');
+					
+					// Add the waypoint marker
+					satnav.addWaypointMarker (e.lngLat, totalWaypoints, label, totalWaypoints);
+					
+					// Once there are two waypoints, load the route
+					if (totalWaypoints == 2) {
 						
+						// Assemble the API URL
+						var url = 'https://api.cyclestreets.net/v2/journey.plan?waypoints=' + waypoints.join ('|') + '&plans=balanced&key=' + _settings.cyclestreetsApiKey;
+						
+						// Load the route
+						satnav.loadRoute (url);
+					}
+				});
+			});
 		},
 		
 		
@@ -267,9 +304,17 @@ var satnav = (function ($) {
 						}
 					}
 					
+					// Set that the route is loaded
+					_routeLoaded = true;
+					
 					// https://bl.ocks.org/ryanbaumann/7f9a353d0a1ae898ce4e30f336200483/96bea34be408290c161589dcebe26e8ccfa132d7
 					_map.addSource (route.layer.source, route.source);
 					_map.addLayer (route.layer);
+					
+					// Clear any existing markers
+					$.each (_markers, function (index, marker) {
+						marker.remove();
+					});
 					
 					// Determine the number of waypoints
 					var totalWaypoints = 0;
@@ -327,10 +372,11 @@ var satnav = (function ($) {
 			wisp.style.backgroundImage = "url('/images/itinerarymarkers/" + image + "-large.png')";
 			
 			// Add the marker
-			new mapboxgl.Marker({element: wisp, offset: [0, -22]})	// See: https://www.mapbox.com/mapbox-gl-js/api/#marker
+			var marker = new mapboxgl.Marker({element: wisp, offset: [0, -22]})	// See: https://www.mapbox.com/mapbox-gl-js/api/#marker
 				.setLngLat(coordinates)
 				.setPopup( new mapboxgl.Popup({ offset: 25 }).setHTML(text) )
 				.addTo(_map);
+			_markers.push (marker);
 		},
 		
 		
