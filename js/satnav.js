@@ -69,6 +69,9 @@ var satnav = (function ($) {
 			// Add toolbox (pending implementation of overall UI)
 			satnav.toolbox ();
 			
+			// Add route clearing
+			satnav.routeClearing ();
+			
 			// Add buildings
 			satnav.addBuildings ();
 			
@@ -278,8 +281,25 @@ var satnav = (function ($) {
 
 			// Construct HTML for layer switcher
 			var html = '<ul id="toolbox">';
+			html += '<li><a id="clearroute" href="#">Clear route &hellip;</a></li>';
 			html += '</ul>';
 			$('#toolbox').append (html);
+		},
+		
+		
+		// Add a clear route handler
+		routeClearing: function ()
+		{
+			$('#clearroute').click (function (e) {
+				
+				// If a route is already loaded, prompt to remove it
+				if (_routeGeojson) {
+					if (!confirm ('Clear existing route?')) {
+						return;
+					}
+					satnav.removeRoute ();
+				}
+			});
 		},
 		
 		
@@ -304,13 +324,14 @@ var satnav = (function ($) {
 				// If the route is already loaded, show it
 				if (_routeGeojson) {
 					satnav.showRoute (_routeGeojson);
+					return;
 				}
 				
 				// Get map locations
 				// https://www.mapbox.com/mapbox-gl-js/example/mouse-position/
 				var waypoints = [];
 				var waypoint;
-				var totalWaypoints;
+				var totalWaypoints = 0;
 				_map.on ('click', function (e) {
 					
 					// Take no action on the click handler if a route is loaded
@@ -336,6 +357,10 @@ var satnav = (function ($) {
 						
 						// Load the route
 						satnav.loadRoute (url);
+						
+						// Reset the waypoints count
+						waypoints = [];
+						totalWaypoints = 0;
 					}
 				});
 			});
@@ -386,6 +411,7 @@ var satnav = (function ($) {
 			$.each (_markers, function (index, marker) {
 				marker.remove();
 			});
+			_markers = [];
 			
 			// Determine the number of waypoints
 			var totalWaypoints = 0;
@@ -408,6 +434,24 @@ var satnav = (function ($) {
 					satnav.addWaypointMarker (marker.geometry.coordinates, marker.properties.waypoint, text, totalWaypoints);
 				}
 			});
+		},
+		
+		
+		// Function to remove a drawn route currently present
+		removeRoute: function ()
+		{
+			// Remove the layer
+			_map.removeLayer ("route");
+			_map.removeSource ("route");
+			
+			// Unset the route data
+			_routeGeojson = false;
+
+			// Clear any existing markers
+			$.each (_markers, function (index, marker) {
+				marker.remove();
+			});
+			_markers = [];
 		},
 		
 		
@@ -442,6 +486,8 @@ var satnav = (function ($) {
 				.setLngLat(coordinates)
 				.setPopup( new mapboxgl.Popup({ offset: 25 }).setHTML(text) )
 				.addTo(_map);
+			
+			// Register the marker
 			_markers.push (marker);
 		},
 		
