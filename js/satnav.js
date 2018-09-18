@@ -283,74 +283,80 @@ var satnav = (function ($) {
 		},
 		
 		
-		// Function to load a route
-		loadRoute (url)
+		// Function to load a route over AJAX
+		loadRoute: function (url)
 		{
 			// Load over AJAX; see: https://stackoverflow.com/a/48655332/180733
 			$.ajax({
 				dataType: 'json',
 				url: url,
 				success: function (geojson) {
-					
-					// https://www.mapbox.com/mapbox-gl-js/example/geojson-line/
-					var route = {
-						"source": {
-							"type": "geojson",
-							"data": geojson,
-						},
-						"layer": {
-							"id": "route",
-							"source": "route",
-							"type": "line",
-							"layout": {
-								// LineString features
-								"line-join": "round",
-								"line-cap": "round",
-								// Point features: handled below in "geojson.features.forEach"
-							},
-							"paint": {
-								"line-color": "purple",
-								"line-width": 8
-							}
-						}
-					}
-					
-					// Set that the route is loaded
-					_routeLoaded = true;
-					
-					// https://bl.ocks.org/ryanbaumann/7f9a353d0a1ae898ce4e30f336200483/96bea34be408290c161589dcebe26e8ccfa132d7
-					_map.addSource (route.layer.source, route.source);
-					_map.addLayer (route.layer);
-					
-					// Clear any existing markers
-					$.each (_markers, function (index, marker) {
-						marker.remove();
-					});
-					
-					// Determine the number of waypoints
-					var totalWaypoints = 0;
-					geojson.features.forEach (function (marker) {
-						if (marker.properties.hasOwnProperty('waypoint')) {
-							totalWaypoints++;
-						}
-					});
-					
-					// Add markers; see: https://www.mapbox.com/help/custom-markers-gl-js/
-					// Unfortunately Mapbox GL makes this much more difficult than Leaflet.js and has to be done at DOM level; see: https://github.com/mapbox/mapbox-gl-js/issues/656
-					geojson.features.forEach (function (marker) {
-						if (marker.geometry.type == 'Point') {	// Apply only to points
-							var text;
-							switch (marker.properties.waypoint) {
-								case 1: text = geojson.properties.start; break;
-								case totalWaypoints: text = geojson.properties.finish; break;
-								default: text = false; break;
-							}
-							satnav.addWaypointMarker (marker.geometry.coordinates, marker.properties.waypoint, text, totalWaypoints);
-						}
-					});
+					satnav.showRoute (geojson);
 				},
 				error: function (jqXHR, textStatus, errorThrown) {
 					console.log (errorThrown);
+				}
+			});
+		},
+		
+		
+		// Function to render a route onto the map
+		showRoute: function (geojson)
+		{
+			// https://www.mapbox.com/mapbox-gl-js/example/geojson-line/
+			var route = {
+				"source": {
+					"type": "geojson",
+					"data": geojson,
+				},
+				"layer": {
+					"id": "route",
+					"source": "route",
+					"type": "line",
+					"layout": {
+						// LineString features
+						"line-join": "round",
+						"line-cap": "round",
+						// Point features: handled below in "geojson.features.forEach"
+					},
+					"paint": {
+						"line-color": "purple",
+						"line-width": 8
+					}
+				}
+			}
+			
+			// Set that the route is loaded
+			_routeLoaded = true;
+			
+			// https://bl.ocks.org/ryanbaumann/7f9a353d0a1ae898ce4e30f336200483/96bea34be408290c161589dcebe26e8ccfa132d7
+			_map.addSource (route.layer.source, route.source);
+			_map.addLayer (route.layer);
+			
+			// Clear any existing markers
+			$.each (_markers, function (index, marker) {
+				marker.remove();
+			});
+			
+			// Determine the number of waypoints
+			var totalWaypoints = 0;
+			geojson.features.forEach (function (marker) {
+				if (marker.properties.hasOwnProperty('waypoint')) {
+					totalWaypoints++;
+				}
+			});
+			
+			// Add markers; see: https://www.mapbox.com/help/custom-markers-gl-js/
+			// Unfortunately Mapbox GL makes this much more difficult than Leaflet.js and has to be done at DOM level; see: https://github.com/mapbox/mapbox-gl-js/issues/656
+			geojson.features.forEach (function (marker) {
+				if (marker.geometry.type == 'Point') {	// Apply only to points
+					var text;
+					switch (marker.properties.waypoint) {
+						case 1: text = geojson.properties.start; break;
+						case totalWaypoints: text = geojson.properties.finish; break;
+						default: text = false; break;
+					}
+					satnav.addWaypointMarker (marker.geometry.coordinates, marker.properties.waypoint, text, totalWaypoints);
 				}
 			});
 		},
