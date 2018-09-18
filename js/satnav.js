@@ -66,6 +66,9 @@ var satnav = (function ($) {
 			// Add layer switching
 			satnav.layerSwitcher ();
 			
+			// Add toolbox (pending implementation of overall UI)
+			satnav.toolbox ();
+			
 			// Add buildings
 			satnav.addBuildings ();
 			
@@ -264,6 +267,19 @@ var satnav = (function ($) {
 			
 			// Instiantiate and add the control
 			_map.addControl (new HelloWorldControl (), position);
+		},
+		
+		
+		// Function to add a toolbox
+		toolbox: function ()
+		{
+			// Add layer switcher UI
+			var control = this.createControl ('toolbox', 'bottom-left');
+
+			// Construct HTML for layer switcher
+			var html = '<ul id="toolbox">';
+			html += '</ul>';
+			$('#toolbox').append (html);
 		},
 		
 		
