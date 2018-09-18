@@ -25,7 +25,7 @@ var satnav = (function ($) {
 		},
 		
 		// Default style
-		defaultStyle: "opencyclemap"
+		defaultStyle: 'OpenCycleMap'
 	};
 	
 	// Internal class properties
@@ -184,7 +184,7 @@ var satnav = (function ($) {
 				
 				// Raster styles; see: https://www.mapbox.com/mapbox-gl-js/example/map-tiles/
 				// NB If using only third-party sources, a Mapbox API key is not needed: see: https://github.com/mapbox/mapbox-gl-native/issues/2996#issuecomment-155483811
-				"opencyclemap": {
+				"OpenCycleMap": {
 					"version": 8,
 					"sources": {
 						"simple-tiles": {
@@ -214,9 +214,22 @@ var satnav = (function ($) {
 		// https://bl.ocks.org/ryanbaumann/7f9a353d0a1ae898ce4e30f336200483/96bea34be408290c161589dcebe26e8ccfa132d7
 		layerSwitcher: function ()
 		{
+			// Add layer switcher UI
+			var control = this.createControl ('layerswitcher', 'bottom-left');
+
+			// Construct HTML for layer switcher
+			var layerSwitcherHtml = '<ul>';
+			var name;
+			$.each (_styles, function (styleId, style) {
+				name = satnav.ucfirst (styleId);
+				layerSwitcherHtml += '<li><input id="' + styleId + '" type="radio" name="layerswitcher" value="' + styleId + '"><label for="' + styleId + '"> ' + name + '</label></li>';
+			});
+			layerSwitcherHtml += '</ul>';
+			$('#layerswitcher').append (layerSwitcherHtml);
+			
 			// Switch to selected layer
-			var layerList = document.getElementById('menu');
-			var inputs = layerList.getElementsByTagName('input');
+			var layerList = document.getElementById ('layerswitcher');
+			var inputs = layerList.getElementsByTagName ('input');
 			function switchLayer (layer) {
 				var layerId = layer.target.id;
 				var style = _styles[layerId];
@@ -246,6 +259,8 @@ var satnav = (function ($) {
 				this._container.parentNode.removeChild(this._container);
 				this._map = undefined;
 			};
+			
+			// #!# Need to add icon and hover; partial example at: https://github.com/schulzsebastian/mapboxgl-legend/blob/master/index.js
 			
 			// Instiantiate and add the control
 			_map.addControl (new HelloWorldControl (), position);
@@ -474,7 +489,15 @@ var satnav = (function ($) {
 		{
 			if (typeof string !== 'string') {return string;}
 			return string.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-		}
+		},
+		
+		
+		// Function to make first character upper-case; see: https://stackoverflow.com/a/1026087/180733
+		ucfirst: function (string)
+		{
+			if (typeof string !== 'string') {return string;}
+			return string.charAt(0).toUpperCase() + string.slice(1);
+		},
 	};
 	
 } (jQuery));
