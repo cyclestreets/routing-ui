@@ -22,7 +22,10 @@ var satnav = (function ($) {
 			latitude: 54.235,
 			longitude: -1.582,
 			zoom: 5
-		}
+		},
+		
+		// Default style
+		defaultStyle: "opencyclemap"
 	};
 	
 	// Internal class properties
@@ -78,7 +81,7 @@ var satnav = (function ($) {
 			mapboxgl.accessToken = _settings.mapboxApiKey;
 			_map = new mapboxgl.Map ({
 				container: 'map',
-				style: 'mapbox://styles/mapbox/streets-v9',
+				style: _styles[_settings.defaultStyle],
 				center: [_settings.defaultLocation.longitude, _settings.defaultLocation.latitude],
 				zoom: _settings.defaultLocation.zoom,
 				maxZoom: 21,
