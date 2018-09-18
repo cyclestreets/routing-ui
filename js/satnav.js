@@ -348,31 +348,23 @@ var satnav = (function ($) {
 		showRoute: function (geojson)
 		{
 			// https://www.mapbox.com/mapbox-gl-js/example/geojson-line/
-			var route = {
+			var layer = {
+				"id": "route",
+				"type": "line",
 				"source": {
 					"type": "geojson",
-					"data": geojson,
+					"data": geojson
 				},
-				"layer": {
-					"id": "route",
-					"source": "route",
-					"type": "line",
-					"layout": {
-						// LineString features
-						"line-join": "round",
-						"line-cap": "round",
-						// Point features: handled below in "geojson.features.forEach"
-					},
-					"paint": {
-						"line-color": "purple",
-						"line-width": 8
-					}
+				"layout": {
+					"line-join": "round",
+					"line-cap": "round"
+				},
+				"paint": {
+					"line-color": "purple",
+					"line-width": 8
 				}
-			}
-			
-			// https://bl.ocks.org/ryanbaumann/7f9a353d0a1ae898ce4e30f336200483/96bea34be408290c161589dcebe26e8ccfa132d7
-			_map.addSource (route.layer.source, route.source);
-			_map.addLayer (route.layer);
+			};
+			_map.addLayer(layer);
 			
 			// Clear any existing markers
 			$.each (_markers, function (index, marker) {
