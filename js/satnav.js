@@ -283,35 +283,13 @@ var satnav = (function ($) {
 					// Unfortunately Mapbox GL makes this much more difficult than Leaflet.js and has to be done at DOM level; see: https://github.com/mapbox/mapbox-gl-js/issues/656
 					geojson.features.forEach (function (marker) {
 						if (marker.geometry.type == 'Point') {	// Apply only to points
-							
-							// Determine the image and text to use
-							var image;
 							var text;
 							switch (marker.properties.waypoint) {
-								case 1:
-									image = 'start';
-									text = 'Start at: <strong>' + satnav.htmlspecialchars (geojson.properties.start) + '</strong>';
-									break;
-								case totalWaypoints:
-									image = 'finish';
-									text = 'Finish at: <strong>' + satnav.htmlspecialchars (geojson.properties.finish) + '</strong>';
-									break;
-								default:
-									image = 'waypoint';
-									text = 'Via: Waypoint #' + (marker.properties.waypoint - 1);	// #!# API needs to provide street location name
-									break;
+								case 1: text = geojson.properties.start; break;
+								case totalWaypoints: text = geojson.properties.finish; break;
+								default: text = false; break;
 							}
-							
-							// Assemble the image as a DOM element
-							var wisp = document.createElement('div');
-							wisp.className = 'wisp';
-							wisp.style.backgroundImage = "url('/images/itinerarymarkers/" + image + "-large.png')";
-							
-							// Add the marker
-							new mapboxgl.Marker({element: wisp, offset: [0, -22]})	// See: https://www.mapbox.com/mapbox-gl-js/api/#marker
-								.setLngLat(marker.geometry.coordinates)
-								.setPopup( new mapboxgl.Popup({ offset: 25 }).setHTML(text) )
-								.addTo(_map);
+							satnav.addWaypointMarker (marker.geometry.coordinates, marker.properties.waypoint, text, totalWaypoints);
 						}
 					});
 				},
@@ -319,6 +297,40 @@ var satnav = (function ($) {
 					console.log (errorThrown);
 				}
 			});
+		},
+		
+		
+		// Function to add a waypoint marker
+		addWaypointMarker: function (coordinates, waypointNumber, label, totalWaypoints)
+		{
+			// Determine the image and text to use
+			var image;
+			var text;
+			switch (waypointNumber) {
+				case 1:
+					image = 'start';
+					text = 'Start at: <strong>' + satnav.htmlspecialchars (label) + '</strong>';
+					break;
+				case totalWaypoints:
+					image = 'finish';
+					text = 'Finish at: <strong>' + satnav.htmlspecialchars (label) + '</strong>';
+					break;
+				default:
+					image = 'waypoint';
+					text = 'Via: Waypoint #' + (waypointNumber - 1);	// #!# API needs to provide street location name
+					break;
+			}
+			
+			// Assemble the image as a DOM element
+			var wisp = document.createElement('div');
+			wisp.className = 'wisp';
+			wisp.style.backgroundImage = "url('/images/itinerarymarkers/" + image + "-large.png')";
+			
+			// Add the marker
+			new mapboxgl.Marker({element: wisp, offset: [0, -22]})	// See: https://www.mapbox.com/mapbox-gl-js/api/#marker
+				.setLngLat(coordinates)
+				.setPopup( new mapboxgl.Popup({ offset: 25 }).setHTML(text) )
+				.addTo(_map);
 		},
 		
 		
