@@ -218,97 +218,106 @@ var satnav = (function ($) {
 		// Function to add routing
 		routing: function ()
 		{
-			// For now, request an itinerary ID if not already entered
-			if (!_itineraryId) {
-				_itineraryId = prompt ("CycleStreets journey number?", "63248473");
-			}
-			
-			// For now, obtain a fixed GeoJSON string
-			var url = 'https://api.cyclestreets.net/v2/journey.retrieve?itinerary=' + _itineraryId + '&plans=balanced&key=' + _settings.cyclestreetsApiKey;
-			
+			// Load routing when style ready
 			_map.on ('style.load', function () {
-			
-				// Load over AJAX; see: https://stackoverflow.com/a/48655332/180733
-				$.ajax({
-					dataType: 'json',
-					url: url,
-					success: function (geojson) {
+				
+				// For now, request an itinerary ID if not already entered
+				if (!_itineraryId) {
+					_itineraryId = prompt ("CycleStreets journey number?", "63248473");
+				}
+				
+				// For now, obtain a fixed GeoJSON string
+				var url = 'https://api.cyclestreets.net/v2/journey.retrieve?itinerary=' + _itineraryId + '&plans=balanced&key=' + _settings.cyclestreetsApiKey;
+				
+				// Load the route
+				satnav.loadRoute (url);
 						
-						// https://www.mapbox.com/mapbox-gl-js/example/geojson-line/
-						var route = {
-							"source": {
-								"type": "geojson",
-								"data": geojson,
+		},
+		
+		
+		// Function to load a route
+		loadRoute (url)
+		{
+			// Load over AJAX; see: https://stackoverflow.com/a/48655332/180733
+			$.ajax({
+				dataType: 'json',
+				url: url,
+				success: function (geojson) {
+					
+					// https://www.mapbox.com/mapbox-gl-js/example/geojson-line/
+					var route = {
+						"source": {
+							"type": "geojson",
+							"data": geojson,
+						},
+						"layer": {
+							"id": "route",
+							"source": "route",
+							"type": "line",
+							"layout": {
+								// LineString features
+								"line-join": "round",
+								"line-cap": "round",
+								// Point features: handled below in "geojson.features.forEach"
 							},
-							"layer": {
-								"id": "route",
-								"source": "route",
-								"type": "line",
-								"layout": {
-									// LineString features
-									"line-join": "round",
-									"line-cap": "round",
-									// Point features: handled below in "geojson.features.forEach"
-								},
-								"paint": {
-									"line-color": "purple",
-									"line-width": 8
-								}
+							"paint": {
+								"line-color": "purple",
+								"line-width": 8
 							}
 						}
-						
-						// https://bl.ocks.org/ryanbaumann/7f9a353d0a1ae898ce4e30f336200483/96bea34be408290c161589dcebe26e8ccfa132d7
-						_map.addSource (route.layer.source, route.source);
-						_map.addLayer (route.layer);
-						
-						// Determine the number of waypoints
-						var totalWaypoints = 0;
-						geojson.features.forEach (function (marker) {
-							if (marker.properties.hasOwnProperty('waypoint')) {
-								totalWaypoints++;
-							}
-						});
-						
-						// Add markers; see: https://www.mapbox.com/help/custom-markers-gl-js/
-						// Unfortunately Mapbox GL makes this much more difficult than Leaflet.js and has to be done at DOM level; see: https://github.com/mapbox/mapbox-gl-js/issues/656
-						geojson.features.forEach (function (marker) {
-							if (marker.geometry.type == 'Point') {	// Apply only to points
-								
-								// Determine the image and text to use
-								var image;
-								var text;
-								switch (marker.properties.waypoint) {
-									case 1:
-										image = 'start';
-										text = 'Start at: <strong>' + satnav.htmlspecialchars (geojson.properties.start) + '</strong>';
-										break;
-									case totalWaypoints:
-										image = 'finish';
-										text = 'Finish at: <strong>' + satnav.htmlspecialchars (geojson.properties.finish) + '</strong>';
-										break;
-									default:
-										image = 'waypoint';
-										text = 'Via: Waypoint #' + (marker.properties.waypoint - 1);	// #!# API needs to provide street location name
-										break;
-								}
-								
-								// Assemble the image as a DOM element
-								var wisp = document.createElement('div');
-								wisp.className = 'wisp';
-								wisp.style.backgroundImage = "url('/images/itinerarymarkers/" + image + "-large.png')";
-								
-								// Add the marker
-								new mapboxgl.Marker({element: wisp, offset: [0, -22]})	// See: https://www.mapbox.com/mapbox-gl-js/api/#marker
-									.setLngLat(marker.geometry.coordinates)
-									.setPopup( new mapboxgl.Popup({ offset: 25 }).setHTML(text) )
-									.addTo(_map);
-							}
-						});
-					},
-					error: function (jqXHR, textStatus, errorThrown) {
-						console.log (errorThrown);
 					}
-				});
+					
+					// https://bl.ocks.org/ryanbaumann/7f9a353d0a1ae898ce4e30f336200483/96bea34be408290c161589dcebe26e8ccfa132d7
+					_map.addSource (route.layer.source, route.source);
+					_map.addLayer (route.layer);
+					
+					// Determine the number of waypoints
+					var totalWaypoints = 0;
+					geojson.features.forEach (function (marker) {
+						if (marker.properties.hasOwnProperty('waypoint')) {
+							totalWaypoints++;
+						}
+					});
+					
+					// Add markers; see: https://www.mapbox.com/help/custom-markers-gl-js/
+					// Unfortunately Mapbox GL makes this much more difficult than Leaflet.js and has to be done at DOM level; see: https://github.com/mapbox/mapbox-gl-js/issues/656
+					geojson.features.forEach (function (marker) {
+						if (marker.geometry.type == 'Point') {	// Apply only to points
+							
+							// Determine the image and text to use
+							var image;
+							var text;
+							switch (marker.properties.waypoint) {
+								case 1:
+									image = 'start';
+									text = 'Start at: <strong>' + satnav.htmlspecialchars (geojson.properties.start) + '</strong>';
+									break;
+								case totalWaypoints:
+									image = 'finish';
+									text = 'Finish at: <strong>' + satnav.htmlspecialchars (geojson.properties.finish) + '</strong>';
+									break;
+								default:
+									image = 'waypoint';
+									text = 'Via: Waypoint #' + (marker.properties.waypoint - 1);	// #!# API needs to provide street location name
+									break;
+							}
+							
+							// Assemble the image as a DOM element
+							var wisp = document.createElement('div');
+							wisp.className = 'wisp';
+							wisp.style.backgroundImage = "url('/images/itinerarymarkers/" + image + "-large.png')";
+							
+							// Add the marker
+							new mapboxgl.Marker({element: wisp, offset: [0, -22]})	// See: https://www.mapbox.com/mapbox-gl-js/api/#marker
+								.setLngLat(marker.geometry.coordinates)
+								.setPopup( new mapboxgl.Popup({ offset: 25 }).setHTML(text) )
+								.addTo(_map);
+						}
+					});
+				},
+				error: function (jqXHR, textStatus, errorThrown) {
+					console.log (errorThrown);
+				}
 			});
 		},
 		
