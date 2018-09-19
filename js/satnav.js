@@ -351,7 +351,6 @@ var satnav = (function ($) {
 				// Get map locations
 				// https://www.mapbox.com/mapbox-gl-js/example/mouse-position/
 				var waypoints = [];
-				var waypoint;
 				var totalWaypoints = 0;
 				_map.on ('click', function (e) {
 					
@@ -359,8 +358,7 @@ var satnav = (function ($) {
 					if (_routeGeojson) {return;}
 					
 					// Register the waypoint
-					waypoint = parseFloat(e.lngLat.lng).toFixed(6) + ',' + parseFloat(e.lngLat.lat).toFixed(6);
-					waypoints.push (waypoint);
+					waypoints.push (e.lngLat);
 					totalWaypoints = waypoints.length;
 					
 					// Obtain the label
@@ -373,11 +371,8 @@ var satnav = (function ($) {
 					// Once there are two waypoints, load the route
 					if (totalWaypoints == 2) {
 						
-						// Assemble the API URL
-						var url = 'https://api.cyclestreets.net/v2/journey.plan?waypoints=' + waypoints.join ('|') + '&plans=balanced&key=' + _settings.cyclestreetsApiKey;
-						
 						// Load the route
-						satnav.loadRoute (url);
+						satnav.loadRouteFromWaypoints (waypoints);
 						
 						// Reset the waypoints count
 						waypoints = [];
@@ -385,6 +380,25 @@ var satnav = (function ($) {
 					}
 				});
 			});
+		},
+		
+		
+		// Function to load a route from specified waypoints, each containing a lng,lat pair
+		loadRouteFromWaypoints (waypoints)
+		{
+			// Convert waypoints to strings
+			var waypointStrings = [];
+			var waypointString;
+			$.each (waypoints, function (index, waypoint) {
+				waypointString = parseFloat(waypoint.lng).toFixed(6) + ',' + parseFloat(waypoint.lat).toFixed(6);
+				waypointStrings.push (waypointString);
+			});
+			
+			// Assemble the API URL
+			var url = 'https://api.cyclestreets.net/v2/journey.plan?waypoints=' + waypointStrings.join ('|') + '&plans=balanced&key=' + _settings.cyclestreetsApiKey;
+			
+			// Load the route
+			satnav.loadRoute (url);
 		},
 		
 		
@@ -426,7 +440,7 @@ var satnav = (function ($) {
 					"line-width": 8
 				}
 			};
-			_map.addLayer(layer);
+			_map.addLayer (layer);
 			
 			// Clear any existing markers
 			$.each (_markers, function (index, marker) {
