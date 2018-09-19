@@ -409,10 +409,16 @@ var satnav = (function ($) {
 			$.ajax({
 				dataType: 'json',
 				url: url,
-				success: function (geojson) {
+				success: function (result) {
+					
+					// Detect error in result
+					if (result.error) {
+						alert ('Sorry, the route could not be loaded: ' + result.error);
+						return;
+					}
 					
 					// Register the GeoJSON to enable the state to persist between map layer changes and to set that the route is loaded
-					_routeGeojson = geojson;
+					_routeGeojson = result;
 					
 					// Show the route
 					satnav.showRoute (_routeGeojson);
@@ -423,6 +429,7 @@ var satnav = (function ($) {
 					}
 				},
 				error: function (jqXHR, textStatus, errorThrown) {
+					alert ('Sorry, the route could not be loaded.');
 					console.log (errorThrown);
 				}
 			});
