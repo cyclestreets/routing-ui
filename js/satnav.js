@@ -469,6 +469,31 @@ var satnav = (function ($) {
 					satnav.addWaypointMarker (marker.geometry.coordinates, marker.properties.waypoint, text, totalWaypoints);
 				}
 			});
+			
+			// For each marker, if moved, replan the route
+			// https://www.mapbox.com/mapbox-gl-js/example/drag-a-marker/
+			if (_routeGeojson) {
+				$.each (_markers, function (index, marker) {
+					_markers[index].on ('dragend', function (e) {
+						
+						// Construct the waypoints lng,lon list
+						var waypoints = [];
+						$.each (_markers, function (index, marker) {
+							waypoints.push (marker._lngLat);
+						});
+						
+						// Remove the existing route
+						satnav.removeRoute ();
+						
+						// Load the route from the waypoints
+						satnav.loadRouteFromWaypoints (waypoints);
+						
+						// Remove the current handler and the other handlers for the other markers
+						// See: https://stackoverflow.com/questions/21415897/removing-a-jquery-event-handler-while-inside-the-event-handler
+						$(this).off ('dragend');
+					});
+				});
+			}
 		},
 		
 		
@@ -517,7 +542,7 @@ var satnav = (function ($) {
 			wisp.style.backgroundImage = "url('/images/itinerarymarkers/" + image + "-large.png')";
 			
 			// Add the marker
-			var marker = new mapboxgl.Marker({element: wisp, offset: [0, -22]})	// See: https://www.mapbox.com/mapbox-gl-js/api/#marker
+			var marker = new mapboxgl.Marker({element: wisp, offset: [0, -22], draggable: true})	// See: https://www.mapbox.com/mapbox-gl-js/api/#marker
 				.setLngLat(coordinates)
 				.setPopup( new mapboxgl.Popup({ offset: 25 }).setHTML(text) )
 				.addTo(_map);
