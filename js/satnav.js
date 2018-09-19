@@ -284,7 +284,7 @@ var satnav = (function ($) {
 
 			// Construct HTML for layer switcher
 			var html = '<ul id="toolbox">';
-			html += '<li><a id="clearroute" href="#">Clear route &hellip;</a></li>';
+			html += '<li><a id="clearroute" href="#" class="hidden">Clear route &hellip;</a></li>';
 			html += '<li><a id="loadrouteid" href="#">Load route ID &hellip;</a></li>';
 			html += '</ul>';
 			$('#toolbox').append (html);
@@ -302,6 +302,9 @@ var satnav = (function ($) {
 						return;
 					}
 					satnav.removeRoute ();
+					
+					// Hide clear route link
+					$('#clearroute').hide ();
 				}
 			});
 		},
@@ -427,6 +430,9 @@ var satnav = (function ($) {
 					if (fitBounds) {
 						satnav.fitBounds (_routeGeojson, 'balanced');
 					}
+					
+					// Show clear route link
+					$('#clearroute').show ();
 				},
 				error: function (jqXHR, textStatus, errorThrown) {
 					alert ('Sorry, the route could not be loaded.');
