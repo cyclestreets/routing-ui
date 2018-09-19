@@ -328,7 +328,7 @@ var satnav = (function ($) {
 				var url = 'https://api.cyclestreets.net/v2/journey.retrieve?itinerary=' + _itineraryId + '&plans=balanced&key=' + _settings.cyclestreetsApiKey;
 				
 				// Load the route
-				satnav.loadRoute (url);
+				satnav.loadRoute (url, true);
 				
 				// Prevent link following
 				e.preventDefault ();
@@ -398,25 +398,57 @@ var satnav = (function ($) {
 			var url = 'https://api.cyclestreets.net/v2/journey.plan?waypoints=' + waypointStrings.join ('|') + '&plans=balanced&key=' + _settings.cyclestreetsApiKey;
 			
 			// Load the route
-			satnav.loadRoute (url);
+			satnav.loadRoute (url, false);
 		},
 		
 		
 		// Function to load a route over AJAX
-		loadRoute: function (url)
+		loadRoute: function (url, fitBounds)
 		{
 			// Load over AJAX; see: https://stackoverflow.com/a/48655332/180733
 			$.ajax({
 				dataType: 'json',
 				url: url,
 				success: function (geojson) {
-					_routeGeojson = geojson;	// Register the GeoJSON to enable the state to persist between map layer changes and to set that the route is loaded
+					
+					// Register the GeoJSON to enable the state to persist between map layer changes and to set that the route is loaded
+					_routeGeojson = geojson;
+					
+					// Show the route
 					satnav.showRoute (_routeGeojson);
+					
+					// Fit bounds if required
+					if (fitBounds) {
+						satnav.fitBounds (_routeGeojson, 'balanced');
+					}
 				},
 				error: function (jqXHR, textStatus, errorThrown) {
 					console.log (errorThrown);
 				}
 			});
+		},
+		
+		
+		// Function to fit bounds for a GeoJSON result
+		// https://www.mapbox.com/mapbox-gl-js/example/zoomto-linestring/
+		fitBounds: function (geojson, plan)
+		{
+			// Find the coordinates in the result
+			var coordinates;
+			$.each (geojson.features, function (index, feature) {
+				if (feature.properties.plan == plan && feature.geometry.type == 'LineString') {
+					coordinates = feature.geometry.coordinates;
+					return;		// I.e. break, as now found
+				}
+			});
+			
+			// Obtain the bounds
+			var bounds = coordinates.reduce (function (bounds, coord) {
+				return bounds.extend (coord);
+			}, new mapboxgl.LngLatBounds (coordinates[0], coordinates[0]));
+			
+			// Fit bounds
+			_map.fitBounds (bounds, {padding: 20});
 		},
 		
 		
