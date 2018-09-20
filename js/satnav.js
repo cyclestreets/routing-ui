@@ -34,6 +34,7 @@ var satnav = (function ($) {
 	var _itineraryId = null;
 	var _markers = [];
 	var _routeGeojson = false;
+	var _panningEnabled = true;
 	
 	
 	return {
@@ -68,6 +69,9 @@ var satnav = (function ($) {
 			
 			// Add toolbox (pending implementation of overall UI)
 			satnav.toolbox ();
+			
+			// Add panning control
+			satnav.controlPanning ();
 			
 			// Add route clearing
 			satnav.routeClearing ();
@@ -116,15 +120,20 @@ var satnav = (function ($) {
 				// Register a callback to run every time a new deviceorientation event is fired by the browser.
 				deviceOrientation.listen (function() {
 					
-					// Get the current *screen-adjusted* device orientation angles
-					var currentOrientation = deviceOrientation.getScreenAdjustedEuler ();
-					
-					// Calculate the current compass heading that the user is 'looking at' (in degrees)
-					var compassHeading = 360 - currentOrientation.alpha;
-					
-					// Set the bearing and pitch
-					_map.setBearing (compassHeading);
-					_map.setPitch (currentOrientation.beta);
+					// Disable if required
+					// #!# For efficiency, disabling panning should disable this whole function, using FULLTILT.DeviceOrientation.stop() / .start(), rather than just at the final point here
+					if (_panningEnabled) {
+						
+						// Get the current *screen-adjusted* device orientation angles
+						var currentOrientation = deviceOrientation.getScreenAdjustedEuler ();
+						
+						// Calculate the current compass heading that the user is 'looking at' (in degrees)
+						var compassHeading = 360 - currentOrientation.alpha;
+						
+						// Set the bearing and pitch
+						_map.setBearing (compassHeading);
+						_map.setPitch (currentOrientation.beta);
+					}
 				});
 				
 			}).catch (function (errorMessage) { // Device Orientation Events are not supported
@@ -286,8 +295,21 @@ var satnav = (function ($) {
 			var html = '<ul id="toolbox">';
 			html += '<li><a id="clearroute" href="#" class="hidden">Clear route &hellip;</a></li>';
 			html += '<li><a id="loadrouteid" href="#">Load route ID &hellip;</a></li>';
+			html += '<li><a id="panning" href="#" class="hidden">Panning: enabled</a></li>';
 			html += '</ul>';
 			$('#toolbox').append (html);
+		},
+		
+		
+		// Control panning
+		controlPanning: function ()
+		{
+			// Toggle panning on/off, and update the control
+			$('#panning').on ('click', function () {
+				_panningEnabled = !_panningEnabled;
+				var text = (_panningEnabled ? 'Panning: enabled' : 'Panning: disabled');
+				$('#panning').text (text);
+			});
 		},
 		
 		
