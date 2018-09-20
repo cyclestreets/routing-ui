@@ -604,9 +604,13 @@ var satnav = (function ($) {
 			// The 'building' layer in the mapbox-streets vector source contains building-height data from OpenStreetMap.
 			_map.on('style.load', function() {
 				
-				// Insert the layer beneath any symbol layer.
+				// Get the layers in the source style
 				var layers = _map.getStyle().layers;
 				
+				// Ensure the layer has buildings, or end
+				if (!satnav.styleHasLayer (layers, 'building')) {return;}
+				
+				// Insert the layer beneath any symbol layer.
 				var labelLayerId;
 				for (var i = 0; i < layers.length; i++) {
 					if (layers[i].type === 'symbol' && layers[i].layout['text-field']) {
@@ -615,6 +619,7 @@ var satnav = (function ($) {
 					}
 				}
 				
+				// Add the layer
 				_map.addLayer ({
 					'id': '3d-buildings',
 					'source': 'composite',
@@ -640,6 +645,21 @@ var satnav = (function ($) {
 					}
 				}, labelLayerId);
 			});
+		},
+		
+		
+		// Function to test whether a style has a layer
+		styleHasLayer: function (layers, layerName)
+		{
+			// Ensure the layer has buildings, or end
+			for (var i = 0; i < layers.length; i++) {
+				if (layers[i].id == layerName) {
+					return true;
+				}
+			}
+			
+			// Not found
+			return false;
 		},
 		
 		
