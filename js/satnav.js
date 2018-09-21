@@ -11,7 +11,8 @@ var satnav = (function ($) {
 	// Settings defaults
 	var _settings = {
 		
-		// CycleStreets API key
+		// CycleStreets API
+		cyclestreetsApiBaseUrl: 'https://api.cyclestreets.net',
 		cyclestreetsApiKey: 'YOUR_CYCLESTREETS_API_KEY',
 		
 		// Mapbox API key
@@ -350,7 +351,7 @@ var satnav = (function ($) {
 				if (!_itineraryId) {return;}
 				
 				// For now, obtain a fixed GeoJSON string
-				var url = 'https://api.cyclestreets.net/v2/journey.retrieve?itinerary=' + _itineraryId + '&plans=balanced&key=' + _settings.cyclestreetsApiKey;
+				var url = _settings.cyclestreetsApiBaseUrl + '/v2/journey.retrieve?itinerary=' + _itineraryId + '&plans=balanced&key=' + _settings.cyclestreetsApiKey;
 				
 				// Load the route
 				satnav.loadRoute (url, true);
@@ -420,7 +421,7 @@ var satnav = (function ($) {
 			});
 			
 			// Assemble the API URL
-			var url = 'https://api.cyclestreets.net/v2/journey.plan?waypoints=' + waypointStrings.join ('|') + '&plans=balanced&key=' + _settings.cyclestreetsApiKey;
+			var url = _settings.cyclestreetsApiBaseUrl + '/v2/journey.plan?waypoints=' + waypointStrings.join ('|') + '&plans=balanced&key=' + _settings.cyclestreetsApiKey;
 			
 			// Load the route
 			satnav.loadRoute (url, false);
