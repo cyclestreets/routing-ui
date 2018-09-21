@@ -421,7 +421,7 @@ var satnav = (function ($) {
 			});
 			
 			// Assemble the API URL
-			var url = _settings.cyclestreetsApiBaseUrl + '/v2/journey.plan?waypoints=' + waypointStrings.join ('|') + '&plans=balanced&key=' + _settings.cyclestreetsApiKey;
+			var url = _settings.cyclestreetsApiBaseUrl + '/v2/journey.plan?waypoints=' + waypointStrings.join ('|') + '&plans=balanced&archive=full&key=' + _settings.cyclestreetsApiKey;
 			
 			// Load the route
 			satnav.loadRoute (url, false);
