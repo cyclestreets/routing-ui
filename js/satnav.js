@@ -25,6 +25,12 @@ var satnav = (function ($) {
 			zoom: 5
 		},
 		
+		// Geocoder API URL; re-use of settings values represented as placeholders {%cyclestreetsApiBaseUrl}, {%cyclestreetsApiKey}, {%autocompleteBbox}, are supported
+		geocoderApiUrl: '{%cyclestreetsApiBaseUrl}/v2/geocoder?key={%cyclestreetsApiKey}&bounded=1&bbox={%autocompleteBbox}',
+		
+		// BBOX for autocomplete results biasing
+		autocompleteBbox: '-6.6577,49.9370,1.7797,57.6924',
+		
 		// Default style
 		defaultStyle: 'OpenCycleMap'
 	};
@@ -67,6 +73,9 @@ var satnav = (function ($) {
 			
 			// Add layer switching
 			satnav.layerSwitcher ();
+			
+			// Add geocoder control
+			satnav.geocoder ();
 			
 			// Add toolbox (pending implementation of overall UI)
 			satnav.toolbox ();
@@ -283,6 +292,39 @@ var satnav = (function ($) {
 			
 			// Instiantiate and add the control
 			_map.addControl (new HelloWorldControl (), position);
+		},
+		
+		
+		// Wrapper function to add a geocoder control
+		geocoder: function ()
+		{
+			// Geocoder URL; re-use of settings values is supported, represented as placeholders {%cyclestreetsApiBaseUrl}, {%cyclestreetsApiKey}, {%autocompleteBbox}
+			var geocoderApiUrl = satnav.settingsPlaceholderSubstitution (_settings.geocoderApiUrl, ['cyclestreetsApiBaseUrl', 'cyclestreetsApiKey', 'autocompleteBbox']);
+			
+			// Attach the autocomplete library behaviour to the location control
+			autocomplete.addTo ('#geocoder input', {
+				sourceUrl: geocoderApiUrl,
+				select: function (event, ui) {
+					var bbox = ui.item.feature.properties.bbox.split(',');
+					_map.fitBounds([ [bbox[0], bbox[1]], [bbox[2], bbox[3]] ]);	// Note that Mapbox GL JS uses sw,ne rather than ws,en as in Leaflet.js
+					event.preventDefault();
+				}
+			});
+		},
+		
+		
+		// Helper function to implement settings placeholder substitution in a string
+		settingsPlaceholderSubstitution: function (string, supportedPlaceholders)
+		{
+			// Substitute each placeholder
+			var placeholder;
+			$.each(supportedPlaceholders, function (index, field) {
+				placeholder = '{%' + field + '}';
+				string = string.replace(placeholder, _settings[field]);
+			});
+			
+			// Return the modified string
+			return string;
 		},
 		
 		

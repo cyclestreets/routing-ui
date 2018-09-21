@@ -13,6 +13,8 @@
 	<link href="/js/lib/mapbox-gl-js/mapbox-gl.css" rel="stylesheet" />
 	<script src="/js/lib/jquery-3.3.1/jquery-3.3.1.min.js"></script>
 	<script src="/js/lib/Full-Tilt/dist/fulltilt.min.js"></script>
+	<script src="/js/lib/jquery-ui-1.12.1/jquery-ui.min.js"></script>
+	<script src="/js/lib/cyclestreets-geocoder/geocoder.js"></script>
 	<script src="/.config.js"></script>
 	<script src="/js/satnav.js"></script>
 	<script>
@@ -22,6 +24,10 @@
 	</script>
 </head>
 <body>
+	
+	<div id="geocoder">
+		<input type="text" name="location" autocomplete="off" placeholder="Search locations and move map" tabindex="1" spellcheck="false" />
+	</div>
 	
 	<div id="map"></div>
 	
