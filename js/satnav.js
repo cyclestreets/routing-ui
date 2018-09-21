@@ -110,6 +110,9 @@ var satnav = (function ($) {
 				maxZoom: 21,
 				hash: true
 			});
+			
+			// Enable zoom in/out buttons
+			_map.addControl (new mapboxgl.NavigationControl ());
 		},
 		
 		
