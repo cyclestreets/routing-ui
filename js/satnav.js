@@ -61,7 +61,7 @@ var satnav = (function ($) {
 			});
 			
 			// Parse the URL
-			_urlParameters = satnav.parseUrl ();
+			satnav.parseUrl ();
 			
 			// Load styles
 			satnav.getStyles ();
@@ -92,6 +92,9 @@ var satnav = (function ($) {
 			
 			// Add route clearing
 			satnav.routeClearing ();
+			
+			// Load route from URL if present
+			satnav.loadRouteInitialUrl ();
 			
 			// Add load route ID functionality
 			satnav.loadRouteId ();
@@ -214,8 +217,15 @@ var satnav = (function ($) {
 			// Start a list of parameters
 			var urlParameters = {};
 			
-			// Return the parameters
-			return urlParameters;
+			// Extract journey URL
+			urlParameters.itineraryId = false;
+			var matches = window.location.pathname.match (/^\/journey\/([0-9]+)\/$/);
+			if (matches) {
+				urlParameters.itineraryId = matches[1];
+			}
+			
+			// Set the parameters
+			_urlParameters = urlParameters;
 		},
 		
 		
@@ -398,6 +408,16 @@ var satnav = (function ($) {
 		},
 		
 		
+		loadRouteInitialUrl: function ()
+		{
+			// Load the route if an itinerary ID is set
+			if (_urlParameters.itineraryId) {
+				_itineraryId = _urlParameters.itineraryId;
+				satnav.loadRouteFromId (_itineraryId);
+			}
+		},
+		
+		
 		// Function to add route loading
 		loadRouteId: function ()
 		{
@@ -522,6 +542,10 @@ var satnav = (function ($) {
 					// Show the route
 					satnav.showRoute (_routeGeojson);
 					
+					// Set the itinerary number permalink in the URL
+					var itineraryId = _routeGeojson.properties.id;
+					satnav.updateUrl (itineraryId);
+					
 					// Fit bounds if required
 					if (fitBounds) {
 						satnav.fitBounds (_routeGeojson, 'balanced');
@@ -638,6 +662,35 @@ var satnav = (function ($) {
 		},
 		
 		
+		// Function to update the URL, to provide persistency when a route is present
+		updateUrl: function (itineraryId)
+		{
+			// End if not supported, e.g. IE9
+			if (!history.pushState) {return;}
+			
+			// Construct the URL slug
+			var urlSlug = '/';
+			if (itineraryId) {
+				urlSlug = '/journey/' + itineraryId + '/';
+			}
+			
+			// Construct the URL
+			var url = '';
+			url += urlSlug;
+			url += window.location.hash;
+			
+			// Construct the page title, based on the enabled layers
+			var title = 'CycleStreets';
+			if (itineraryId) {
+				title += ': journey #' + itineraryId;
+			}
+			
+			// Push the URL state
+			history.pushState (urlSlug, title, url);
+			document.title = title;		// Workaround for poor browser support; see: https://stackoverflow.com/questions/13955520/
+		},
+		
+		
 		// Function to remove a drawn route currently present
 		removeRoute: function ()
 		{
@@ -653,6 +706,15 @@ var satnav = (function ($) {
 				marker.remove();
 			});
 			_markers = [];
+			
+			// Remove the itinerary ID
+			_itineraryId = false;
+			
+			// Reparse the URL
+			satnav.parseUrl ();
+			
+			// Update the URL
+			satnav.updateUrl (_itineraryId);
 		},
 		
 		
