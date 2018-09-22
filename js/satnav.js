@@ -40,6 +40,7 @@ var satnav = (function ($) {
 	
 	// Internal class properties
 	var _map = null;
+	var _urlParameters = {};
 	var _styles = {};
 	var _itineraryId = null;
 	var _markers = [];
@@ -58,6 +59,9 @@ var satnav = (function ($) {
 					_settings[setting] = config[setting];
 				}
 			});
+			
+			// Parse the URL
+			_urlParameters = satnav.parseUrl ();
 			
 			// Load styles
 			satnav.getStyles ();
@@ -201,6 +205,17 @@ var satnav = (function ($) {
 			
 			// Add to the map
 			_map.addControl (geolocate);
+		},
+		
+		
+		// Function to parse the URL
+		parseUrl: function ()
+		{
+			// Start a list of parameters
+			var urlParameters = {};
+			
+			// Return the parameters
+			return urlParameters;
 		},
 		
 		
