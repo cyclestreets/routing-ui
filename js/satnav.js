@@ -25,6 +25,9 @@ var satnav = (function ($) {
 			zoom: 5
 		},
 		
+		// Max zoom
+		maxZoom: 20,
+		
 		// Geocoder API URL; re-use of settings values represented as placeholders {%cyclestreetsApiBaseUrl}, {%cyclestreetsApiKey}, {%autocompleteBbox}, are supported
 		geocoderApiUrl: '{%cyclestreetsApiBaseUrl}/v2/geocoder?key={%cyclestreetsApiKey}&bounded=1&bbox={%autocompleteBbox}',
 		
@@ -107,7 +110,7 @@ var satnav = (function ($) {
 				style: _styles[_settings.defaultStyle],
 				center: [_settings.defaultLocation.longitude, _settings.defaultLocation.latitude],
 				zoom: _settings.defaultLocation.zoom,
-				maxZoom: 21,
+				maxZoom: _settings.maxZoom,
 				hash: true
 			});
 			
