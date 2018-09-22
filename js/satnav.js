@@ -400,11 +400,8 @@ var satnav = (function ($) {
 				_itineraryId = prompt ('CycleStreets journey number?', '63248473');
 				if (!_itineraryId) {return;}
 				
-				// For now, obtain a fixed GeoJSON string
-				var url = _settings.cyclestreetsApiBaseUrl + '/v2/journey.retrieve?itinerary=' + _itineraryId + '&plans=balanced&key=' + _settings.cyclestreetsApiKey;
-				
 				// Load the route
-				satnav.loadRoute (url, true);
+				satnav.loadRouteFromId (_itineraryId);
 				
 				// Prevent link following
 				e.preventDefault ();
@@ -475,6 +472,17 @@ var satnav = (function ($) {
 			
 			// Load the route
 			satnav.loadRoute (url, false);
+		},
+		
+		
+		// Function to load a route from a specified itinerary ID
+		loadRouteFromId: function (itineraryId)
+		{
+			// For now, obtain a fixed GeoJSON string
+			var url = _settings.cyclestreetsApiBaseUrl + '/v2/journey.retrieve?itinerary=' + itineraryId + '&plans=balanced&key=' + _settings.cyclestreetsApiKey;
+			
+			// Load the route
+			satnav.loadRoute (url, true);
 		},
 		
 		
