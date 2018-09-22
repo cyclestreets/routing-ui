@@ -256,7 +256,7 @@ var satnav = (function ($) {
 			var name;
 			$.each (_styles, function (styleId, style) {
 				name = satnav.ucfirst (styleId);
-				layerSwitcherHtml += '<li><input id="' + styleId + '" type="radio" name="layerswitcher" value="' + styleId + '"><label for="' + styleId + '"> ' + name + '</label></li>';
+				layerSwitcherHtml += '<li><input id="' + styleId + '" type="radio" name="layerswitcher" value="' + styleId + '"' + (styleId == _settings.defaultStyle ? ' checked="checked"' : '') + '><label for="' + styleId + '"> ' + name + '</label></li>';
 			});
 			layerSwitcherHtml += '</ul>';
 			$('#layerswitcher').append (layerSwitcherHtml);
