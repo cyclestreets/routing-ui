@@ -45,7 +45,7 @@ var satnav = (function ($) {
 	var _itineraryId = null;
 	var _markers = [];
 	var _routeGeojson = false;
-	var _panningEnabled = true;
+	var _panningEnabled = false;
 	
 	
 	return {
@@ -372,13 +372,14 @@ var satnav = (function ($) {
 			var html = '<ul id="toolbox">';
 			html += '<li><a id="clearroute" href="#" class="hidden">Clear route &hellip;</a></li>';
 			html += '<li><a id="loadrouteid" href="#">Load route ID &hellip;</a></li>';
-			html += '<li><a id="panning" href="#" class="hidden">Panning: enabled</a></li>';
+			html += '<li><a id="panning" href="#" class="hidden">Panning: disabled</a></li>';
 			html += '</ul>';
 			$('#toolbox').append (html);
 		},
 		
 		
 		// Control panning
+		// NB Two-finger gesture on mobile for pitch not yet supported: https://github.com/mapbox/mapbox-gl-js/issues/3405
 		controlPanning: function ()
 		{
 			// Toggle panning on/off, and update the control
@@ -386,6 +387,11 @@ var satnav = (function ($) {
 				_panningEnabled = !_panningEnabled;
 				var text = (_panningEnabled ? 'Panning: enabled' : 'Panning: disabled');
 				$('#panning').text (text);
+				
+				// Switch to top-down view when not enabled
+				if (!_panningEnabled) {
+					_map.setPitch (0);
+				}
 			});
 		},
 		
