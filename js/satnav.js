@@ -253,7 +253,8 @@ var satnav = (function ($) {
 								"https://b.tile.cyclestreets.net/opencyclemap/{z}/{x}/{y}.png",
 								"https://c.tile.cyclestreets.net/opencyclemap/{z}/{x}/{y}.png",
 							],
-							"tileSize": 256
+							"tileSize": 256,
+							"attribution": 'Maps © <a href="https://www.thunderforest.com/">Thunderforest</a>, Data © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'
 						}
 					},
 					"layers": [{
