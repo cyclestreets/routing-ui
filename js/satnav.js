@@ -597,7 +597,8 @@ var satnav = (function ($) {
 				"type": "line",
 				"source": {
 					"type": "geojson",
-					"data": geojson
+					"data": geojson,
+					"attribution": 'Routing by <a href="https://www.cyclestreets.net/">CycleStreets</a>'
 				},
 				"layout": {
 					"line-join": "round",
