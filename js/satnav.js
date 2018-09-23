@@ -382,17 +382,33 @@ var satnav = (function ($) {
 		// NB Two-finger gesture on mobile for pitch not yet supported: https://github.com/mapbox/mapbox-gl-js/issues/3405
 		controlPanning: function ()
 		{
+/*
+			// Enable pan on rotate
+			// https://github.com/mapbox/mapbox-gl-js/issues/3357
+			_map.on ('rotateend', function () {
+				_panningEnabled = true;
+				satnav.setPanningIndicator ();
+			});
+*/
+			
 			// Toggle panning on/off, and update the control
 			$('#panning').on ('click', function () {
 				_panningEnabled = !_panningEnabled;
-				var text = (_panningEnabled ? 'Panning: enabled' : 'Panning: disabled');
-				$('#panning').text (text);
+				satnav.setPanningIndicator ();
 				
 				// Switch to top-down view when not enabled
 				if (!_panningEnabled) {
 					_map.setPitch (0);
 				}
 			});
+		},
+		
+		
+		// Set text for panning control
+		setPanningIndicator: function ()
+		{
+			var text = (_panningEnabled ? 'Panning: enabled' : 'Panning: disabled');
+			$('#panning').text (text);
 		},
 		
 		
