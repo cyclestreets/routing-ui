@@ -548,7 +548,7 @@ var satnav = (function ($) {
 					
 					// Fit bounds if required
 					if (fitBounds) {
-						satnav.fitBounds (_routeGeojson, 'balanced');
+						satnav.fitBoundsGeojson (_routeGeojson, 'balanced');
 					}
 					
 					// Show clear route link
@@ -564,7 +564,7 @@ var satnav = (function ($) {
 		
 		// Function to fit bounds for a GeoJSON result
 		// https://www.mapbox.com/mapbox-gl-js/example/zoomto-linestring/
-		fitBounds: function (geojson, plan)
+		fitBoundsGeojson: function (geojson, plan)
 		{
 			// Find the coordinates in the result
 			var coordinates;
@@ -581,7 +581,9 @@ var satnav = (function ($) {
 			}, new mapboxgl.LngLatBounds (coordinates[0], coordinates[0]));
 			
 			// Fit bounds
+			_map.setMaxZoom (17);	// Prevent excessive zoom to give context
 			_map.fitBounds (bounds, {padding: 20});
+			_map.setMaxZoom (_settings.maxZoom);	// Reset
 		},
 		
 		
