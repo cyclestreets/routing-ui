@@ -605,7 +605,7 @@ var satnav = (function ($) {
 			
 			// Fit bounds
 			_map.setMaxZoom (17);	// Prevent excessive zoom to give context
-			_map.fitBounds (bounds, {padding: 20});
+			_map.fitBounds (bounds, {padding: 60});
 			_map.setMaxZoom (_settings.maxZoom);	// Reset
 		},
 		
