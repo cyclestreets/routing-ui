@@ -4,11 +4,15 @@ body, input, textarea {font-family: 'Raleway', Arial, Helvetica, sans-serif; fon
 .wisp {width: 22px; height: 43px; cursor: pointer;}
 .mapboxgl-popup {width: 200px;}
 .mapboxgl-popup-content {text-align: center; font-size: 1.2em; border-radius: 5px; box-shadow: 5px 5px 10px #888;}
+.mapboxgl-ctrl-group h2 {font-size: 1em;}
+.mapboxgl-ctrl-group p {margin: 0 0 5px;}
 .mapboxgl-ctrl-group.local {width: 120px; padding: 6px;}
 .mapboxgl-ctrl-group.local ul {list-style: none; padding: 0; margin: 0;}
 .mapboxgl-ctrl-group.local ul li {padding: 0; margin: 0; font-size: 1em;}
 .mapboxgl-ctrl-group.local a {color: black;}
 #clearroute {display: none;}
+#routeplanning {width: 200px; background-color: #ddd;}
+#routeplanning input {width: 95%;}
 
 /* Geocoder */
 #geocoder {position: absolute; top: 10px; left: 10px; z-index: 1001;}
