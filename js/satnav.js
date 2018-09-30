@@ -81,8 +81,8 @@ var satnav = (function ($) {
 			// Add layer switching
 			satnav.layerSwitcher ();
 			
-			// Add geocoder control
-			satnav.geocoder ();
+			// Add move-to control
+			satnav.addMoveToControl ();
 			
 			// Add toolbox (pending implementation of overall UI)
 			satnav.toolbox ();
@@ -327,14 +327,21 @@ var satnav = (function ($) {
 		},
 		
 		
-		// Wrapper function to add a geocoder control
-		geocoder: function ()
+		// Move-to control
+		addMoveToControl: function ()
+		{
+			satnav.geocoder ('#geocoder input');
+		},
+		
+		
+		// Function to add a geocoder control
+		geocoder: function (addTo)
 		{
 			// Geocoder URL; re-use of settings values is supported, represented as placeholders {%cyclestreetsApiBaseUrl}, {%cyclestreetsApiKey}, {%autocompleteBbox}
 			var geocoderApiUrl = satnav.settingsPlaceholderSubstitution (_settings.geocoderApiUrl, ['cyclestreetsApiBaseUrl', 'cyclestreetsApiKey', 'autocompleteBbox']);
 			
 			// Attach the autocomplete library behaviour to the location control
-			autocomplete.addTo ('#geocoder input', {
+			autocomplete.addTo (addTo, {
 				sourceUrl: geocoderApiUrl,
 				select: function (event, ui) {
 					var bbox = ui.item.feature.properties.bbox.split(',');
