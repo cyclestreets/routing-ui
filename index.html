@@ -7,7 +7,6 @@
 	<meta name="apple-mobile-web-app-capable" content="yes" />
 	<meta name="apple-mobile-web-app-title" content="CycleStreets" />
 	<link rel="apple-touch-icon" sizes="57x57" href="/images/apple-touch-icon-57x57.png">
-	<link rel="stylesheet" href="/css/style.css" type="text/css" />
 	<link rel="stylesheet" href="/css/fonts.css" type="text/css" />
 	<script src="/js/lib/mapbox-gl-js/mapbox-gl.js"></script>
 	<link href="/js/lib/mapbox-gl-js/mapbox-gl.css" rel="stylesheet" />
@@ -15,13 +14,21 @@
 	<script src="/js/lib/Full-Tilt/dist/fulltilt.min.js"></script>
 	<script src="/js/lib/jquery-ui-1.12.1/jquery-ui.min.js"></script>
 	<script src="/js/lib/cyclestreets-geocoder/geocoder.js"></script>
+	
+	<!-- Routing -->
+	<script src="/js/routing.js"></script>
+	<link href="/css/routing.css" rel="stylesheet" type="text/css" />
+	
+	<!-- Main -->
 	<script src="/.config.js"></script>
 	<script src="/js/satnav.js"></script>
+	<link href="/css/satnav.css" rel="stylesheet" type="text/css" />
 	<script>
 		$(function() {
 			satnav.initialise (config);
 		});
 	</script>
+	
 </head>
 <body>
 	

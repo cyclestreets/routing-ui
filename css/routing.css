@@ -1,6 +1,4 @@
-body {margin: 0; padding: 0;}
-body, input, textarea {font-family: 'Raleway', Arial, Helvetica, sans-serif; font-size: 1em;} /* https://www.google.com/fonts */
-#map {position: absolute; top: 0; bottom: 0; width: 100%;}
+/* Routing */
 .wisp {width: 22px; height: 43px; cursor: pointer;}
 .mapboxgl-popup {width: 200px;}
 .mapboxgl-popup-content {text-align: center; font-size: 1.2em; border-radius: 5px; box-shadow: 5px 5px 10px #888;}
@@ -24,3 +22,4 @@ body, input, textarea {font-family: 'Raleway', Arial, Helvetica, sans-serif; fon
 .ui-autocomplete li a {padding: 7px; display: block; color: #603;}
 .ui-autocomplete li a span {color: gray; font-size: 0.81em;}
 .ui-autocomplete li a.ui-state-active {cursor: pointer; background-color: #f7f7f7;}
+
