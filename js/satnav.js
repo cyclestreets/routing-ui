@@ -87,6 +87,14 @@ var satnav = (function ($) {
 			// Add move-to control
 			satnav.addMoveToControl ();
 			
+			// Add routing
+			satnav.routing ();
+		},
+		
+		
+		// Route planning / satnav user interface
+		routing: function ()
+		{
 			// Add toolbox (pending implementation of overall UI)
 			satnav.toolbox ();
 			
