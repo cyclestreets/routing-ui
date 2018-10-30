@@ -72,6 +72,9 @@ var satnav = (function ($) {
 			// Enable tilt and direction
 			satnav.enableTilt ();
 			
+			// Add buildings
+			satnav.addBuildings ();
+			
 			// Geolocate the user initially
 			satnav.geolocateInitial ();
 			
@@ -101,9 +104,6 @@ var satnav = (function ($) {
 			
 			// Add route planning UI
 			satnav.routePlanning ();
-			
-			// Add buildings
-			satnav.addBuildings ();
 			
 			// Add routing
 			satnav.routing ();
@@ -165,6 +165,72 @@ var satnav = (function ($) {
 			}).catch (function (errorMessage) { // Device Orientation Events are not supported
 				console.log (errorMessage);
 			});
+		},
+		
+		
+		// Buildings layer
+		// https://www.mapbox.com/mapbox-gl-js/example/3d-buildings/
+		addBuildings: function ()
+		{
+			// The 'building' layer in the mapbox-streets vector source contains building-height data from OpenStreetMap.
+			_map.on('style.load', function() {
+				
+				// Get the layers in the source style
+				var layers = _map.getStyle().layers;
+				
+				// Ensure the layer has buildings, or end
+				if (!satnav.styleHasLayer (layers, 'building')) {return;}
+				
+				// Insert the layer beneath any symbol layer.
+				var labelLayerId;
+				for (var i = 0; i < layers.length; i++) {
+					if (layers[i].type === 'symbol' && layers[i].layout['text-field']) {
+						labelLayerId = layers[i].id;
+						break;
+					}
+				}
+				
+				// Add the layer
+				_map.addLayer ({
+					'id': '3d-buildings',
+					'source': 'composite',
+					'source-layer': 'building',
+					'filter': ['==', 'extrude', 'true'],
+					'type': 'fill-extrusion',
+					'minzoom': 15,
+					'paint': {
+						'fill-extrusion-color': '#aaa',
+						
+						// Use an 'interpolate' expression to add a smooth transition effect to the buildings as the user zooms in
+						'fill-extrusion-height': [
+							"interpolate", ["linear"], ["zoom"],
+							15, 0,
+							15.05, ["get", "height"]
+						],
+						'fill-extrusion-base': [
+							"interpolate", ["linear"], ["zoom"],
+							15, 0,
+							15.05, ["get", "min_height"]
+						],
+						'fill-extrusion-opacity': .6
+					}
+				}, labelLayerId);
+			});
+		},
+		
+		
+		// Function to test whether a style has a layer
+		styleHasLayer: function (layers, layerName)
+		{
+			// Ensure the layer has buildings, or end
+			for (var i = 0; i < layers.length; i++) {
+				if (layers[i].id == layerName) {
+					return true;
+				}
+			}
+			
+			// Not found
+			return false;
 		},
 		
 		
@@ -301,6 +367,14 @@ var satnav = (function ($) {
 			for (var i = 0; i < inputs.length; i++) {
 				inputs[i].onclick = switchLayer;
 			}
+		},
+		
+		
+		// Function to make first character upper-case; see: https://stackoverflow.com/a/1026087/180733
+		ucfirst: function (string)
+		{
+			if (typeof string !== 'string') {return string;}
+			return string.charAt(0).toUpperCase() + string.slice(1);
 		},
 		
 		
@@ -835,85 +909,11 @@ var satnav = (function ($) {
 		},
 		
 		
-		// Buildings layer
-		// https://www.mapbox.com/mapbox-gl-js/example/3d-buildings/
-		addBuildings: function ()
-		{
-			// The 'building' layer in the mapbox-streets vector source contains building-height data from OpenStreetMap.
-			_map.on('style.load', function() {
-				
-				// Get the layers in the source style
-				var layers = _map.getStyle().layers;
-				
-				// Ensure the layer has buildings, or end
-				if (!satnav.styleHasLayer (layers, 'building')) {return;}
-				
-				// Insert the layer beneath any symbol layer.
-				var labelLayerId;
-				for (var i = 0; i < layers.length; i++) {
-					if (layers[i].type === 'symbol' && layers[i].layout['text-field']) {
-						labelLayerId = layers[i].id;
-						break;
-					}
-				}
-				
-				// Add the layer
-				_map.addLayer ({
-					'id': '3d-buildings',
-					'source': 'composite',
-					'source-layer': 'building',
-					'filter': ['==', 'extrude', 'true'],
-					'type': 'fill-extrusion',
-					'minzoom': 15,
-					'paint': {
-						'fill-extrusion-color': '#aaa',
-						
-						// Use an 'interpolate' expression to add a smooth transition effect to the buildings as the user zooms in
-						'fill-extrusion-height': [
-							"interpolate", ["linear"], ["zoom"],
-							15, 0,
-							15.05, ["get", "height"]
-						],
-						'fill-extrusion-base': [
-							"interpolate", ["linear"], ["zoom"],
-							15, 0,
-							15.05, ["get", "min_height"]
-						],
-						'fill-extrusion-opacity': .6
-					}
-				}, labelLayerId);
-			});
-		},
-		
-		
-		// Function to test whether a style has a layer
-		styleHasLayer: function (layers, layerName)
-		{
-			// Ensure the layer has buildings, or end
-			for (var i = 0; i < layers.length; i++) {
-				if (layers[i].id == layerName) {
-					return true;
-				}
-			}
-			
-			// Not found
-			return false;
-		},
-		
-		
 		// Function to make data entity-safe
 		htmlspecialchars: function (string)
 		{
 			if (typeof string !== 'string') {return string;}
 			return string.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-		},
-		
-		
-		// Function to make first character upper-case; see: https://stackoverflow.com/a/1026087/180733
-		ucfirst: function (string)
-		{
-			if (typeof string !== 'string') {return string;}
-			return string.charAt(0).toUpperCase() + string.slice(1);
 		},
 	};
 	
