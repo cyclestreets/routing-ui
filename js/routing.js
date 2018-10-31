@@ -22,7 +22,14 @@ var routing = (function ($) {
 		geocoderApiUrl: '{%cyclestreetsApiBaseUrl}/v2/geocoder?key={%cyclestreetsApiKey}&bounded=1&bbox={%autocompleteBbox}',
 		
 		// BBOX for autocomplete results biasing
-		autocompleteBbox: '-6.6577,49.9370,1.7797,57.6924'
+		autocompleteBbox: '-6.6577,49.9370,1.7797,57.6924',
+		
+		// Images
+		images: {
+			start: '/images/itinerarymarkers/start-large.png',
+			waypoint: '/images/itinerarymarkers/waypoint-large.png',
+			finish: '/images/itinerarymarkers/finish-large.png'
+		}
 	};
 	
 	// Internal class properties
@@ -590,15 +597,15 @@ var routing = (function ($) {
 			var text;
 			switch (waypointNumber) {
 				case 1:
-					image = 'start';
+					image = _settings.images.start;
 					text = 'Start at: <strong>' + routing.htmlspecialchars (label) + '</strong>';
 					break;
 				case totalWaypoints:
-					image = 'finish';
+					image = _settings.images.finish;
 					text = 'Finish at: <strong>' + routing.htmlspecialchars (label) + '</strong>';
 					break;
 				default:
-					image = 'waypoint';
+					image = _settings.images.waypoint;
 					text = 'Via: Waypoint #' + (waypointNumber - 1);	// #!# API needs to provide street location name
 					break;
 			}
@@ -606,7 +613,7 @@ var routing = (function ($) {
 			// Assemble the image as a DOM element
 			var wisp = document.createElement('div');
 			wisp.className = 'wisp';
-			wisp.style.backgroundImage = "url('/images/itinerarymarkers/" + image + "-large.png')";
+			wisp.style.backgroundImage = "url('" + image + "')";
 			
 			// Add the marker
 			var marker = new mapboxgl.Marker({element: wisp, offset: [0, -22], draggable: true})	// See: https://www.mapbox.com/mapbox-gl-js/api/#marker
