@@ -493,7 +493,6 @@ var routing = (function ($) {
 			});
 			
 			// Add markers; see: https://www.mapbox.com/help/custom-markers-gl-js/
-			// Unfortunately Mapbox GL makes this much more difficult than Leaflet.js and has to be done at DOM level; see: https://github.com/mapbox/mapbox-gl-js/issues/656
 			$.each (geojson.features, function (index, feature) {
 				if (feature.geometry.type == 'Point') {	// Apply only to points
 					var text;
@@ -590,6 +589,7 @@ var routing = (function ($) {
 		
 		
 		// Function to add a waypoint marker
+		// Unfortunately Mapbox GL makes this much more difficult than Leaflet.js and has to be done at DOM level; see: https://github.com/mapbox/mapbox-gl-js/issues/656
 		addWaypointMarker: function (coordinates, waypointNumber, label, totalWaypoints)
 		{
 			// Determine the image and text to use
