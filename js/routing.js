@@ -29,7 +29,29 @@ var routing = (function ($) {
 			start: '/images/itinerarymarkers/start.png',
 			waypoint: '/images/itinerarymarkers/waypoint.png',
 			finish: '/images/itinerarymarkers/finish.png'
-		}
+		},
+		
+		// Routing strategies, in order of appearance in the UI
+		strategies: [
+			{
+				id: 'fastest',
+				label: 'Fastest route',
+				parameters: {plans: 'fastest'},
+				lineColour: '#cc0000'
+			},
+			{
+				id: 'balanced',
+				label: 'Balanced route',
+				parameters: {plans: 'balanced'},
+				lineColour: '#ffc200'
+			},
+			{
+				id: 'quietest',
+				label: 'Quietest route',
+				parameters: {plans: 'quietest'},
+				lineColour: '#00cc00'
+			}
+		]
 	};
 	
 	// Internal class properties
@@ -37,7 +59,7 @@ var routing = (function ($) {
 	var _urlParameters = {};
 	var _itineraryId = null;
 	var _markers = [];
-	var _routeGeojson = false;
+	var _routeGeojson = {};
 	var _panningEnabled = false;
 	
 	
@@ -221,10 +243,12 @@ var routing = (function ($) {
 			$('#clearroute').click (function (e) {
 				
 				// If a route is already loaded, prompt to remove it
-				if (_routeGeojson) {
+				if (!$.isEmptyObject (_routeGeojson)) {
 					if (!confirm ('Clear existing route?')) {
 						return;
 					}
+					
+					// Remove the route for each strategy
 					routing.removeRoute ();
 					
 					// Hide clear route link
@@ -251,10 +275,12 @@ var routing = (function ($) {
 			$('#loadrouteid').click (function (e) {
 				
 				// If a route is already loaded, prompt to remove it
-				if (_routeGeojson) {
+				if (!$.isEmptyObject (_routeGeojson)) {
 					if (!confirm ('Clear existing route?')) {
 						return;
 					}
+					
+					// Remove the route for each strategy
 					routing.removeRoute ();
 				}
 				
@@ -319,8 +345,12 @@ var routing = (function ($) {
 			_map.on ('style.load', function () {
 				
 				// If the route is already loaded, show it
-				if (_routeGeojson) {
-					routing.showRoute (_routeGeojson);
+				if (!$.isEmptyObject (_routeGeojson)) {
+					
+					// Add the route for each strategy, and end
+					$.each (_settings.strategies, function (index, strategy) {
+						routing.showRoute (_routeGeojson[strategy.id], strategy.id, strategy.lineColour);
+					});
 					return;
 				}
 				
@@ -331,7 +361,7 @@ var routing = (function ($) {
 				_map.on ('click', function (e) {
 					
 					// Take no action on the click handler if a route is loaded
-					if (_routeGeojson) {return;}
+					if (!$.isEmptyObject (_routeGeojson)) {return;}
 					
 					// Register the waypoint
 					waypoints.push (e.lngLat);
@@ -370,36 +400,46 @@ var routing = (function ($) {
 				waypointStrings.push (waypointString);
 			});
 			
-			// Assemble the API URL
+			// Load the route for each strategy
 			var parameters = {};
-			parameters.key = _settings.cyclestreetsApiKey;
-			parameters.waypoints = waypointStrings.join ('|');
-			parameters.plans = 'balanced';
-			parameters.archive = 'full';
-			var url = _settings.cyclestreetsApiBaseUrl + '/v2/journey.plan' + '?' + $.param (parameters, false);
-			
-			// Load the route
-			routing.loadRoute (url);
+			var url;
+			$.each (_settings.strategies, function (index, strategy) {
+				
+				// Construct the route request
+				parameters = $.extend (true, {}, strategy.parameters);	// i.e. clone
+				parameters.key = _settings.cyclestreetsApiKey;
+				parameters.waypoints = waypointStrings.join ('|');
+				parameters.archive = 'full';
+				url = _settings.cyclestreetsApiBaseUrl + '/v2/journey.plan' + '?' + $.param (parameters, false);
+				
+				// Load the route
+				routing.loadRoute (url, strategy.id, strategy.lineColour);
+			});
 		},
 		
 		
 		// Function to load a route from a specified itinerary ID
 		loadRouteFromId: function (itineraryId)
 		{
-			// For now, obtain a fixed GeoJSON string
+			// Load the route for each strategy
 			var parameters = {};
-			parameters.key = _settings.cyclestreetsApiKey;
-			parameters.id = itineraryId;
-			parameters.plans = balanced;
-			var url = _settings.cyclestreetsApiBaseUrl + '/v2/journey.retrieve' + '?' + $.param (parameters, false);
-			
-			// Load the route
-			routing.loadRoute (url);
+			var url;
+			$.each (_settings.strategies, function (index, strategy) {
+				
+				// Construct the route request
+				parameters = $.extend (true, {}, strategy.parameters);	// i.e. clone
+				parameters.key = _settings.cyclestreetsApiKey;
+				parameters.id = itineraryId;
+				url = _settings.cyclestreetsApiBaseUrl + '/v2/journey.retrieve' + '?' + $.param (parameters, false);
+				
+				// Load the route
+				routing.loadRoute (url, strategy.id, strategy.lineColour);
+			});
 		},
 		
 		
 		// Function to load a route over AJAX
-		loadRoute: function (url)
+		loadRoute: function (url, strategy, lineColour)
 		{
 			// Load over AJAX; see: https://stackoverflow.com/a/48655332/180733
 			$.ajax({
@@ -414,17 +454,17 @@ var routing = (function ($) {
 					}
 					
 					// Register the GeoJSON to enable the state to persist between map layer changes and to set that the route is loaded
-					_routeGeojson = result;
+					_routeGeojson[strategy] = result;
 					
 					// Show the route
-					routing.showRoute (_routeGeojson);
+					routing.showRoute (_routeGeojson[strategy], strategy, lineColour);
 					
 					// Set the itinerary number permalink in the URL
-					var itineraryId = _routeGeojson.properties.id;
+					var itineraryId = _routeGeojson[strategy].properties.id;
 					routing.updateUrl (itineraryId);
 					
 					// Fit bounds
-					routing.fitBoundsGeojson (_routeGeojson, 'balanced');
+					routing.fitBoundsGeojson (_routeGeojson[strategy], strategy);
 					
 					// Show clear route link
 					$('#clearroute').show ();
@@ -463,11 +503,11 @@ var routing = (function ($) {
 		
 		
 		// Function to render a route onto the map
-		showRoute: function (geojson)
+		showRoute: function (geojson, id, lineColour)
 		{
 			// https://www.mapbox.com/mapbox-gl-js/example/geojson-line/
 			var layer = {
-				"id": "route",
+				"id": id,
 				"type": "line",
 				"source": {
 					"type": "geojson",
@@ -479,7 +519,7 @@ var routing = (function ($) {
 					"line-cap": "round"
 				},
 				"paint": {
-					"line-color": "purple",
+					"line-color": lineColour,
 					"line-width": 8
 				}
 			};
@@ -515,7 +555,7 @@ var routing = (function ($) {
 			
 			// For each marker, if moved, replan the route
 			// https://www.mapbox.com/mapbox-gl-js/example/drag-a-marker/
-			if (_routeGeojson) {
+			if (!$.isEmptyObject (_routeGeojson)) {
 				$.each (_markers, function (index, marker) {
 					_markers[index].on ('dragend', function (e) {
 						
@@ -525,7 +565,7 @@ var routing = (function ($) {
 							waypoints.push (marker._lngLat);
 						});
 						
-						// Remove the existing route
+						// Remove the route for each strategy
 						routing.removeRoute ();
 						
 						// Load the route from the waypoints
@@ -572,12 +612,14 @@ var routing = (function ($) {
 		// Function to remove a drawn route currently present
 		removeRoute: function ()
 		{
-			// Remove the layer
-			_map.removeLayer ("route");
-			_map.removeSource ("route");
+			// Remove the layer for each strategy
+			$.each (_routeGeojson, function (id, routeGeojson) {
+				_map.removeLayer (id);
+				_map.removeSource (id);
+			});
 			
 			// Unset the route data
-			_routeGeojson = false;
+			_routeGeojson = {};
 
 			// Clear any existing markers
 			$.each (_markers, function (index, marker) {
