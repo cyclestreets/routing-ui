@@ -24,11 +24,11 @@ var routing = (function ($) {
 		// BBOX for autocomplete results biasing
 		autocompleteBbox: '-6.6577,49.9370,1.7797,57.6924',
 		
-		// Images
+		// Images; size set in CSS with .itinerarymarker
 		images: {
-			start: '/images/itinerarymarkers/start-large.png',
-			waypoint: '/images/itinerarymarkers/waypoint-large.png',
-			finish: '/images/itinerarymarkers/finish-large.png'
+			start: '/images/itinerarymarkers/start.png',
+			waypoint: '/images/itinerarymarkers/waypoint.png',
+			finish: '/images/itinerarymarkers/finish.png'
 		}
 	};
 	
@@ -611,12 +611,12 @@ var routing = (function ($) {
 			}
 			
 			// Assemble the image as a DOM element
-			var wisp = document.createElement('div');
-			wisp.className = 'wisp';
-			wisp.style.backgroundImage = "url('" + image + "')";
+			var itinerarymarker = document.createElement('div');
+			itinerarymarker.className = 'itinerarymarker';
+			itinerarymarker.style.backgroundImage = "url('" + image + "')";
 			
 			// Add the marker
-			var marker = new mapboxgl.Marker({element: wisp, offset: [0, -22], draggable: true})	// See: https://www.mapbox.com/mapbox-gl-js/api/#marker
+			var marker = new mapboxgl.Marker({element: itinerarymarker, offset: [0, -22], draggable: true})	// See: https://www.mapbox.com/mapbox-gl-js/api/#marker
 				.setLngLat(coordinates)
 				.setPopup( new mapboxgl.Popup({ offset: 25 }).setHTML(text) )
 				.addTo(_map);
