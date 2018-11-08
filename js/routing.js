@@ -382,7 +382,7 @@ var routing = (function ($) {
 		loadRouteFromId: function (itineraryId)
 		{
 			// For now, obtain a fixed GeoJSON string
-			var url = _settings.cyclestreetsApiBaseUrl + '/v2/journey.retrieve?itinerary=' + itineraryId + '&plans=balanced&key=' + _settings.cyclestreetsApiKey;
+			var url = _settings.cyclestreetsApiBaseUrl + '/v2/journey.retrieve?id=' + itineraryId + '&plans=balanced&key=' + _settings.cyclestreetsApiKey;
 			
 			// Load the route
 			routing.loadRoute (url, true);
@@ -487,7 +487,7 @@ var routing = (function ($) {
 			// Determine the number of waypoints
 			var totalWaypoints = 0;
 			$.each (geojson.features, function (index, feature) {
-				if (feature.properties.hasOwnProperty ('waypoint')) {
+				if (feature.properties.hasOwnProperty ('markerTag')) {
 					totalWaypoints++;
 				}
 			});
@@ -496,12 +496,13 @@ var routing = (function ($) {
 			$.each (geojson.features, function (index, feature) {
 				if (feature.geometry.type == 'Point') {	// Apply only to points
 					var text;
-					switch (feature.properties.waypoint) {
+					var waypointNumber = parseInt (feature.properties.path.replace ('waypoint/', ''));	// E.g.'waypoint/1' becomes 1
+					switch (waypointNumber) {
 						case 1: text = geojson.properties.start; break;
 						case totalWaypoints: text = geojson.properties.finish; break;
 						default: text = false; break;
 					}
-					routing.addWaypointMarker (feature.geometry.coordinates, feature.properties.waypoint, text, totalWaypoints);
+					routing.addWaypointMarker (feature.geometry.coordinates, waypointNumber, text, totalWaypoints);
 				}
 			});
 			
