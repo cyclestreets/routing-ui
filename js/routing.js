@@ -486,23 +486,23 @@ var routing = (function ($) {
 			
 			// Determine the number of waypoints
 			var totalWaypoints = 0;
-			$.each (geojson.features, function (index, marker) {
-				if (marker.properties.hasOwnProperty('waypoint')) {
+			$.each (geojson.features, function (index, feature) {
+				if (feature.properties.hasOwnProperty ('waypoint')) {
 					totalWaypoints++;
 				}
 			});
 			
 			// Add markers; see: https://www.mapbox.com/help/custom-markers-gl-js/
 			// Unfortunately Mapbox GL makes this much more difficult than Leaflet.js and has to be done at DOM level; see: https://github.com/mapbox/mapbox-gl-js/issues/656
-			$.each (geojson.features, function (index, marker) {
-				if (marker.geometry.type == 'Point') {	// Apply only to points
+			$.each (geojson.features, function (index, feature) {
+				if (feature.geometry.type == 'Point') {	// Apply only to points
 					var text;
-					switch (marker.properties.waypoint) {
+					switch (feature.properties.waypoint) {
 						case 1: text = geojson.properties.start; break;
 						case totalWaypoints: text = geojson.properties.finish; break;
 						default: text = false; break;
 					}
-					routing.addWaypointMarker (marker.geometry.coordinates, marker.properties.waypoint, text, totalWaypoints);
+					routing.addWaypointMarker (feature.geometry.coordinates, feature.properties.waypoint, text, totalWaypoints);
 				}
 			});
 			
