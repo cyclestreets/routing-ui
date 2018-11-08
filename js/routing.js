@@ -371,7 +371,12 @@ var routing = (function ($) {
 			});
 			
 			// Assemble the API URL
-			var url = _settings.cyclestreetsApiBaseUrl + '/v2/journey.plan?waypoints=' + waypointStrings.join ('|') + '&plans=balanced&archive=full&key=' + _settings.cyclestreetsApiKey;
+			var parameters = {};
+			parameters.key = _settings.cyclestreetsApiKey;
+			parameters.waypoints = waypointStrings.join ('|');
+			parameters.plans = 'balanced';
+			parameters.archive = 'full';
+			var url = _settings.cyclestreetsApiBaseUrl + '/v2/journey.plan' + '?' + $.param (parameters, false);
 			
 			// Load the route
 			routing.loadRoute (url, false);
@@ -382,7 +387,11 @@ var routing = (function ($) {
 		loadRouteFromId: function (itineraryId)
 		{
 			// For now, obtain a fixed GeoJSON string
-			var url = _settings.cyclestreetsApiBaseUrl + '/v2/journey.retrieve?id=' + itineraryId + '&plans=balanced&key=' + _settings.cyclestreetsApiKey;
+			var parameters = {};
+			parameters.key = _settings.cyclestreetsApiKey;
+			parameters.id = itineraryId;
+			parameters.plans = balanced;
+			var url = _settings.cyclestreetsApiBaseUrl + '/v2/journey.retrieve' + '?' + $.param (parameters, false);
 			
 			// Load the route
 			routing.loadRoute (url, true);
