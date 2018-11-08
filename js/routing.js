@@ -379,7 +379,7 @@ var routing = (function ($) {
 			var url = _settings.cyclestreetsApiBaseUrl + '/v2/journey.plan' + '?' + $.param (parameters, false);
 			
 			// Load the route
-			routing.loadRoute (url, false);
+			routing.loadRoute (url);
 		},
 		
 		
@@ -394,12 +394,12 @@ var routing = (function ($) {
 			var url = _settings.cyclestreetsApiBaseUrl + '/v2/journey.retrieve' + '?' + $.param (parameters, false);
 			
 			// Load the route
-			routing.loadRoute (url, true);
+			routing.loadRoute (url);
 		},
 		
 		
 		// Function to load a route over AJAX
-		loadRoute: function (url, fitBounds)
+		loadRoute: function (url)
 		{
 			// Load over AJAX; see: https://stackoverflow.com/a/48655332/180733
 			$.ajax({
@@ -423,10 +423,8 @@ var routing = (function ($) {
 					var itineraryId = _routeGeojson.properties.id;
 					routing.updateUrl (itineraryId);
 					
-					// Fit bounds if required
-					if (fitBounds) {
-						routing.fitBoundsGeojson (_routeGeojson, 'balanced');
-					}
+					// Fit bounds
+					routing.fitBoundsGeojson (_routeGeojson, 'balanced');
 					
 					// Show clear route link
 					$('#clearroute').show ();
