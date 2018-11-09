@@ -272,6 +272,7 @@ var routing = (function ($) {
 		// Function to add route loading
 		loadRouteId: function ()
 		{
+			// Run on clicking on UI link
 			$('#loadrouteid').click (function (e) {
 				
 				// If a route is already loaded, prompt to remove it
@@ -369,7 +370,9 @@ var routing = (function ($) {
 		// Function to add routing
 		routing: function ()
 		{
-			// Load routing when style ready
+			// Load routing when style ready or when style changed - the whole application logic is wrapped in this, as the entire state must be recreated if the style is changed
+			// May need to consider use of: https://stackoverflow.com/questions/44394573/mapbox-gl-js-style-is-not-done-loading
+			// #!# Does not fire when loading a raster after another raster: https://github.com/mapbox/mapbox-gl-js/issues/7579
 			_map.on ('style.load', function () {
 				
 				// If the route is already loaded, show it
