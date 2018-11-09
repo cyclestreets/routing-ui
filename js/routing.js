@@ -132,7 +132,7 @@ var routing = (function ($) {
 		
 		
 		// Function to add a geocoder control
-		geocoder: function (addTo, callbackFunction)
+		geocoder: function (addTo, callbackFunction, callbackData)
 		{
 			// Geocoder URL; re-use of settings values is supported, represented as placeholders {%cyclestreetsApiBaseUrl}, {%cyclestreetsApiKey}, {%autocompleteBbox}
 			var geocoderApiUrl = routing.settingsPlaceholderSubstitution (_settings.geocoderApiUrl, ['cyclestreetsApiBaseUrl', 'cyclestreetsApiKey', 'autocompleteBbox']);
@@ -146,7 +146,7 @@ var routing = (function ($) {
 					_map.fitBounds([ [bbox[0], bbox[1]], [bbox[2], bbox[3]] ]);	// Note that Mapbox GL JS uses sw,ne rather than ws,en as in Leaflet.js
 					_map.setMaxZoom (_settings.maxZoom);	// Reset
 					if (callbackFunction) {
-						callbackFunction (ui.item);
+						callbackFunction (ui.item, callbackData);
 					}
 					event.preventDefault();
 				}
@@ -304,13 +304,12 @@ var routing = (function ($) {
 			var control = this.createControl ('routeplanning', 'bottom-right');
 			
 			// Add title
-			var html = '<h2>Route planning</h2>';
+			var html = '<h2>Route planner</h2>';
 			$('#routeplanning').append (html);
 			
 			// Add input widgets
 			var totalWaypoints = 2;
 			var waypointName;
-			var nextWaypointName;
 			var label;
 			for (var waypointNumber = 0; waypointNumber < totalWaypoints; waypointNumber++) {
 				
@@ -323,18 +322,47 @@ var routing = (function ($) {
 				
 				// Create the input widget and attach a geocoder to it
 				waypointName = 'waypoint' + waypointNumber;
-				var input = '<p><input name="' + waypointName + '" type="search" placeholder="' + label + '" /></p>';
+				var input = '<p><input name="' + waypointName + '" type="search" placeholder="' + label + '" class="geocoder" /></p>';
 				$('#routeplanning').append (input);
-				routing.geocoder ('#routeplanning input[name="' + waypointName + '"]', function (item) {
+				routing.geocoder ('#routeplanning input[name="' + waypointName + '"]', function (item, callbackData) {
 					
 					// Fire a click on the map
 					// #!# Note that use of map.fire is now deprecated: https://gis.stackexchange.com/a/210289/58752
 					var point = _map.project ([item.lon, item.lat]);	// https://github.com/mapbox/mapbox-gl-js/issues/5060
 					_map.fire ('click', { lngLat: {lng: item.lon, lat: item.lat} }, point);
-				});
+					
+					// Move focus to next geocoder input box if present
+					routing.focusFirstAvailableGeocoder (totalWaypoints);
+					
+				}, {totalWaypoints: totalWaypoints});
 			}
 			
-			
+			// Put focus on the first available geocoder
+			routing.focusFirstAvailableGeocoder (totalWaypoints);
+		},
+		
+		
+		// Helper function to put focus in the first available geocoder control
+		focusFirstAvailableGeocoder: function (totalWaypoints)
+		{
+			// Loop through each available slot
+			var waypointName;
+			var element;
+			for (var waypointNumber = 0; waypointNumber < totalWaypoints; waypointNumber++) {
+				
+				// Check if this geocoder input exists
+				waypointName = 'waypoint' + waypointNumber;
+				element = '#routeplanning input[name="' + waypointName + '"]';
+				if ($(element).length) {
+					
+					// If empty, set its focus, and end
+					if (!$(element).val ()) {
+						$(element).focus ();
+						return;
+					}
+				}
+				
+			}
 		},
 		
 		

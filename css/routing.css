@@ -23,3 +23,5 @@
 .ui-autocomplete li a span {color: gray; font-size: 0.81em;}
 .ui-autocomplete li a.ui-state-active {cursor: pointer; background-color: #f7f7f7;}
 
+#routeplanning h2 {font-size: 1.4em;}
+#routeplanning .geocoder {margin-bottom: 5px; padding: 5px;}
