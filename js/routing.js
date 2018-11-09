@@ -362,7 +362,23 @@ var routing = (function ($) {
 						return;
 					}
 				}
-				
+			}
+		},
+		
+		
+		// Function to set the geocoder location box value
+		setGeocoderLocationName: function (name, waypointNumber)
+		{
+			// If no name, set to null value
+			if (name === false) {
+				name = '(Could not find location name)';
+			}
+			
+			// Set the value if the input box is present
+			var waypointName = 'waypoint' + (waypointNumber - 1);
+			var element = '#routeplanning input[name="' + waypointName + '"]';
+			if ($(element).length) {
+				$(element).val (name);
 			}
 		},
 		
@@ -582,7 +598,8 @@ var routing = (function ($) {
 						case totalWaypoints: text = geojson.properties.finish; break;
 						default: text = false; break;
 					}
-					routing.addWaypointMarker (feature.geometry.coordinates, waypointNumber, text, totalWaypoints);
+					var coordinates = {lng: feature.geometry.coordinates[0], lat: feature.geometry.coordinates[1]};
+					routing.addWaypointMarker (coordinates, waypointNumber, text, totalWaypoints);
 				}
 			});
 			
@@ -706,6 +723,42 @@ var routing = (function ($) {
 			
 			// Register the marker
 			_markers.push (marker);
+			
+			// Perform a reverse geocoding of the location
+			routing.reverseGeocode (coordinates, waypointNumber);
+		},
+		
+		
+		// Function to reverse geocode a location
+		reverseGeocode: function (coordinates, waypointNumber)
+		{
+			// Assemble API URL; see: https://www.cyclestreets.net/api/v2/nearestpoint/
+			var parameters = {
+				key: _settings.cyclestreetsApiKey,
+				lonlat: coordinates.lng + ',' + coordinates.lat
+			}
+			var url = _settings.cyclestreetsApiBaseUrl + '/v2/nearestpoint' + '?' + $.param (parameters, false);
+			
+			// Fetch the result
+			$.ajax ({
+				dataType: 'json',
+				url: url,
+				success: function (result) {
+					
+					// Detect error in result
+					if (result.error) {
+						routing.setGeocoderLocationName (false, waypointNumber);
+						return;
+					}
+					
+					// Set the location name
+					routing.setGeocoderLocationName (result.features[0].properties.name, waypointNumber);
+				},
+				error: function (jqXHR, textStatus, errorThrown) {
+					routing.setGeocoderLocationName (false, waypointNumber);
+					console.log (errorThrown);
+				}
+			});
 		},
 		
 		
