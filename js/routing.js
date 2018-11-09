@@ -438,6 +438,7 @@ var routing = (function ($) {
 				parameters.key = _settings.cyclestreetsApiKey;
 				parameters.waypoints = waypointStrings.join ('|');
 				parameters.archive = 'full';
+				parameters.itineraryFields = 'id,start,finish,waypointCount';
 				url = _settings.cyclestreetsApiBaseUrl + '/v2/journey.plan' + '?' + $.param (parameters, false);
 				
 				// Load the route
@@ -458,6 +459,7 @@ var routing = (function ($) {
 				parameters = $.extend (true, {}, strategy.parameters);	// i.e. clone
 				parameters.key = _settings.cyclestreetsApiKey;
 				parameters.id = itineraryId;
+				parameters.itineraryFields = 'id,start,finish,waypointCount';
 				url = _settings.cyclestreetsApiBaseUrl + '/v2/journey.retrieve' + '?' + $.param (parameters, false);
 				
 				// Load the route
