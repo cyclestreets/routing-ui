@@ -265,6 +265,9 @@ var routing = (function ($) {
 			if (_urlParameters.itineraryId) {
 				_itineraryId = _urlParameters.itineraryId;
 				routing.loadRouteFromId (_itineraryId);
+				
+				// Add results tabs
+				routing.resultsTabs ();
 			}
 		},
 		
@@ -398,6 +401,10 @@ var routing = (function ($) {
 					$.each (_settings.strategies, function (index, strategy) {
 						routing.showRoute (_routeGeojson[strategy.id], strategy.id, strategy.lineColour);
 					});
+					
+					// Add results tabs
+					routing.resultsTabs ();
+					
 					return;
 				}
 				
@@ -447,6 +454,9 @@ var routing = (function ($) {
 				waypointStrings.push (waypointString);
 			});
 			
+			// Add results tabs
+			routing.resultsTabs ();
+			
 			// Load the route for each strategy
 			var parameters = {};
 			var url;
@@ -463,6 +473,33 @@ var routing = (function ($) {
 				// Load the route
 				routing.loadRoute (url, strategy.id, strategy.lineColour);
 			});
+		},
+		
+		
+		// Function to create result tabs; see: https://jqueryui.com/tabs/
+		resultsTabs: function ()
+		{
+			// Create tabs and content panes for each of the strategies
+			var tabsHtml = '<ul id="strategies">';
+			var contentPanesHtml = '<div id="itineraries">';
+			$.each (_settings.strategies, function (index, strategy) {
+				tabsHtml += '<li><a href="#' + strategy.id + '" style="background-color: ' + strategy.lineColour + ';">' + routing.htmlspecialchars (strategy.label) + '</a></li>';
+				contentPanesHtml += '<div id="' + strategy.id + '">' + routing.htmlspecialchars (strategy.label) + ' details loading &hellip;</div>';
+			});
+			tabsHtml += '</ul>';
+			contentPanesHtml += '</div>';
+			
+			// Assemble the HTML
+			var html = tabsHtml + contentPanesHtml;
+			
+			// Surround with a div for styling
+			html = '<div id="results">' + html + '</div>';
+			
+			// Append the panel to the route planning UI
+			$('#routeplanning').append (html);
+			
+			// Add jQuery UI tabs behaviour
+			$('#results').tabs();
 		},
 		
 		
@@ -484,6 +521,9 @@ var routing = (function ($) {
 				// Load the route
 				routing.loadRoute (url, strategy.id, strategy.lineColour);
 			});
+			
+			// Add results tabs
+			routing.resultsTabs ();
 		},
 		
 		
@@ -679,6 +719,10 @@ var routing = (function ($) {
 			
 			// Remove the itinerary ID
 			_itineraryId = false;
+			
+			// Remove the result tabs if present
+			$('#routeplanning #results').tabs ('destroy');	// http://api.jqueryui.com/tabs/
+			$('#routeplanning #results').remove ();
 			
 			// Reparse the URL
 			routing.parseUrl ();

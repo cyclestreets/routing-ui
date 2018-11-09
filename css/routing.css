@@ -25,3 +25,8 @@
 
 #routeplanning h2 {font-size: 1.4em;}
 #routeplanning .geocoder {margin-bottom: 5px; padding: 5px;}
+
+#routeplanning #results.ui-tabs {border: 0; padding: 0; border-radius: 0; margin-top: 20px;}
+#routeplanning #results.ui-tabs ul#strategies li a {padding: 5px 7px;}
+#routeplanning #results.ui-tabs #itineraries {min-height: 400px;}
+
