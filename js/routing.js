@@ -31,7 +31,8 @@ var routing = (function ($) {
 			finish: '/images/itinerarymarkers/finish.png'
 		},
 		
-		// Routing strategies, in order of appearance in the UI
+		// Routing strategies, in order of appearance in the UI, and the default
+		defaultStrategy: 'balanced',
 		strategies: [
 			{
 				id: 'fastest',
@@ -515,10 +516,12 @@ var routing = (function ($) {
 			var tabsHtml = '<ul id="strategies">';
 			var contentPanesHtml = '<div id="itineraries">';
 			var rgb;
+			var selectedIndex = 0;
 			$.each (_settings.strategies, function (index, strategy) {
 				rgb = routing.hexToRgb (strategy.lineColour);
 				tabsHtml += '<li><a href="#' + strategy.id + '" style="background-color: rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',' + '0.3' + ');">' + routing.htmlspecialchars (strategy.label) + '</a></li>';
 				contentPanesHtml += '<div id="' + strategy.id + '">' + routing.htmlspecialchars (strategy.label) + ' details loading &hellip;</div>';
+				if (strategy.id == _settings.defaultStrategy) {selectedIndex = index;}
 			});
 			tabsHtml += '</ul>';
 			contentPanesHtml += '</div>';
@@ -533,7 +536,10 @@ var routing = (function ($) {
 			$('#routeplanning').append (html);
 			
 			// Add jQuery UI tabs behaviour
-			$('#results').tabs();
+			$('#results').tabs ();
+			
+			// Select the default tab
+			$('#results').tabs ('option', 'active', selectedIndex);
 		},
 		
 		
@@ -737,7 +743,6 @@ var routing = (function ($) {
 			html += '</table>';
 			
 			// Set the content in the tab pane
-console.log ('#itineraries #' + id);
 			$('#itineraries #' + id).html (html);
 		},
 		
