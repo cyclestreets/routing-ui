@@ -19,7 +19,8 @@ var routing = (function ($) {
 		maxZoom: 20,
 		
 		// Geocoder API URL; re-use of settings values represented as placeholders {%cyclestreetsApiBaseUrl}, {%cyclestreetsApiKey}, {%autocompleteBbox}, are supported
-		geocoderApiUrl: '{%cyclestreetsApiBaseUrl}/v2/geocoder?key={%cyclestreetsApiKey}&bounded=1&bbox={%autocompleteBbox}',
+		geocoderApiUrl:        '{%cyclestreetsApiBaseUrl}/v2/geocoder?key={%cyclestreetsApiKey}&bounded=1&bbox={%autocompleteBbox}',
+		reverseGeocoderApiUrl: '{%cyclestreetsApiBaseUrl}/v2/nearestpoint?key={%cyclestreetsApiKey}',
 		
 		// BBOX for autocomplete results biasing
 		autocompleteBbox: '-6.6577,49.9370,1.7797,57.6924',
@@ -174,9 +175,9 @@ var routing = (function ($) {
 		{
 			// Substitute each placeholder
 			var placeholder;
-			$.each(supportedPlaceholders, function (index, field) {
+			$.each (supportedPlaceholders, function (index, field) {
 				placeholder = '{%' + field + '}';
-				string = string.replace(placeholder, _settings[field]);
+				string = string.replace (placeholder, _settings[field]);
 			});
 			
 			// Return the modified string
@@ -1129,16 +1130,13 @@ var routing = (function ($) {
 		reverseGeocode: function (coordinates, waypointNumber)
 		{
 			// Assemble API URL; see: https://www.cyclestreets.net/api/v2/nearestpoint/
-			var parameters = {
-				key: _settings.cyclestreetsApiKey,
-				lonlat: coordinates.lng + ',' + coordinates.lat
-			}
-			var url = _settings.cyclestreetsApiBaseUrl + '/v2/nearestpoint' + '?' + $.param (parameters, false);
+			var reverseGeocoderApiUrl = routing.settingsPlaceholderSubstitution (_settings.reverseGeocoderApiUrl, ['cyclestreetsApiBaseUrl', 'cyclestreetsApiKey']);
+			reverseGeocoderApiUrl += '&lonlat=' + coordinates.lng + ',' + coordinates.lat;
 			
 			// Fetch the result
 			$.ajax ({
 				dataType: 'json',
-				url: url,
+				url: reverseGeocoderApiUrl,
 				success: function (result) {
 					
 					// Detect error in result
