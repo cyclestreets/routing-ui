@@ -3,6 +3,44 @@
 /*jslint browser: true, white: true, single: true, for: true */
 /*global $, alert, console, window, mapboxgl */
 
+
+/*
+	Route planning UI specification:
+	
+	- The journey planner operates on the basis of a stack of points, e.g. start,waypoint,finish
+	- The stack is indexed from 0 internally
+	- Each marker has an associated geocoder (also expressable in reverse - each geocoder affects a marker).
+	- Marker/geocoder pairs operate in sync - setting/moving/updating one affects its pair with the same geographical result.
+	- A marker/geocoder pair is referred to as a 'point'.
+	- There can be as many points as the user wants.
+	- Whenever two or more points are set, a route should be displayed.
+	- Whenever no or one point is set, no route should be displayed.
+	- When the map is clicked on to set a marker, the marker is shown as gray until the geocoder provides a resolved actual location.
+	- A route request is triggered whenever any change to any point is made, with the result being added or replacing any existing result.
+	- The marker for each point has a popup which gives the resolved name matching the geocoder.
+	- The marker's popup and the associated geocoder each have an 'X' button to delete that point.
+	- When a route is present, the only map-based way to add another point is to drag part of the existing line to pull out a new waypoint.
+	- The geocoder list contains a + button between each to create a new empty geocoder.
+	- Empty geocoders are not treated as part of the stack counted.
+	- When a route is present, adding a successful geocoder result inserts this into the stack in the order shown.
+	- The geocoders, whether empty or complete, can be reordered without restriction, using drag-and-drop.
+	- When markers are present, the start point shall be green, the finish point red, and intermediate points yellow, labelled as "Via #1", "Via #2", etc.
+	- When a previously-planned route number is loaded, this effectively pre-loads the stack, and the rest of the logic then works as normal.
+	- When a route is present, the associated itinerary set is shown in a set of tabs.
+	- When a itinerary street is hovered on, the associated part of the line is highlighted.
+	- Conversely, when a part of the line is hovered on, the associated itinerary street is highlighted.
+	- The rendering of each part of the route line relates to the riding surface.
+	- All strategies for a route are shown at once.
+	- On clicking on a strategy, it is brought into focus, and a cookie setting stores this last-clicked strategy.
+	- On showing a route, the last-clicked strategy is shown, or if the cookie is not set, the default strategy defined in the settings is shown.
+	- The strategy in focus is coloured, and the other strategies are grayed out.
+	- A tooltip shows the summary for each strategy at all times.
+	- Clicking on a route strategy on the map selects its associated tab in the itinerary panel.
+	- Conversely, selecting a tab in the itinerary panel selects its associated route strategy on the map.
+	
+*/
+
+
 var routing = (function ($) {
 	
 	'use strict';
@@ -402,7 +440,7 @@ var routing = (function ($) {
 		},
 		
 		
-		// Function to add routing
+		// Function to add the routing UI
 		routing: function ()
 		{
 			// Load routing when style ready or when style changed - the whole application logic is wrapped in this, as the entire state must be recreated if the style is changed
