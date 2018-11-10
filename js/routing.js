@@ -482,8 +482,10 @@ var routing = (function ($) {
 			// Create tabs and content panes for each of the strategies
 			var tabsHtml = '<ul id="strategies">';
 			var contentPanesHtml = '<div id="itineraries">';
+			var rgb;
 			$.each (_settings.strategies, function (index, strategy) {
-				tabsHtml += '<li><a href="#' + strategy.id + '" style="background-color: ' + strategy.lineColour + ';">' + routing.htmlspecialchars (strategy.label) + '</a></li>';
+				rgb = routing.hexToRgb (strategy.lineColour);
+				tabsHtml += '<li><a href="#' + strategy.id + '" style="background-color: rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',' + '0.3' + ');">' + routing.htmlspecialchars (strategy.label) + '</a></li>';
 				contentPanesHtml += '<div id="' + strategy.id + '">' + routing.htmlspecialchars (strategy.label) + ' details loading &hellip;</div>';
 			});
 			tabsHtml += '</ul>';
@@ -500,6 +502,24 @@ var routing = (function ($) {
 			
 			// Add jQuery UI tabs behaviour
 			$('#results').tabs();
+		},
+		
+		
+		// Function to convert colour codes in Hex to RGB
+		hexToRgb: function (hex)
+		{
+			// Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
+			var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+			hex = hex.replace (shorthandRegex, function (m, r, g, b) {
+				return r + r + g + g + b + b;
+			});
+			
+			var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+			return result ? {
+				r: parseInt (result[1], 16),
+				g: parseInt (result[2], 16),
+				b: parseInt (result[3], 16)
+			} : null;
 		},
 		
 		
