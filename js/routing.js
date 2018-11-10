@@ -503,6 +503,33 @@ var routing = (function ($) {
 		},
 		
 		
+		// Function to create an itinerary listing from the loaded route data
+		itineraryListing: function (id, features)
+		{
+			// Loop through each feature
+			var html = '<table class="itinerary lines">';
+			$.each (features, function (index, feature) {
+				
+				// Skip non-streets
+				if (!feature.properties.path.match (/street/)) {return 'continue';}
+				
+				// Add this row
+				html += '<tr>';
+				html += '<td>' + feature.properties.startBearing + '</td>';
+				html += '<td><strong>' + routing.htmlspecialchars (feature.properties.name) + '</strong></td>';
+				html += '<td>' + feature.properties.ridingSurface + '</td>';
+				html += '<td>' + feature.properties.distanceMetres + 'm</td>';
+				html += '<td>' + feature.properties.durationSeconds + 's</td>';
+				html += '</tr>';
+			});
+			html += '</table>';
+			
+			// Set the content in the tab pane
+console.log ('#itineraries #' + id);
+			$('#itineraries #' + id).html (html);
+		},
+		
+		
 		// Function to load a route from a specified itinerary ID
 		loadRouteFromId: function (itineraryId)
 		{
@@ -642,6 +669,9 @@ var routing = (function ($) {
 					routing.addWaypointMarker (coordinates, waypointNumber, text, totalWaypoints);
 				}
 			});
+			
+			// Add the itinerary listing
+			routing.itineraryListing (id, geojson.features);
 			
 			// For each marker, if moved, replan the route
 			// https://www.mapbox.com/mapbox-gl-js/example/drag-a-marker/
