@@ -775,7 +775,7 @@ var routing = (function ($) {
 				html += '<td>' + routing.turnsicon (feature.properties.startBearing) + '</td>';
 				html += '<td><strong>' + routing.htmlspecialchars (feature.properties.name) + '</strong></td>';
 				html += '<td>' + feature.properties.ridingSurface + '</td>';
-				html += '<td>' + feature.properties.distanceMetres + 'm</td>';
+				html += '<td>' + routing.formatDistance (feature.properties.distanceMetres) + '</td>';
 				html += '<td>' + feature.properties.durationSeconds + 's</td>';
 				html += '</tr>';
 			});
@@ -813,6 +813,22 @@ var routing = (function ($) {
 			
 			// Assemble and return the HTML
 			return '<span class="turnsicons turnsicon-' + icon + '"></span>';
+		},
+		
+		
+		// Function to format a distance
+		formatDistance: function (metres)
+		{
+			// Convert Km
+			if (metres >= 1000) {
+				var km = metres / 1000;
+				var result = Number (km.toFixed(1)) + 'km';
+				return result;
+			}
+			
+			// Round metres
+			var result = Number (metres.toFixed ()) + 'm';
+			return result;
 		},
 		
 		
