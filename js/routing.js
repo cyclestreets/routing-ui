@@ -1007,6 +1007,14 @@ var routing = (function ($) {
 				});
 			});
 			
+			// Assemble the plan summaries
+			var plans = {};
+			plans[strategy] = {		// Cannot be assigned directly in the array below; see https://stackoverflow.com/questions/11508463/javascript-set-object-key-by-variable
+				length: osrm.routes[0].distance,
+				time: osrm.routes[0].duration
+				// Others not yet added, e.g. signalledJunctions, signalledCrossings, etc.
+			};
+			
 			// Assemble the GeoJSON structure
 			var geojson = {
 				type: 'FeatureCollection',
@@ -1014,11 +1022,13 @@ var routing = (function ($) {
 					id: null,							// Not available in OSRM
 					start: osrm.waypoints[0].name,
 					finish: osrm.waypoints[lastWaypoint].name,
-					waypointCount: totalWaypoints
+					waypointCount: totalWaypoints,
+					plans: plans
 				},
 				features: features
 			};
 			
+			//console.log (geojson);
 			//console.log (JSON.stringify (geojson));
 			
 			// Return the result
