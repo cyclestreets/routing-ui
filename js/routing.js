@@ -453,7 +453,7 @@ var routing = (function ($) {
 					
 					// Add the route for each strategy, and end
 					$.each (_settings.strategies, function (index, strategy) {
-						routing.showRoute (_routeGeojson[strategy.id], strategy.id, strategy.lineColour);
+						routing.showRoute (_routeGeojson[strategy.id], strategy);
 					});
 					
 					// Add results tabs
@@ -543,7 +543,7 @@ var routing = (function ($) {
 				
 				// Load the route
 				//console.log (url);
-				routing.loadRoute (url, strategy.format, strategy.id, strategy.lineColour);
+				routing.loadRoute (url, strategy.format, strategy);
 			});
 		},
 		
@@ -881,7 +881,7 @@ var routing = (function ($) {
 				url = _settings.cyclestreetsApiBaseUrl + '/v2/journey.retrieve' + '?' + $.param (parameters, false);
 				
 				// Load the route
-				routing.loadRoute (url, 'cyclestreets', strategy.id, strategy.lineColour);
+				routing.loadRoute (url, 'cyclestreets', strategy);
 			});
 			
 			// Add results tabs
@@ -890,7 +890,7 @@ var routing = (function ($) {
 		
 		
 		// Function to load a route over AJAX
-		loadRoute: function (url, format, strategy, lineColour)
+		loadRoute: function (url, format, strategy)
 		{
 			// Load over AJAX; see: https://stackoverflow.com/a/48655332/180733
 			$.ajax({
@@ -906,21 +906,21 @@ var routing = (function ($) {
 					
 					// For OSRM format, convert to (emulate) the CycleStreets GeoJSON format
 					if (format == 'osrm') {
-						result = routing.osrmToGeojson (result, strategy);
+						result = routing.osrmToGeojson (result, strategy.id);
 					}
 					
 					// Register the GeoJSON to enable the state to persist between map layer changes and to set that the route is loaded
-					_routeGeojson[strategy] = result;
+					_routeGeojson[strategy.id] = result;
 					
 					// Show the route
-					routing.showRoute (_routeGeojson[strategy], strategy, lineColour);
+					routing.showRoute (_routeGeojson[strategy.id], strategy);
 					
 					// Set the itinerary number permalink in the URL
-					var itineraryId = _routeGeojson[strategy].properties.id;
+					var itineraryId = _routeGeojson[strategy.id].properties.id;
 					routing.updateUrl (itineraryId);
 					
 					// Fit bounds
-					routing.fitBoundsGeojson (_routeGeojson[strategy], strategy);
+					routing.fitBoundsGeojson (_routeGeojson[strategy.id], strategy.id);
 					
 					// Show clear route link
 					$('#clearroute').show ();
@@ -1069,11 +1069,11 @@ var routing = (function ($) {
 		
 		
 		// Function to render a route onto the map
-		showRoute: function (geojson, strategy, lineColour)
+		showRoute: function (geojson, strategy)
 		{
 			// https://www.mapbox.com/mapbox-gl-js/example/geojson-line/
 			var layer = {
-				"id": strategy,
+				"id": strategy.id,
 				"type": "line",
 				"source": {
 					"type": "geojson",
@@ -1085,8 +1085,8 @@ var routing = (function ($) {
 					"line-cap": "round"
 				},
 				"paint": {
-					"line-color": lineColour,
-					"line-width": (strategy == _settings.defaultStrategy ? 8 : 3)
+					"line-color": strategy.lineColour,
+					"line-width": (strategy.id == _settings.defaultStrategy ? 8 : 3)
 				}
 			};
 			_map.addLayer (layer);
@@ -1121,7 +1121,7 @@ var routing = (function ($) {
 			});
 			
 			// Add the itinerary listing
-			routing.itineraryListing (strategy, geojson);
+			routing.itineraryListing (strategy.id, geojson);
 			
 			// For each marker, if moved, replan the route
 			// https://www.mapbox.com/mapbox-gl-js/example/drag-a-marker/
