@@ -1091,6 +1091,9 @@ var routing = (function ($) {
 			};
 			_map.addLayer (layer);
 			
+			// Add a hover popup giving a summary of the route details
+			routing.hoverPopup (strategy, geojson.properties.plans[strategy.id]);
+			
 			// Clear any existing markers
 			$.each (_markers, function (index, marker) {
 				marker.remove();
@@ -1147,6 +1150,41 @@ var routing = (function ($) {
 					});
 				});
 			}
+		},
+		
+		
+		// Function to handle a hover popup; see: http://bl.ocks.org/kejace/356a4f31773a2edc9b1b1fec676bdfaf
+		hoverPopup: function (strategy, plan)
+		{
+			// Create a popup, but do not add it to the map yet
+			var popup = new mapboxgl.Popup ({
+				closeButton: false,
+				closeOnClick: false,
+				className: 'strategypopup'
+			});
+
+			// Add hover for each line; see: https://stackoverflow.com/questions/51039362/popup-for-a-line-in-mapbox-gl-js-requires-padding-or-approximate-mouse-over
+			_map.on ('mousemove', strategy.id, function (e) {
+				_map.getCanvas ().style.cursor = 'pointer';
+				var coordinates = e.lngLat;
+				
+				// Construct the HTML for the popup
+				var html = '<div class="details" style="background-color: ' + strategy.lineColour + '">';
+				html += '<p><strong>' + routing.htmlspecialchars (strategy.label) + '</strong></p>';
+				html += '<p>' + routing.formatDuration (plan.time) + '<br />' + routing.formatDistance (plan.length) + '</p>';
+				html += '</div>'
+				
+				// Populate the popup and set its coordinates based on the feature found
+				popup.setLngLat (coordinates)
+					.setHTML (html)
+					.addTo (_map);
+			});
+			
+			// Remove the popup when leaving the line
+			_map.on ('mouseleave', strategy.id, function () {
+				_map.getCanvas ().style.cursor = '';
+				popup.remove ();
+			});
 		},
 		
 		

@@ -33,6 +33,9 @@
 #routeplanning #results.ui-tabs .ui-tabs-panel {padding: 15px 10px;}
 h3 {color: #603;}
 h3.right {float: right;}
+.strategypopup {max-width: 100px; max-height: 80px;}
+.strategypopup .details {padding: 5px;}
+.strategypopup .details p {padding: 0; margin: 0 0 5px;}
 
 /* Turns - copied from OSRM */
 .turnsicons {background-image: url('../images/turns/turns.svg'); -webkit-background-size: 455px 20px; background-size: 455px 20px; background-repeat: no-repeat; margin: 0; content: ''; display: inline-block; vertical-align: top; width: 20px; height: 20px;}
