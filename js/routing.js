@@ -772,7 +772,7 @@ var routing = (function ($) {
 				
 				// Add this row
 				html += '<tr>';
-				html += '<td>' + feature.properties.startBearing + '</td>';
+				html += '<td>' + routing.turnsicon (feature.properties.startBearing) + '</td>';
 				html += '<td><strong>' + routing.htmlspecialchars (feature.properties.name) + '</strong></td>';
 				html += '<td>' + feature.properties.ridingSurface + '</td>';
 				html += '<td>' + feature.properties.distanceMetres + 'm</td>';
@@ -783,6 +783,36 @@ var routing = (function ($) {
 			
 			// Set the content in the tab pane
 			$('#itineraries #' + id).html (html);
+		},
+		
+		
+		// Function to convert a bearing to an icon for the itinerary listing
+		turnsicon: function (bearing)
+		{
+			// Define the turns for each snapped bearing
+			var turns = {
+				0:		'continue',
+				45:		'bear-right',
+				90:		'turn-right',
+				135:	'sharp-right',
+				180:	'u-turn',
+				235:	'sharp-left',
+				290:	'turn-left',
+				335:	'bear-left',
+				360:	'continue',
+			};
+			
+			// Find the closest; see: https://stackoverflow.com/a/19277804/180733
+			var bearings = Object.keys (turns);
+			var closest = bearings.reduce (function (prev, curr) {
+				return (Math.abs (curr - bearing) < Math.abs (prev - bearing) ? curr : prev);
+			});
+			
+			// Set the icon
+			var icon = turns[closest];
+			
+			// Assemble and return the HTML
+			return '<span class="turnsicons turnsicon-' + icon + '"></span>';
 		},
 		
 		

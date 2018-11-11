@@ -31,3 +31,25 @@
 #routeplanning #results.ui-tabs ul#strategies .ui-tabs-active {background-color: #eee;}
 #routeplanning #results.ui-tabs #itineraries {height: 500px; overflow-y: auto;}
 #routeplanning #results.ui-tabs .ui-tabs-panel {padding: 15px 10px;}
+
+/* Turns - copied from OSRM */
+.turnsicons {background-image: url('../images/turns/turns.svg'); -webkit-background-size: 455px 20px; background-size: 455px 20px; background-repeat: no-repeat; margin: 0; content: ''; display: inline-block; vertical-align: top; width: 20px; height: 20px;}
+.turnsicon-continue         {background-position: 2px 0px;}
+.turnsicon-sharp-right      {background-position: -24px 0px;}
+.turnsicon-turn-right       {background-position: -50px 0px;}
+.turnsicon-bear-right       {background-position: -74px 0px;}
+.turnsicon-u-turn           {background-position: -101px 0px;}
+.turnsicon-sharp-left       {background-position: -127px 0px;}
+.turnsicon-turn-left        {background-position: -150px 0px;}
+.turnsicon-bear-left        {background-position: -175px 0px;}
+.turnsicon-depart           {background-position: -202px 0px;}
+.turnsicon-enter-roundabout {background-position: -227px 0px;}
+.turnsicon-arrive           {background-position: -253px 0px;}
+.turnsicon-via              {background-position: -278px 0px;}
+.turnsicon-fork             {background-position: -305px 0px;}
+.turnsicon-ramp-right       {background-position: -331px 0px;}
+.turnsicon-ramp-left        {background-position: -352px 0px;}
+.turnsicon-merge-left       {background-position: -376px 0px;}
+.turnsicon-merge-right      {background-position: -403px 0px;}
+.turnsicon-end              {background-position: -429px 0px;}
+
