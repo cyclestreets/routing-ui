@@ -776,7 +776,7 @@ var routing = (function ($) {
 				html += '<td><strong>' + routing.htmlspecialchars (feature.properties.name) + '</strong></td>';
 				html += '<td>' + feature.properties.ridingSurface + '</td>';
 				html += '<td>' + routing.formatDistance (feature.properties.distanceMetres) + '</td>';
-				html += '<td>' + feature.properties.durationSeconds + 's</td>';
+				html += '<td>' + routing.formatDuration (feature.properties.durationSeconds) + '</td>';
 				html += '</tr>';
 			});
 			html += '</table>';
@@ -828,6 +828,32 @@ var routing = (function ($) {
 			
 			// Round metres
 			var result = Number (metres.toFixed ()) + 'm';
+			return result;
+		},
+		
+		
+		// Function to format a duration
+		formatDuration: function (seconds)
+		{
+			// Calculate values; see: https://stackoverflow.com/a/16057667/180733
+			var days = Math.floor (seconds/86400);
+			var hours = Math.floor (((seconds / 86400) % 1) * 24);
+			var minutes = Math.floor (((seconds / 3600) % 1) * 60);
+			var seconds = Math.round (((seconds / 60) % 1) * 60);
+			
+			// Assemble the components
+			var components = [];
+			if (days) {components.push (days + 'days')};
+			if (hours) {components.push (hours + 'h')};
+			if (minutes) {components.push (minutes + 'm')};
+			if (!components.length) {
+				components.push (seconds + 's');
+			}
+			
+			// Assemble the string
+			var result = components.join (',&nbsp;');
+			
+			// Return the result
 			return result;
 		},
 		
