@@ -1086,7 +1086,7 @@ var routing = (function ($) {
 				},
 				"paint": {
 					"line-color": lineColour,
-					"line-width": 8
+					"line-width": (strategy == _settings.defaultStrategy ? 8 : 3)
 				}
 			};
 			_map.addLayer (layer);
