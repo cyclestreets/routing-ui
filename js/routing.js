@@ -761,11 +761,18 @@ var routing = (function ($) {
 		
 		
 		// Function to create an itinerary listing from the loaded route data
-		itineraryListing: function (strategy, features)
+		itineraryListing: function (strategy, geojson)
 		{
+			// Start the HTML
+			var html = '';
+			
+			// Add the total distance and time
+			html += '<h3 class="right">' + routing.formatDuration (geojson.properties.plans[strategy].time) + '</h3>';
+			html += '<h3>' + routing.formatDistance (geojson.properties.plans[strategy].length) + '</h3>';
+			
 			// Loop through each feature
-			var html = '<table class="itinerary lines">';
-			$.each (features, function (index, feature) {
+			html += '<table class="itinerary lines">';
+			$.each (geojson.features, function (index, feature) {
 				
 				// Skip non-streets
 				if (!feature.properties.path.match (/street/)) {return 'continue';}
@@ -843,7 +850,7 @@ var routing = (function ($) {
 			
 			// Assemble the components
 			var components = [];
-			if (days) {components.push (days + 'days')};
+			if (days) {components.push (days + ' ' + (days == 1 ? 'day' : 'days'))};
 			if (hours) {components.push (hours + 'h')};
 			if (minutes) {components.push (minutes + 'm')};
 			if (!components.length) {
@@ -1114,7 +1121,7 @@ var routing = (function ($) {
 			});
 			
 			// Add the itinerary listing
-			routing.itineraryListing (strategy, geojson.features);
+			routing.itineraryListing (strategy, geojson);
 			
 			// For each marker, if moved, replan the route
 			// https://www.mapbox.com/mapbox-gl-js/example/drag-a-marker/
