@@ -761,7 +761,7 @@ var routing = (function ($) {
 		
 		
 		// Function to create an itinerary listing from the loaded route data
-		itineraryListing: function (id, features)
+		itineraryListing: function (strategy, features)
 		{
 			// Loop through each feature
 			var html = '<table class="itinerary lines">';
@@ -781,8 +781,8 @@ var routing = (function ($) {
 			});
 			html += '</table>';
 			
-			// Set the content in the tab pane
-			$('#itineraries #' + id).html (html);
+			// Set the content in the tab pane, overwriting any previous content
+			$('#itineraries #' + strategy).html (html);
 		},
 		
 		
@@ -1052,11 +1052,11 @@ var routing = (function ($) {
 		
 		
 		// Function to render a route onto the map
-		showRoute: function (geojson, id, lineColour)
+		showRoute: function (geojson, strategy, lineColour)
 		{
 			// https://www.mapbox.com/mapbox-gl-js/example/geojson-line/
 			var layer = {
-				"id": id,
+				"id": strategy,
 				"type": "line",
 				"source": {
 					"type": "geojson",
@@ -1104,7 +1104,7 @@ var routing = (function ($) {
 			});
 			
 			// Add the itinerary listing
-			routing.itineraryListing (id, geojson.features);
+			routing.itineraryListing (strategy, geojson.features);
 			
 			// For each marker, if moved, replan the route
 			// https://www.mapbox.com/mapbox-gl-js/example/drag-a-marker/
