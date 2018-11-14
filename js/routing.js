@@ -155,7 +155,7 @@ var routing = (function ($) {
 			routing.routePlanning ();
 			
 			// Add routing
-			routing.routing ();
+			routing.routingInit ();
 		},
 		
 		
@@ -440,59 +440,66 @@ var routing = (function ($) {
 		},
 		
 		
-		// Function to add the routing UI
+		// Function to initialise the routing UI
+		routingInit: function ()
+		{
+			// Load initially
+			routing.routing ();
+			
+			// Load routing when style ready or when style changed - the whole application logic is wrapped in this, as the entire state must be recreated if the style is changed
+			$(document).on ('style-changed', function (event) {
+				routing.routing ();
+			});
+		},
+		
+		
+		// Function to add the routing
 		routing: function ()
 		{
-			// Load routing when style ready or when style changed - the whole application logic is wrapped in this, as the entire state must be recreated if the style is changed
-			// May need to consider use of: https://stackoverflow.com/questions/44394573/mapbox-gl-js-style-is-not-done-loading
-			// #!# Does not fire when loading a raster after another raster: https://github.com/mapbox/mapbox-gl-js/issues/7579
-			_map.on ('style.load', function () {
+			// If the route is already loaded, show it
+			if (!$.isEmptyObject (_routeGeojson)) {
 				
-				// If the route is already loaded, show it
-				if (!$.isEmptyObject (_routeGeojson)) {
-					
-					// Add the route for each strategy, and end
-					$.each (_settings.strategies, function (index, strategy) {
-						routing.showRoute (_routeGeojson[strategy.id], strategy);
-					});
-					
-					// Add results tabs
-					routing.resultsTabs ();
-					
-					return;
-				}
-				
-				// Get map locations
-				// https://www.mapbox.com/mapbox-gl-js/example/mouse-position/
-				var waypoints = [];
-				var totalWaypoints = 0;
-				_map.on ('click', function (e) {
-					
-					// Take no action on the click handler if a route is loaded
-					if (!$.isEmptyObject (_routeGeojson)) {return;}
-					
-					// Register the waypoint
-					waypoints.push (e.lngLat);
-					totalWaypoints = waypoints.length;
-					
-					// Obtain the label
-					// #!# Replace to using nearestpoint
-					var label = (totalWaypoints == 1 ? 'Start' : 'Finish');
-					
-					// Add the waypoint marker
-					routing.addWaypointMarker (e.lngLat, totalWaypoints, label, totalWaypoints);
-					
-					// Once there are two waypoints, load the route
-					if (totalWaypoints == 2) {
-						
-						// Load the route
-						routing.loadRouteFromWaypoints (waypoints);
-						
-						// Reset the waypoints count
-						waypoints = [];
-						totalWaypoints = 0;
-					}
+				// Add the route for each strategy, and end
+				$.each (_settings.strategies, function (index, strategy) {
+					routing.showRoute (_routeGeojson[strategy.id], strategy);
 				});
+				
+				// Add results tabs
+				routing.resultsTabs ();
+				
+				return;
+			}
+			
+			// Get map locations
+			// https://www.mapbox.com/mapbox-gl-js/example/mouse-position/
+			var waypoints = [];
+			var totalWaypoints = 0;
+			_map.on ('click', function (e) {
+				
+				// Take no action on the click handler if a route is loaded
+				if (!$.isEmptyObject (_routeGeojson)) {return;}
+				
+				// Register the waypoint
+				waypoints.push (e.lngLat);
+				totalWaypoints = waypoints.length;
+				
+				// Obtain the label
+				// #!# Replace to using nearestpoint
+				var label = (totalWaypoints == 1 ? 'Start' : 'Finish');
+				
+				// Add the waypoint marker
+				routing.addWaypointMarker (e.lngLat, totalWaypoints, label, totalWaypoints);
+				
+				// Once there are two waypoints, load the route
+				if (totalWaypoints == 2) {
+					
+					// Load the route
+					routing.loadRouteFromWaypoints (waypoints);
+					
+					// Reset the waypoints count
+					waypoints = [];
+					totalWaypoints = 0;
+				}
 			});
 		},
 		
