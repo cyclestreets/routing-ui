@@ -544,7 +544,7 @@ var routing = (function ($) {
 						parameters.steps = 'true';
 						parameters.geometries = 'geojson';
 						var waypoints = waypointStrings.join (';');
-						url = strategy.baseUrl + '/route/v1/driving/' + waypoints + '?' + $.param (parameters, false);
+						url = strategy.baseUrl + '/' + waypoints + '?' + $.param (parameters, false);
 						break;
 				}
 				
