@@ -900,7 +900,7 @@ var routing = (function ($) {
 					
 					// Detect error in result
 					if (result.error) {
-						alert ('Sorry, the route could not be loaded: ' + result.error);
+						alert ('Sorry, the route for ' + strategy.label + ' could not be loaded: ' + result.error);
 						return;
 					}
 					
@@ -926,7 +926,7 @@ var routing = (function ($) {
 					$('#clearroute').show ();
 				},
 				error: function (jqXHR, textStatus, errorThrown) {
-					alert ('Sorry, the route could not be loaded.');
+					alert ('Sorry, the route for ' + strategy.label + ' could not be loaded.');
 					console.log (errorThrown);
 				}
 			});
