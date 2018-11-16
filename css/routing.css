@@ -36,9 +36,10 @@ h3.right {float: right;}
 .strategypopup {max-width: 100px; max-height: 80px;}
 .strategypopup .details {padding: 5px;}
 .strategypopup .details p {padding: 0; margin: 0 0 5px;}
+.travelmode {font-size: 1.3em;}
 
 /* Turns - copied from OSRM */
-.turnsicons {background-image: url('../images/turns/turns.svg'); -webkit-background-size: 455px 20px; background-size: 455px 20px; background-repeat: no-repeat; margin: 0; content: ''; display: inline-block; vertical-align: top; width: 20px; height: 20px;}
+.turnsicons {background-image: url('../images/turns/turns.svg'); -webkit-background-size: 455px 20px; background-size: 455px 20px; background-repeat: no-repeat; margin: 0; content: ''; display: inline-block; vertical-align: top; width: 20px; height: 20px; opacity: 0.5;}
 .turnsicon-continue         {background-position: 2px 0px;}
 .turnsicon-sharp-right      {background-position: -24px 0px;}
 .turnsicon-turn-right       {background-position: -50px 0px;}
