@@ -105,7 +105,13 @@ var routing = (function ($) {
 				format: 'osrm'
 			}
 			*/
-		]
+		],
+		
+		// Line thickness
+		lineThickness: {
+			selected: 8,
+			unselected: 3
+		}
 	};
 	
 	// Internal class properties
@@ -1093,7 +1099,7 @@ var routing = (function ($) {
 				},
 				"paint": {
 					"line-color": strategy.lineColour,
-					"line-width": (strategy.id == _settings.defaultStrategy ? 8 : 3)
+					"line-width": (strategy.id == _settings.defaultStrategy ? _settings.lineThickness.selected : _settings.lineThickness.unselected)
 				}
 			};
 			_map.addLayer (layer);
