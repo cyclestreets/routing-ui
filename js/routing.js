@@ -571,7 +571,7 @@ var routing = (function ($) {
 			var selectedIndex = 0;
 			$.each (_settings.strategies, function (index, strategy) {
 				rgb = routing.hexToRgb (strategy.lineColour);
-				tabsHtml += '<li><a href="#' + strategy.id + '" style="background-color: rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',' + '0.3' + ');">' + routing.htmlspecialchars (strategy.label) + '</a></li>';
+				tabsHtml += '<li><a data-strategy="' + strategy.id + '" href="#' + strategy.id + '" style="background-color: rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',' + '0.3' + ');">' + routing.htmlspecialchars (strategy.label) + '</a></li>';
 				contentPanesHtml += '<div id="' + strategy.id + '">' + routing.htmlspecialchars (strategy.label) + ' details loading &hellip;</div>';
 				if (strategy.id == _settings.defaultStrategy) {selectedIndex = index;}
 			});
@@ -592,6 +592,14 @@ var routing = (function ($) {
 			
 			// Select the default tab
 			$('#results').tabs ('option', 'active', selectedIndex);
+			
+			// On switching tabs, change the line thickness; see: https://stackoverflow.com/a/43165165/180733
+			$('#results').on ('tabsactivate', function (event, ui) {
+				var newStrategyId = ui.newTab.attr ('li', 'innerHTML')[0].getElementsByTagName ('a')[0].dataset.strategy;	// https://stackoverflow.com/a/21114766/180733
+				_map.setPaintProperty (newStrategyId, 'line-width', _settings.lineThickness.selected);
+				var oldStrategyId = ui.oldTab.attr ('li', 'innerHTML')[0].getElementsByTagName ('a')[0].dataset.strategy;
+				_map.setPaintProperty (oldStrategyId, 'line-width', _settings.lineThickness.unselected);
+			} );
 		},
 		
 		
