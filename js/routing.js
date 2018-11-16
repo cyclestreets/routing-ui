@@ -255,7 +255,6 @@ var routing = (function ($) {
 
 			// Construct HTML for layer switcher
 			var html = '<ul id="toolbox">';
-			html += '<li><a id="clearroute" href="#" class="hidden">Clear route &hellip;</a></li>';
 			html += '<li><a id="loadrouteid" href="#">Load route ID &hellip;</a></li>';
 			html += '<li><a id="panning" href="#" class="hidden">Panning: disabled</a></li>';
 			html += '</ul>';
@@ -300,7 +299,8 @@ var routing = (function ($) {
 		// Add a clear route handler
 		routeClearing: function ()
 		{
-			$('#clearroute').click (function (e) {
+			// Create a delegated click function to clear the route
+			$('body').on('click', '#clearroute', function (e) {
 				
 				// If a route is already loaded, prompt to remove it
 				if (!$.isEmptyObject (_routeGeojson)) {
@@ -310,9 +310,6 @@ var routing = (function ($) {
 					
 					// Remove the route for each strategy
 					routing.removeRoute ();
-					
-					// Hide clear route link
-					$('#clearroute').hide ();
 				}
 			});
 		},
@@ -583,6 +580,10 @@ var routing = (function ($) {
 			
 			// Surround with a div for styling
 			html = '<div id="results">' + html + '</div>';
+			
+			// Add a link to clear the route
+			var clearRouteHtml = '<p><a id="clearroute" href="#">Clear route &hellip;</a></p>';
+			html = clearRouteHtml + html;
 			
 			// Append the panel to the route planning UI
 			$('#routeplanning').append (html);
@@ -960,9 +961,6 @@ var routing = (function ($) {
 					
 					// Fit bounds
 					routing.fitBoundsGeojson (_routeGeojson[strategy.id], strategy.id);
-					
-					// Show clear route link
-					$('#clearroute').show ();
 				},
 				error: function (jqXHR, textStatus, errorThrown) {
 					alert ('Sorry, the route for ' + strategy.label + ' could not be loaded.');
