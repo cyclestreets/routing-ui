@@ -800,7 +800,8 @@ var routing = (function ($) {
 				
 				// Add this row
 				html += '<tr>';
-				html += '<td>' + routing.turnsicon (feature.properties.startBearing) + '</td>';
+				html += '<td class="travelmode">' + routing.travelModeIcon (feature.properties.travelMode, strategy) + '</td>';
+				html += '<td>' + routing.turnsIcon (feature.properties.startBearing) + '</td>';
 				html += '<td><strong>' + routing.htmlspecialchars (feature.properties.name) + '</strong></td>';
 				html += '<td>' + feature.properties.ridingSurface + '</td>';
 				html += '<td>' + routing.formatDistance (feature.properties.distanceMetres) + '</td>';
@@ -814,8 +815,25 @@ var routing = (function ($) {
 		},
 		
 		
+		// Function to convert a travel mode to an icon for the itinerary listing
+		travelModeIcon: function (travelMode, strategy)
+		{
+			// Define the icons, using Unicode emojis
+			var icons = {
+				'walking': '&#x1f6b6',	// https://emojipedia.org/pedestrian/
+				'cycling': '&#x1f697',	// https://emojipedia.org/bicycle/
+				'driving': '&#x1f697',	// https://emojipedia.org/automobile/
+				'railway': '&#xf683',	// https://emojipedia.org/railway-car/
+				'horse':   '&#x1f40e',	// https://emojipedia.org/horse/
+			}
+			
+			// Return the icon
+			return icons[travelMode];
+		},
+		
+		
 		// Function to convert a bearing to an icon for the itinerary listing
-		turnsicon: function (bearing)
+		turnsIcon: function (bearing)
 		{
 			// Define the turns for each snapped bearing
 			var turns = {
