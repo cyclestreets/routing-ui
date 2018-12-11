@@ -121,6 +121,7 @@ var routing = (function ($) {
 	var _markers = [];
 	var _routeGeojson = {};
 	var _panningEnabled = false;
+	var _routeIndexes = {};
 	var _selectedStrategy = false;
 	
 	
@@ -151,6 +152,9 @@ var routing = (function ($) {
 			
 			// Add route clearing
 			routing.routeClearing ();
+			
+			// Create an index of strategies to tab index
+			routing.loadRouteIndexes ();
 			
 			// Load route from URL if present
 			routing.loadRouteInitialUrl ();
@@ -312,6 +316,16 @@ var routing = (function ($) {
 					// Remove the route for each strategy
 					routing.removeRoute ();
 				}
+			});
+		},
+		
+		
+		// Function to create an index of routes, e.g. for tab selection
+		loadRouteIndexes: function ()
+		{
+			// Map from strategyId => index
+			$.each (_settings.strategies, function (index, strategy) {
+				_routeIndexes[strategy.id] = index;
 			});
 		},
 		
@@ -569,12 +583,10 @@ var routing = (function ($) {
 			var tabsHtml = '<ul id="strategies">';
 			var contentPanesHtml = '<div id="itineraries">';
 			var rgb;
-			var selectedIndex = 0;
 			$.each (_settings.strategies, function (index, strategy) {
 				rgb = routing.hexToRgb (strategy.lineColour);
 				tabsHtml += '<li><a data-strategy="' + strategy.id + '" href="#' + strategy.id + '" style="background-color: rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',' + '0.3' + ');">' + routing.htmlspecialchars (strategy.label) + '</a></li>';
 				contentPanesHtml += '<div id="' + strategy.id + '">' + routing.htmlspecialchars (strategy.label) + ' details loading &hellip;</div>';
-				if (strategy.id == _settings.defaultStrategy) {selectedIndex = index;}
 			});
 			tabsHtml += '</ul>';
 			contentPanesHtml += '</div>';
@@ -596,7 +608,7 @@ var routing = (function ($) {
 			$('#results').tabs ();
 			
 			// Select the default tab
-			$('#results').tabs ('option', 'active', selectedIndex);
+			$('#results').tabs ('option', 'active', _routeIndexes[_settings.defaultStrategy]);
 			
 			// On switching tabs, change the line thickness; see: https://stackoverflow.com/a/43165165/180733
 			$('#results').on ('tabsactivate', function (event, ui) {
