@@ -78,21 +78,24 @@ var routing = (function ($) {
 				label: 'Fastest route',
 				parameters: {plans: 'fastest'},
 				lineColour: '#cc0000',
-				format: 'cyclestreets'
+				format: 'cyclestreets',
+				attribution: 'Routing by <a href="https://www.cyclestreets.net/">CycleStreets</a>'
 			},
 			{
 				id: 'balanced',
 				label: 'Balanced route',
 				parameters: {plans: 'balanced'},
 				lineColour: '#ffc200',
-				format: 'cyclestreets'
+				format: 'cyclestreets',
+				attribution: 'Routing by <a href="https://www.cyclestreets.net/">CycleStreets</a>'
 			},
 			{
 				id: 'quietest',
 				label: 'Quietest route',
 				parameters: {plans: 'quietest'},
 				lineColour: '#00cc00',
-				format: 'cyclestreets'
+				format: 'cyclestreets',
+				attribution: 'Routing by <a href="https://www.cyclestreets.net/">CycleStreets</a>'
 			}
 			/* OSRM example:
 			,
@@ -1144,7 +1147,7 @@ var routing = (function ($) {
 				"source": {
 					"type": "geojson",
 					"data": geojson,
-					"attribution": 'Routing by <a href="https://www.cyclestreets.net/">CycleStreets</a>'
+					"attribution": strategy.attribution
 				},
 				"layout": {
 					"line-join": "round",
