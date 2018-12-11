@@ -1154,6 +1154,17 @@ var routing = (function ($) {
 			// Set the route line to be clickable, which makes it the selected route
 			routing.clickSelect (strategy.id);
 			
+			// Add markers
+			routing.addRouteMarkers (geojson);
+			
+			// Add the itinerary listing
+			routing.itineraryListing (strategy.id, geojson);
+		},
+		
+		
+		// Function to add markers; see: https://www.mapbox.com/help/custom-markers-gl-js/
+		addRouteMarkers: function (geojson)
+		{
 			// Clear any existing markers
 			$.each (_markers, function (index, marker) {
 				marker.remove();
@@ -1168,9 +1179,11 @@ var routing = (function ($) {
 				}
 			});
 			
-			// Add markers; see: https://www.mapbox.com/help/custom-markers-gl-js/
+			// Add the marker for each point
 			$.each (geojson.features, function (index, feature) {
 				if (feature.geometry.type == 'Point') {	// Apply only to points
+					
+					// Construct the marker attributes
 					var text;
 					var waypointNumber = parseInt (feature.properties.path.replace ('waypoint/', ''));	// E.g.'waypoint/1' becomes 1
 					switch (waypointNumber) {
@@ -1179,12 +1192,11 @@ var routing = (function ($) {
 						default: text = false; break;
 					}
 					var coordinates = {lng: feature.geometry.coordinates[0], lat: feature.geometry.coordinates[1]};
+					
+					// Add the marker
 					routing.addWaypointMarker (coordinates, waypointNumber, text, totalWaypoints);
 				}
 			});
-			
-			// Add the itinerary listing
-			routing.itineraryListing (strategy.id, geojson);
 			
 			// For each marker, if moved, replan the route
 			// https://www.mapbox.com/mapbox-gl-js/example/drag-a-marker/
