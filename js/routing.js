@@ -144,8 +144,9 @@ var routing = (function ($) {
 			// Parse the URL
 			routing.parseUrl ();
 			
-			// Set the initial default strategy
-			_selectedStrategy = _settings.defaultStrategy;
+			// Set the initial default strategy, checking for a cookie from a previous page load
+			var strategyCookie = routing.getCookie ('selectedstrategy');
+			_selectedStrategy = (strategyCookie ? strategyCookie : _settings.defaultStrategy);
 			
 			// Add toolbox (pending implementation of overall UI)
 			routing.toolbox ();
@@ -624,7 +625,11 @@ var routing = (function ($) {
 		// Function to set a new selected strategy
 		setSelectedStrategy: function (newStrategyId)
 		{
+			// Register the defined strategy
 			_selectedStrategy = newStrategyId;
+			
+			// Set a cookie, for a future page reload, to pick up the new default
+			routing.setCookie ('selectedstrategy', newStrategyId, 14);
 		},
 		
 		
@@ -1430,6 +1435,35 @@ var routing = (function ($) {
 		{
 			if (typeof string !== 'string') {return string;}
 			return string.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+		},
+		
+		
+		// Function to set a cookie; see: https://www.w3schools.com/js/js_cookies.asp
+		setCookie: function (name, value, days)
+		{
+			var d = new Date ();
+			d.setTime (d.getTime () + (days * 24 * 60 * 60 * 1000));
+			var expires = 'expires=' + d.toUTCString();
+			document.cookie = name + '=' + value + ';' + expires + ';path=/';
+		},
+		
+		
+		// Function to get a cookie's value; see: https://www.w3schools.com/js/js_cookies.asp
+		getCookie: function (name)
+		{
+			var cname = name + '=';
+			var decodedCookie = decodeURIComponent (document.cookie);
+			var ca = decodedCookie.split (';');
+			for (var i = 0; i <ca.length; i++) {
+				var c = ca[i];
+				while (c.charAt(0) == ' ') {
+					c = c.substring(1);
+				}
+				if (c.indexOf (cname) == 0) {
+					return c.substring (cname.length, c.length);
+				}
+			}
+			return false;
 		}
 	};
 	
