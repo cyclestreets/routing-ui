@@ -144,6 +144,9 @@ var routing = (function ($) {
 			// Parse the URL
 			routing.parseUrl ();
 			
+			// Set the initial default strategy
+			_selectedStrategy = _settings.defaultStrategy;
+			
 			// Add toolbox (pending implementation of overall UI)
 			routing.toolbox ();
 			
@@ -482,9 +485,6 @@ var routing = (function ($) {
 					routing.showRoute (_routeGeojson[strategy.id], strategy);
 				});
 				
-				// Set the selected strategy
-				_selectedStrategy = _settings.defaultStrategy;
-				
 				// Add results tabs
 				routing.resultsTabs ();
 				
@@ -608,7 +608,7 @@ var routing = (function ($) {
 			$('#results').tabs ();
 			
 			// Select the default tab
-			$('#results').tabs ('option', 'active', _routeIndexes[_settings.defaultStrategy]);
+			$('#results').tabs ('option', 'active', _routeIndexes[_selectedStrategy]);
 			
 			// On switching tabs, change the line thickness; see: https://stackoverflow.com/a/43165165/180733
 			$('#results').on ('tabsactivate', function (event, ui) {
@@ -1140,7 +1140,7 @@ var routing = (function ($) {
 				},
 				"paint": {
 					"line-color": strategy.lineColour,
-					"line-width": (strategy.id == _settings.defaultStrategy ? _settings.lineThickness.selected : _settings.lineThickness.unselected)
+					"line-width": (strategy.id == _selectedStrategy ? _settings.lineThickness.selected : _settings.lineThickness.unselected)
 				}
 			};
 			_map.addLayer (layer);
