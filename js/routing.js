@@ -614,10 +614,17 @@ var routing = (function ($) {
 			$('#results').on ('tabsactivate', function (event, ui) {
 				var newStrategyId = ui.newTab.attr ('li', 'innerHTML')[0].getElementsByTagName ('a')[0].dataset.strategy;	// https://stackoverflow.com/a/21114766/180733
 				_map.setPaintProperty (newStrategyId, 'line-width', _settings.lineThickness.selected);
-				_selectedStrategy = newStrategyId;
+				routing.setSelectedStrategy (newStrategyId);
 				var oldStrategyId = ui.oldTab.attr ('li', 'innerHTML')[0].getElementsByTagName ('a')[0].dataset.strategy;
 				_map.setPaintProperty (oldStrategyId, 'line-width', _settings.lineThickness.unselected);
 			} );
+		},
+		
+		
+		// Function to set a new selected strategy
+		setSelectedStrategy: function (newStrategyId)
+		{
+			_selectedStrategy = newStrategyId;
 		},
 		
 		
@@ -1274,7 +1281,7 @@ var routing = (function ($) {
 			_map.on ('click', strategyId, function (e) {
 				
 				// Set to be the selected strategy
-				_selectedStrategy = strategyId;
+				routing.setSelectedStrategy (strategyId);
 				
 				// Set to the thicker line style
 				_map.setPaintProperty (strategyId, 'line-width', _settings.lineThickness.selected);
