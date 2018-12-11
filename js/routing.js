@@ -972,9 +972,6 @@ var routing = (function ($) {
 					// Show the route
 					routing.showRoute (_routeGeojson[strategy.id], strategy);
 					
-					// Set the selected strategy
-					_selectedStrategy = _settings.defaultStrategy;
-					
 					// Set the itinerary number permalink in the URL
 					var itineraryId = _routeGeojson[strategy.id].properties.id;
 					routing.updateUrl (itineraryId);
