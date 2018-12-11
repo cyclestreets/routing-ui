@@ -1154,8 +1154,10 @@ var routing = (function ($) {
 			// Set the route line to be clickable, which makes it the selected route
 			routing.clickSelect (strategy.id);
 			
-			// Add markers
-			routing.addRouteMarkers (geojson);
+			// Add markers; this is only done once (using the endpoints of the selected strategy), to avoid re-laying markers and setting handlers multiple times
+			if (strategy.id == _selectedStrategy) {
+				routing.addRouteMarkers (geojson);
+			}
 			
 			// Add the itinerary listing
 			routing.itineraryListing (strategy.id, geojson);
