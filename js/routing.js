@@ -121,6 +121,7 @@ var routing = (function ($) {
 	var _markers = [];
 	var _routeGeojson = {};
 	var _panningEnabled = false;
+	var _selectedStrategy = false;
 	
 	
 	return {
@@ -467,6 +468,9 @@ var routing = (function ($) {
 					routing.showRoute (_routeGeojson[strategy.id], strategy);
 				});
 				
+				// Set the selected strategy
+				_selectedStrategy = _settings.defaultStrategy;
+				
 				// Add results tabs
 				routing.resultsTabs ();
 				
@@ -598,6 +602,7 @@ var routing = (function ($) {
 			$('#results').on ('tabsactivate', function (event, ui) {
 				var newStrategyId = ui.newTab.attr ('li', 'innerHTML')[0].getElementsByTagName ('a')[0].dataset.strategy;	// https://stackoverflow.com/a/21114766/180733
 				_map.setPaintProperty (newStrategyId, 'line-width', _settings.lineThickness.selected);
+				_selectedStrategy = newStrategyId;
 				var oldStrategyId = ui.oldTab.attr ('li', 'innerHTML')[0].getElementsByTagName ('a')[0].dataset.strategy;
 				_map.setPaintProperty (oldStrategyId, 'line-width', _settings.lineThickness.unselected);
 			} );
@@ -955,6 +960,9 @@ var routing = (function ($) {
 					// Show the route
 					routing.showRoute (_routeGeojson[strategy.id], strategy);
 					
+					// Set the selected strategy
+					_selectedStrategy = _settings.defaultStrategy;
+					
 					// Set the itinerary number permalink in the URL
 					var itineraryId = _routeGeojson[strategy.id].properties.id;
 					routing.updateUrl (itineraryId);
@@ -1199,9 +1207,9 @@ var routing = (function ($) {
 				closeOnClick: false,
 				className: 'strategypopup'
 			});
-
+			
 			// Add hover for each line; see: https://stackoverflow.com/questions/51039362/popup-for-a-line-in-mapbox-gl-js-requires-padding-or-approximate-mouse-over
-			_map.on ('mousemove', strategy.id, function (e) {
+			_map.on ('mousemove', strategy.id /* i.e. the ID of the element being hovered on */, function (e) {
 				_map.getCanvas ().style.cursor = 'pointer';
 				var coordinates = e.lngLat;
 				
@@ -1210,6 +1218,9 @@ var routing = (function ($) {
 				html += '<p><strong>' + routing.htmlspecialchars (strategy.label) + '</strong></p>';
 				html += '<p>' + routing.formatDuration (plan.time) + '<br />' + routing.formatDistance (plan.length) + '</p>';
 				html += '</div>'
+				
+				// Highlight the line with a thicker width
+				_map.setPaintProperty (strategy.id, 'line-width', _settings.lineThickness.selected);
 				
 				// Populate the popup and set its coordinates based on the feature found
 				popup.setLngLat (coordinates)
@@ -1221,6 +1232,11 @@ var routing = (function ($) {
 			_map.on ('mouseleave', strategy.id, function () {
 				_map.getCanvas ().style.cursor = '';
 				popup.remove ();
+				
+				// Reset the line width, if it is was not already the originally-selected (thick) line
+				if (strategy.id != _selectedStrategy) {
+					_map.setPaintProperty (strategy.id, 'line-width', _settings.lineThickness.unselected);
+				}
 			});
 		},
 		
