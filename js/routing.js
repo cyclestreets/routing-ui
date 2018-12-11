@@ -1151,6 +1151,9 @@ var routing = (function ($) {
 			// Add a hover popup giving a summary of the route details
 			routing.hoverPopup (strategy, geojson.properties.plans[strategy.id]);
 			
+			// Set the route line to be clickable, which makes it the selected route
+			routing.clickSelect (strategy.id);
+			
 			// Clear any existing markers
 			$.each (_markers, function (index, marker) {
 				marker.remove();
@@ -1220,7 +1223,7 @@ var routing = (function ($) {
 				className: 'strategypopup'
 			});
 			
-			// Add hover for each line; see: https://stackoverflow.com/questions/51039362/popup-for-a-line-in-mapbox-gl-js-requires-padding-or-approximate-mouse-over
+			// Add hover for this line; see: https://stackoverflow.com/questions/51039362/popup-for-a-line-in-mapbox-gl-js-requires-padding-or-approximate-mouse-over
 			_map.on ('mousemove', strategy.id /* i.e. the ID of the element being hovered on */, function (e) {
 				_map.getCanvas ().style.cursor = 'pointer';
 				var coordinates = e.lngLat;
@@ -1249,6 +1252,24 @@ var routing = (function ($) {
 				if (strategy.id != _selectedStrategy) {
 					_map.setPaintProperty (strategy.id, 'line-width', _settings.lineThickness.unselected);
 				}
+			});
+		},
+		
+		
+		// Function to set the route line to be clickable, which makes it the selected route
+		clickSelect: function (strategyId)
+		{
+			// For this line, set a handler when clicked on
+			_map.on ('click', strategyId, function (e) {
+				
+				// Set to be the selected strategy
+				_selectedStrategy = strategyId;
+				
+				// Set to the thicker line style
+				_map.setPaintProperty (strategyId, 'line-width', _settings.lineThickness.selected);
+				
+				// Switch to its tab
+				$('#results').tabs ('option', 'active', _routeIndexes[strategyId]);
 			});
 		},
 		
