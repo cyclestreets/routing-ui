@@ -1166,7 +1166,7 @@ var routing = (function ($) {
 			// Set the route line to be clickable, which makes it the selected route
 			routing.clickSelect (strategy.id);
 			
-			// Add markers; this is only done once (using the endpoints of the selected strategy), to avoid re-laying markers and setting handlers multiple times
+			// Add markers; this is only done once (using the exact endpoints of the selected strategy), to avoid re-laying markers and setting handlers multiple times
 			if (strategy.id == _selectedStrategy) {
 				routing.addRouteMarkers (geojson);
 			}
@@ -1395,11 +1395,14 @@ var routing = (function ($) {
 				.setPopup( new mapboxgl.Popup({ offset: 25 }).setHTML(text) )
 				.addTo(_map);
 			
+			// Perform a reverse geocoding of the marker location initially and when moved
+			routing.reverseGeocode (coordinates, waypointNumber);
+			marker.on ('dragend', function (e) {
+				routing.reverseGeocode (e.target._lngLat, waypointNumber);
+			});
+			
 			// Register the marker
 			_markers.push (marker);
-			
-			// Perform a reverse geocoding of the location
-			routing.reverseGeocode (coordinates, waypointNumber);
 		},
 		
 		
