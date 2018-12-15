@@ -854,7 +854,7 @@ var routing = (function ($) {
 			// Define the icons, using Unicode emojis
 			var icons = {
 				'walking': '&#x1f6b6',	// https://emojipedia.org/pedestrian/
-				'cycling': '&#x1f697',	// https://emojipedia.org/bicycle/
+				'cycling': '&#x1f6b2',	// https://emojipedia.org/bicycle/
 				'driving': '&#x1f697',	// https://emojipedia.org/automobile/
 				'railway': '&#xf683',	// https://emojipedia.org/railway-car/
 				'horse':   '&#x1f40e',	// https://emojipedia.org/horse/
