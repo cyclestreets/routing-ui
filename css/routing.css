@@ -9,7 +9,7 @@
 .mapboxgl-ctrl-group.local ul li {padding: 0; margin: 0; font-size: 1em;}
 .mapboxgl-ctrl-group.local a {color: black;}
 #clearroute {display: block; text-align: right;}
-#routeplanning {width: 250px; background-color: #ddd;}
+#routeplanning {width: 300px; background-color: #ddd;}
 #routeplanning input {width: 95%;}
 
 /* Geocoder */
