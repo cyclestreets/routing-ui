@@ -291,6 +291,7 @@ var routing = (function ($) {
 			$('#panning').on ('click', function () {
 				_panningEnabled = !_panningEnabled;
 				routing.setPanningIndicator ();
+				satnav.setPanningEnabled (_panningEnabled);
 				
 				// Switch to top-down view when not enabled
 				if (!_panningEnabled) {

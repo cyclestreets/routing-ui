@@ -170,6 +170,13 @@ var satnav = (function ($) {
 		},
 		
 		
+		// Setter for panningEnabled
+		setPanningEnabled: /* public */ function (panningEnabled)
+		{
+			_panningEnabled = panningEnabled;
+		},
+		
+		
 		// Buildings layer
 		// https://www.mapbox.com/mapbox-gl-js/example/3d-buildings/
 		addBuildings: function ()
