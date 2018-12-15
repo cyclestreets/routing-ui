@@ -981,6 +981,11 @@ var routing = (function ($) {
 						result = routing.osrmToGeojson (result, strategy.id);
 					}
 					
+					// For a single CycleStreets route, emulate /properties/plans present in the multiple route type
+					if (!result.properties.plans) {
+						result = routing.emulatePropertiesPlans (result, strategy.id);
+					}
+					
 					// Register the GeoJSON to enable the state to persist between map layer changes and to set that the route is loaded
 					_routeGeojson[strategy.id] = result;
 					
@@ -1109,6 +1114,33 @@ var routing = (function ($) {
 			
 			// Return the result
 			return geojson;
+		},
+		
+		
+		// Function to emulate /properties/plans present in the multiple route type but not the single type
+		// #!# Needs to be fixed in the API V2 format
+		emulatePropertiesPlans: function (result, strategyId)
+		{
+			// Find the relevant feature
+			var findPath = 'plan/' + strategyId;
+			var planIndex = false;
+			$.each (result.features, function (index, feature) {
+				if (feature.properties.path == findPath) {
+					planIndex = index;
+					return;	// i.e. break
+				}
+			});
+			
+			// Assemble the plan summaries
+			var plans = {};
+			plans[strategyId] = {		// Cannot be assigned directly in the array below; see https://stackoverflow.com/questions/11508463/javascript-set-object-key-by-variable
+				length: result.features[planIndex].properties.lengthMetres,
+				time: result.features[planIndex].properties.timeSeconds
+			};
+			result.properties.plans = plans;
+			
+			// Return the result
+			return result;
 		},
 		
 		
