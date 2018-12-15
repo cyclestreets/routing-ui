@@ -38,6 +38,11 @@ h3.right {float: right;}
 .strategypopup .details p {padding: 0; margin: 0 0 5px;}
 .travelmode {font-size: 1.3em;}
 
+/* Table style */
+table.lines {border-collapse: collapse;}
+.lines td, .lines th {border-bottom: 1px solid #e9e9e9; padding: 6px 4px 2px; vertical-align: top; text-align: left;}
+.lines tr:first-child {border-top: 1px solid #e9e9e9;}
+
 /* Turns - copied from OSRM */
 .turnsicons {background-image: url('../images/turns/turns.svg'); -webkit-background-size: 455px 20px; background-size: 455px 20px; background-repeat: no-repeat; margin: 0; content: ''; display: inline-block; vertical-align: top; width: 20px; height: 20px; opacity: 0.5;}
 .turnsicon-continue         {background-position: 2px 0px;}
