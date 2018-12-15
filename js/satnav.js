@@ -34,8 +34,35 @@ var satnav = (function ($) {
 		// BBOX for autocomplete results biasing
 		autocompleteBbox: '-6.6577,49.9370,1.7797,57.6924',
 		
-		// Default style
-		defaultStyle: 'OpenCycleMap'
+		// Tileservers; historical map sources are listed at: https://wiki.openstreetmap.org/wiki/National_Library_of_Scotland
+		// Raster styles; see: https://www.mapbox.com/mapbox-gl-js/example/map-tiles/
+		// NB If using only third-party sources, a Mapbox API key is not needed: see: https://github.com/mapbox/mapbox-gl-native/issues/2996#issuecomment-155483811
+		defaultStyle: 'opencyclemap',
+		tileUrls: {
+			"streets": {
+				vectorTiles: 'mapbox://styles/mapbox/streets-v9',
+				label: 'Streets',
+			},
+			"bright": {
+				vectorTiles: 'mapbox://styles/mapbox/bright-v9',
+				label: 'Bright',
+			},
+			"dark": {
+				vectorTiles: 'mapbox://styles/mapbox/dark-v9',
+				label: 'Night',
+			},
+			"satellite": {
+				vectorTiles: 'mapbox://styles/mapbox/satellite-v9',
+				label: 'Satellite',
+			},
+			"opencyclemap": {
+				tiles: 'https://{s}.tile.cyclestreets.net/opencyclemap/{z}/{x}/{y}.png',
+				maxZoom: 22,
+				attribution: 'Maps © <a href="https://www.thunderforest.com/">Thunderforest</a>, Data © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
+				tileSize: 256,
+				label: 'OpenCycleMap'
+			}
+		}
 	};
 	
 	// Internal class properties
@@ -258,40 +285,54 @@ var satnav = (function ($) {
 		// Define styles
 		getStyles: function ()
 		{
-			// Define the available background styles
-			_styles = {
+			// Register each tileset
+			$.each (_settings.tileUrls, function (tileLayerId, tileLayerAttributes) {
 				
-				// Mapbox vector styles
-				"streets": 'mapbox://styles/mapbox/streets-v9',
-				"bright": 'mapbox://styles/mapbox/bright-v9',
-				"dark": 'mapbox://styles/mapbox/dark-v9',
-				"satellite": 'mapbox://styles/mapbox/satellite-v9',
-				
-				// Raster styles; see: https://www.mapbox.com/mapbox-gl-js/example/map-tiles/
-				// NB If using only third-party sources, a Mapbox API key is not needed: see: https://github.com/mapbox/mapbox-gl-native/issues/2996#issuecomment-155483811
-				"OpenCycleMap": {
-					"version": 8,
-					"sources": {
-						"simple-tiles": {
+				// Vector tiles
+				if (tileLayerAttributes.vectorTiles) {
+					_styles[tileLayerId] = tileLayerAttributes.vectorTiles;
+					
+				// Traditional bitmap tiles
+				} else {
+					
+					// Convert {s} server to a,b,c if present
+					if (tileLayerAttributes.tiles.indexOf('{s}') != -1) {
+						tileLayerAttributes.tiles = [
+							tileLayerAttributes.tiles.replace ('{s}', 'a'),
+							tileLayerAttributes.tiles.replace ('{s}', 'b'),
+							tileLayerAttributes.tiles.replace ('{s}', 'c')
+						]
+					}
+					
+					// Convert string (without {s}) to array
+					if (typeof tileLayerAttributes.tiles === 'string') {
+						tileLayerAttributes.tiles = [
+							tileLayerAttributes.tiles
+						]
+					}
+					
+					// Register the definition
+					_styles[tileLayerId] = {
+						"version": 8,
+						"sources": {
+							"raster-tiles": {
+								"type": "raster",
+								"tiles": tileLayerAttributes.tiles,
+								"tileSize": (tileLayerAttributes.tileSize ? tileLayerAttributes.tileSize : 256),	// NB Mapbox GL default is 512
+								"attribution": tileLayerAttributes.attribution
+							}
+						},
+						"layers": [{
+							"id": "simple-tiles",
 							"type": "raster",
-							"tiles": [
-								"https://a.tile.cyclestreets.net/opencyclemap/{z}/{x}/{y}.png",
-								"https://b.tile.cyclestreets.net/opencyclemap/{z}/{x}/{y}.png",
-								"https://c.tile.cyclestreets.net/opencyclemap/{z}/{x}/{y}.png",
-							],
-							"tileSize": 256,
-							"attribution": 'Maps © <a href="https://www.thunderforest.com/">Thunderforest</a>, Data © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'
-						}
-					},
-					"layers": [{
-						"id": "simple-tiles",
-						"type": "raster",
-						"source": "simple-tiles",
-						"minzoom": 0,
-						"maxzoom": 22
-					}]
+							"source": "raster-tiles",
+							"minzoom": 0,
+							// #!# Something is causing maxzoom not to be respected
+							"maxzoom": (tileLayerAttributes.maxZoom ? tileLayerAttributes.maxZoom : 22)
+						}]
+					};
 				}
-			}
+			});
 		},
 		
 		
@@ -302,12 +343,12 @@ var satnav = (function ($) {
 		{
 			// Add layer switcher UI
 			var control = this.createControl ('layerswitcher', 'bottom-left');
-
+			
 			// Construct HTML for layer switcher
 			var layerSwitcherHtml = '<ul>';
 			var name;
 			$.each (_styles, function (styleId, style) {
-				name = satnav.ucfirst (styleId);
+				name = (_settings.tileUrls[styleId].label ? _settings.tileUrls[styleId].label : satnav.ucfirst (styleId));
 				layerSwitcherHtml += '<li><input id="' + styleId + '" type="radio" name="layerswitcher" value="' + styleId + '"' + (styleId == _settings.defaultStyle ? ' checked="checked"' : '') + '><label for="' + styleId + '"> ' + name + '</label></li>';
 			});
 			layerSwitcherHtml += '</ul>';
@@ -320,10 +361,32 @@ var satnav = (function ($) {
 				var layerId = layer.target.id;
 				var style = _styles[layerId];
 				_map.setStyle (style);
+				
+				// Fire an event; see: https://javascript.info/dispatch-events
+				satnav.styleChanged ();
 			};
 			for (var i = 0; i < inputs.length; i++) {
 				inputs[i].onclick = switchLayer;
 			}
+		},
+		
+		
+		// Function to trigger style changed, checking whether it is actually loading; see: https://stackoverflow.com/a/47313389/180733
+		// Cannot use _map.on(style.load) directly, as that does not fire when loading a raster after another raster: https://github.com/mapbox/mapbox-gl-js/issues/7579
+		styleChanged: function ()
+		{
+			// Delay for 200 minutes in a loop until the style is loaded; see: https://stackoverflow.com/a/47313389/180733
+			if (!_map.isStyleLoaded()) {
+				setTimeout (function () {
+					satnav.styleChanged ();	// Done inside a function to avoid "Maximum Call Stack Size Exceeded"
+				}, 250);
+				return;
+			}
+			
+			// Fire a custom event that client code can pick up when the style is changed
+			var body = document.getElementsByTagName ('body')[0];
+			var myEvent = new Event ('style-changed', {'bubbles': true});
+			body.dispatchEvent (myEvent);
 		},
 		
 		
