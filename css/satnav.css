@@ -13,3 +13,6 @@ body, input, textarea {font-family: 'Raleway', Arial, Helvetica, sans-serif; fon
 .ui-autocomplete li a span {color: gray; font-size: 0.81em;}
 .ui-autocomplete li a.ui-state-active {cursor: pointer; background-color: #f7f7f7;}
 
+/* Markers */
+body .itinerarymarker {width: 22px; height: 43px;}
+

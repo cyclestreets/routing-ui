@@ -62,6 +62,13 @@ var satnav = (function ($) {
 				tileSize: 256,
 				label: 'OpenCycleMap'
 			}
+		},
+		
+		// Images; size set in CSS with .itinerarymarker
+		images: {
+			start: '/images/wisps/start.png',
+			waypoint: '/images/wisps/waypoint.png',
+			finish: '/images/wisps/finish.png'
 		}
 	};
 	
