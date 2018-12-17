@@ -1220,8 +1220,7 @@ var routing = (function ($) {
 					
 					// Construct the marker attributes
 					var text;
-					var waypointNumber = parseInt (feature.properties.path.replace ('waypoint/', ''));	// E.g.'waypoint/1' becomes 1
-					switch (waypointNumber) {
+					switch (feature.properties.number) {
 						case 1: text = geojson.properties.start; break;
 						case totalWaypoints: text = geojson.properties.finish; break;
 						default: text = false; break;
@@ -1229,7 +1228,7 @@ var routing = (function ($) {
 					var coordinates = {lng: feature.geometry.coordinates[0], lat: feature.geometry.coordinates[1]};
 					
 					// Add the marker
-					routing.addWaypointMarker (coordinates, waypointNumber, text, totalWaypoints);
+					routing.addWaypointMarker (coordinates, feature.properties.number, text, totalWaypoints);
 				}
 			});
 			
