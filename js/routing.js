@@ -1209,14 +1209,14 @@ var routing = (function ($) {
 			// Determine the number of waypoints
 			var totalWaypoints = 0;
 			$.each (geojson.features, function (index, feature) {
-				if (feature.properties.hasOwnProperty ('markerTag')) {
+				if (feature.properties.path.match (/^waypoint/)) {
 					totalWaypoints++;
 				}
 			});
 			
 			// Add the marker for each point
 			$.each (geojson.features, function (index, feature) {
-				if (feature.geometry.type == 'Point') {	// Apply only to points
+				if (feature.properties.path.match (/^waypoint/)) {
 					
 					// Construct the marker attributes
 					var text;
