@@ -1045,8 +1045,6 @@ var routing = (function ($) {
 				properties: {
 					path: 'plan/' + strategy,
 					plan: strategy,
-					elevationsMetresCsv: null,
-					distancesMetresCsv: null,
 					lengthMetres: osrm.routes[0].distance,
 					timeSeconds: osrm.routes[0].duration
 				},
@@ -1065,26 +1063,15 @@ var routing = (function ($) {
 					properties: {
 						path: 'plan/' + strategy + '/street/' + (index + 1),
 						number: (index + 1),
-						legNumber: (index + 1),
 						name: step.name,
 						distanceMetres: step.distance,
 						durationSeconds: step.duration,
-						busynanceMetres: -1,			// Not available in OSRM
-						balancederMetres: -1,			// Not available in OSRM
 						ridingSurface: '',				// Not available in OSRM
 						color: '',						// Not available in OSRM
 						travelMode: step.mode,
-						elevationsMetresCsv: '',		// Not available in OSRM
-						distancesMetresCsv: '',			// Not available in OSRM
 						signalledJunctions: step.intersections.length,
 						signalledCrossings: -1,			// Not available in OSRM
-						hurdleTypeCsv: '',				// Not available in OSRM
-						hurdleTypeIdCsv: '',			// Not available in OSRM
-						startBearing: step.maneuver.bearing_before,
-						finishBearing: step.maneuver.bearing_after,
-						turnPrevAngle: -1,				// Not available in OSRM
-						turnPrevText: '',				// Not available in OSRM
-						photosEnRouteCsv: ''			// Not available in OSRM
+						startBearing: step.maneuver.bearing_before
 					},
 					geometry: step.geometry	// Already in GeoJSON coordinates format
 				});
