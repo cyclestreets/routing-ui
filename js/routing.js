@@ -1220,10 +1220,10 @@ var routing = (function ($) {
 					
 					// Construct the marker attributes
 					var text;
-					switch (feature.properties.number) {
-						case 1: text = geojson.properties.start; break;
-						case totalWaypoints: text = geojson.properties.finish; break;
-						default: text = false; break;
+					switch (feature.properties.markerTag) {
+						case 'start'       : text = geojson.properties.start;  break;
+						case 'finish'      : text = geojson.properties.finish; break;
+						case 'intermediate': text = false;                     break;
 					}
 					var coordinates = {lng: feature.geometry.coordinates[0], lat: feature.geometry.coordinates[1]};
 					
