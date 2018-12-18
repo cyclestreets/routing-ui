@@ -112,7 +112,10 @@ var routing = (function ($) {
 		lineThickness: {
 			selected: 8,
 			unselected: 3
-		}
+		},
+		
+		// Whether to show all route line results or just the currently-selected
+		showAllRoutes: true
 	};
 	
 	// Internal class properties
@@ -160,6 +163,11 @@ var routing = (function ($) {
 			
 			// Create an index of strategies to tab index
 			routing.loadRouteIndexes ();
+			
+			// If not showing all routes, set the line thickness to zero, so that it is does not display, but leave all other interaction in place
+			if (!_settings.showAllRoutes) {
+				_settings.lineThickness.unselected = 0;
+			}
 			
 			// Load route from URL if present
 			routing.loadRouteInitialUrl ();
@@ -1106,11 +1114,15 @@ var routing = (function ($) {
 			};
 			_map.addLayer (layer);
 			
-			// Add a hover popup giving a summary of the route details
-			routing.hoverPopup (strategy, geojson.properties.plans[strategy.id]);
+			// Add a hover popup giving a summary of the route details, unless only one route is set to be shown at a time
+			if (_settings.showAllRoutes) {
+				routing.hoverPopup (strategy, geojson.properties.plans[strategy.id]);
+			}
 			
-			// Set the route line to be clickable, which makes it the selected route
-			routing.clickSelect (strategy.id);
+			// Set the route line to be clickable, which makes it the selected route, unless only one route is set to be shown at a time
+			if (_settings.showAllRoutes) {
+				routing.clickSelect (strategy.id);
+			}
 			
 			// Add markers; this is only done once (using the exact endpoints of the selected strategy), to avoid re-laying markers and setting handlers multiple times
 			if (strategy.id == _selectedStrategy) {
