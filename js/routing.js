@@ -826,14 +826,14 @@ var routing = (function ($) {
 			html += '<h3>' + routing.formatDistance (geojson.properties.plans[strategy].length) + '</h3>';
 			
 			// Loop through each feature
-			html += '<table class="itinerary lines">';
+			html += '<table class="itinerary lines strategy-' + strategy + '">';
 			$.each (geojson.features, function (index, feature) {
 				
 				// Skip non-streets
 				if (!feature.properties.path.match (/street/)) {return 'continue';}
 				
 				// Add this row
-				html += '<tr>';
+				html += '<tr data-feature="' + index + '">';
 				html += '<td class="travelmode">' + routing.travelModeIcon (feature.properties.travelMode, strategy) + '</td>';
 				html += '<td>' + routing.turnsIcon (feature.properties.startBearing) + '</td>';
 				html += '<td><strong>' + routing.htmlspecialchars (feature.properties.name) + '</strong></td>';
@@ -846,6 +846,32 @@ var routing = (function ($) {
 			
 			// Set the content in the tab pane, overwriting any previous content
 			$('#itineraries #' + strategy).html (html);
+			
+			// If a table row is clicked on, zoom to that section of the route (for that strategy)
+			$('#itineraries table.strategy-' + strategy).on('click', 'tr', function (e) {
+				var feature = e.currentTarget.dataset.feature;
+				var boundingBox = routing.getBoundingBox (geojson.features[feature].geometry.coordinates);
+				_map.fitBounds (boundingBox, {maxZoom: 14});	// Bounding box version of flyTo
+			});
+		},
+		
+		
+		// Function to determine the bounding box for a feature; see: https://stackoverflow.com/a/35685551/180733
+		getBoundingBox: function (coordinates)
+		{
+			// Loop through the coordinates
+			var bounds = {}, latitude, longitude;
+			for (var j = 0; j < coordinates.length; j++) {
+				longitude = coordinates[j][0];
+				latitude = coordinates[j][1];
+				bounds.w = bounds.w < longitude ? bounds.w : longitude;
+				bounds.e = bounds.e > longitude ? bounds.e : longitude;
+				bounds.s = bounds.s < latitude ? bounds.s : latitude;
+				bounds.n = bounds.n > latitude ? bounds.n : latitude;
+			}
+			
+			// Return the bounds, in LngLatBoundsLike format; see: https://www.mapbox.com/mapbox-gl-js/api/#lnglatboundslike
+			return [bounds.w, bounds.s, bounds.e, bounds.n];
 		},
 		
 		

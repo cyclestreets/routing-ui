@@ -31,6 +31,7 @@
 #routeplanning #results.ui-tabs ul#strategies .ui-tabs-active {background-color: #eee;}
 #routeplanning #results.ui-tabs #itineraries {height: 500px; overflow-y: auto;}
 #routeplanning #results.ui-tabs .ui-tabs-panel {padding: 15px 10px;}
+table.itinerary tr {cursor: zoom-in;}
 h3 {color: #603;}
 h3.right {float: right;}
 .strategypopup {max-width: 100px; max-height: 80px;}
