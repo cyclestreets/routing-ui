@@ -1,7 +1,7 @@
 // Route planning / satnav user interface
 
 /*jslint browser: true, white: true, single: true, for: true */
-/*global $, alert, console, window, mapboxgl */
+/*global $, jQuery, alert, console, window, confirm, prompt, mapboxgl, autocomplete */
 
 
 /*
@@ -147,7 +147,7 @@ var routing = (function ($) {
 			
 			// Set the initial default strategy, checking for a cookie from a previous page load
 			var strategyCookie = routing.getCookie ('selectedstrategy');
-			_selectedStrategy = (strategyCookie ? strategyCookie : _settings.defaultStrategy);
+			_selectedStrategy = strategyCookie || _settings.defaultStrategy;
 			
 			// Add toolbox (pending implementation of overall UI)
 			routing.toolbox ();
@@ -179,25 +179,25 @@ var routing = (function ($) {
 		// See: https://www.mapbox.com/mapbox-gl-js/api/#icontrol
 		createControl: function (id, position)
 		{
-			function HelloWorldControl() { }
+			var myControl = function () {};
 			
-			HelloWorldControl.prototype.onAdd = function(_map) {
-				this._map = map;
-				this._container = document.createElement('div');
-				this._container.setAttribute ('id', id);
-				this._container.className = 'mapboxgl-ctrl-group mapboxgl-ctrl local';
-				return this._container;
+			myControl.prototype.onAdd = function(_map) {
+				this.map = map;
+				this.container = document.createElement('div');
+				this.container.setAttribute ('id', id);
+				this.container.className = 'mapboxgl-ctrl-group mapboxgl-ctrl local';
+				return this.container;
 			};
 			
-			HelloWorldControl.prototype.onRemove = function () {
-				this._container.parentNode.removeChild(this._container);
-				this._map = undefined;
+			myControl.prototype.onRemove = function () {
+				this.container.parentNode.removeChild (this.container);
+				delete this.map;
 			};
 			
 			// #!# Need to add icon and hover; partial example at: https://github.com/schulzsebastian/mapboxgl-legend/blob/master/index.js
 			
 			// Instiantiate and add the control
-			_map.addControl (new HelloWorldControl (), position);
+			_map.addControl (new myControl (), position);
 		},
 		
 		
@@ -393,24 +393,27 @@ var routing = (function ($) {
 			var totalWaypoints = 2;
 			var waypointName;
 			var label;
-			for (var waypointNumber = 0; waypointNumber < totalWaypoints; waypointNumber++) {
+			var waypointNumber;
+			var input;
+			var point;
+			for (waypointNumber = 0; waypointNumber < totalWaypoints; waypointNumber++) {
 				
 				// Set the label
 				switch (waypointNumber) {
 					case 0: label = 'Start'; break;
 					case (totalWaypoints - 1): label = 'Finish'; break;
-					default: 'Waypoint';
+					default: label = 'Waypoint';
 				}
 				
 				// Create the input widget and attach a geocoder to it
 				waypointName = 'waypoint' + waypointNumber;
-				var input = '<p><input name="' + waypointName + '" type="search" placeholder="' + label + '" class="geocoder" /></p>';
+				input = '<p><input name="' + waypointName + '" type="search" placeholder="' + label + '" class="geocoder" /></p>';
 				$('#routeplanning').append (input);
 				routing.geocoder ('#routeplanning input[name="' + waypointName + '"]', function (item, callbackData) {
 					
 					// Fire a click on the map
 					// #!# Note that use of map.fire is now deprecated: https://gis.stackexchange.com/a/210289/58752
-					var point = _map.project ([item.lon, item.lat]);	// https://github.com/mapbox/mapbox-gl-js/issues/5060
+					point = _map.project ([item.lon, item.lat]);	// https://github.com/mapbox/mapbox-gl-js/issues/5060
 					_map.fire ('click', { lngLat: {lng: item.lon, lat: item.lat} }, point);
 					
 					// Move focus to next geocoder input box if present
@@ -430,7 +433,8 @@ var routing = (function ($) {
 			// Loop through each available slot
 			var waypointName;
 			var element;
-			for (var waypointNumber = 0; waypointNumber < totalWaypoints; waypointNumber++) {
+			var waypointNumber;
+			for (waypointNumber = 0; waypointNumber < totalWaypoints; waypointNumber++) {
 				
 				// Check if this geocoder input exists
 				waypointName = 'waypoint' + waypointNumber;
@@ -529,7 +533,7 @@ var routing = (function ($) {
 		
 		
 		// Function to load a route from specified waypoints, each containing a lng,lat pair
-		loadRouteFromWaypoints (waypoints)
+		loadRouteFromWaypoints: function (waypoints)
 		{
 			// Convert waypoints to strings
 			var waypointStrings = [];
@@ -638,11 +642,11 @@ var routing = (function ($) {
 			
 			// Assemble the result
 			var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-			return result ? {
+			return (result ? {
 				r: parseInt (result[1], 16),
 				g: parseInt (result[2], 16),
 				b: parseInt (result[3], 16)
-			} : null;
+			} : null);
 		},
 		
 		
@@ -794,8 +798,9 @@ var routing = (function ($) {
 			};
 			
 			// Return the substituted colour
-			if (typeof colours[colour.toLowerCase()] != 'undefined')
+			if (colours[colour.toLowerCase()] !== undefined) {
 				return colours[colour.toLowerCase()];
+			}
 			
 			// Else pass through as-is
 			return colour;
@@ -847,14 +852,17 @@ var routing = (function ($) {
 		getBoundingBox: function (coordinates)
 		{
 			// Loop through the coordinates
-			var bounds = {}, latitude, longitude;
-			for (var j = 0; j < coordinates.length; j++) {
+			var bounds = {};
+			var latitude;
+			var longitude;
+			var j;
+			for (j = 0; j < coordinates.length; j++) {
 				longitude = coordinates[j][0];
 				latitude = coordinates[j][1];
-				bounds.w = bounds.w < longitude ? bounds.w : longitude;
-				bounds.e = bounds.e > longitude ? bounds.e : longitude;
-				bounds.s = bounds.s < latitude ? bounds.s : latitude;
-				bounds.n = bounds.n > latitude ? bounds.n : latitude;
+				bounds.w = (bounds.w < longitude ? bounds.w : longitude);
+				bounds.e = (bounds.e > longitude ? bounds.e : longitude);
+				bounds.s = (bounds.s < latitude ? bounds.s : latitude);
+				bounds.n = (bounds.n > latitude ? bounds.n : latitude);
 			}
 			
 			// Return the bounds, in LngLatBoundsLike format; see: https://www.mapbox.com/mapbox-gl-js/api/#lnglatboundslike
@@ -885,15 +893,15 @@ var routing = (function ($) {
 		{
 			// Define the turns for each snapped bearing
 			var turns = {
-				0:		'continue',
-				45:		'bear-right',
-				90:		'turn-right',
-				135:	'sharp-right',
-				180:	'u-turn',
-				235:	'sharp-left',
-				290:	'turn-left',
-				335:	'bear-left',
-				360:	'continue',
+				'0':		'continue',
+				'45':		'bear-right',
+				'90':		'turn-right',
+				'135':	'sharp-right',
+				'180':	'u-turn',
+				'235':	'sharp-left',
+				'290':	'turn-left',
+				'335':	'bear-left',
+				'360':	'continue'
 			};
 			
 			// Find the closest; see: https://stackoverflow.com/a/19277804/180733
@@ -914,14 +922,15 @@ var routing = (function ($) {
 		formatDistance: function (metres)
 		{
 			// Convert Km
+			var result;
 			if (metres >= 1000) {
 				var km = metres / 1000;
-				var result = Number (km.toFixed(1)) + 'km';
+				result = Number (km.toFixed(1)) + 'km';
 				return result;
 			}
 			
 			// Round metres
-			var result = Number (metres.toFixed ()) + 'm';
+			result = Number (metres.toFixed ()) + 'm';
 			return result;
 		},
 		
@@ -930,16 +939,16 @@ var routing = (function ($) {
 		formatDuration: function (seconds)
 		{
 			// Calculate values; see: https://stackoverflow.com/a/16057667/180733
-			var days = Math.floor (seconds/86400);
+			var days = Math.floor (seconds / 86400);
 			var hours = Math.floor (((seconds / 86400) % 1) * 24);
 			var minutes = Math.floor (((seconds / 3600) % 1) * 60);
-			var seconds = Math.round (((seconds / 60) % 1) * 60);
+			seconds = Math.round (((seconds / 60) % 1) * 60);
 			
 			// Assemble the components
 			var components = [];
-			if (days) {components.push (days + ' ' + (days == 1 ? 'day' : 'days'))};
-			if (hours) {components.push (hours + 'h')};
-			if (minutes) {components.push (minutes + 'm')};
+			if (days) {components.push (days + ' ' + (days == 1 ? 'day' : 'days'));}
+			if (hours) {components.push (hours + 'h');}
+			if (minutes) {components.push (minutes + 'm');}
 			if (!components.length) {
 				components.push (seconds + 's');
 			}
@@ -1194,7 +1203,7 @@ var routing = (function ($) {
 				var html = '<div class="details" style="background-color: ' + strategy.lineColour + '">';
 				html += '<p><strong>' + routing.htmlspecialchars (strategy.label) + '</strong></p>';
 				html += '<p>' + routing.formatDuration (plan.time) + '<br />' + routing.formatDistance (plan.length) + '</p>';
-				html += '</div>'
+				html += '</div>';
 				
 				// Highlight the line with a thicker width
 				_map.setPaintProperty (strategy.id, 'line-width', _settings.lineThickness.selected);
@@ -1317,7 +1326,6 @@ var routing = (function ($) {
 				default:
 					image = _settings.images.waypoint;
 					text = 'Via: Waypoint #' + (waypointNumber - 1);	// #!# API needs to provide street location name
-					break;
 			}
 			
 			// Assemble the image as a DOM element
@@ -1396,8 +1404,10 @@ var routing = (function ($) {
 			var cname = name + '=';
 			var decodedCookie = decodeURIComponent (document.cookie);
 			var ca = decodedCookie.split (';');
-			for (var i = 0; i <ca.length; i++) {
-				var c = ca[i];
+			var i;
+			var c;
+			for (i = 0; i <ca.length; i++) {
+				c = ca[i];
 				while (c.charAt(0) == ' ') {
 					c = c.substring(1);
 				}
