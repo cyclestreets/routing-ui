@@ -78,7 +78,6 @@ var routing = (function ($) {
 				label: 'Fastest route',
 				parameters: {plans: 'fastest'},
 				lineColour: '#cc0000',
-				format: 'cyclestreets',
 				attribution: 'Routing by <a href="https://www.cyclestreets.net/">CycleStreets</a>'
 			},
 			{
@@ -86,7 +85,6 @@ var routing = (function ($) {
 				label: 'Balanced route',
 				parameters: {plans: 'balanced'},
 				lineColour: '#ffc200',
-				format: 'cyclestreets',
 				attribution: 'Routing by <a href="https://www.cyclestreets.net/">CycleStreets</a>'
 			},
 			{
@@ -94,10 +92,9 @@ var routing = (function ($) {
 				label: 'Quietest route',
 				parameters: {plans: 'quietest'},
 				lineColour: '#00cc00',
-				format: 'cyclestreets',
 				attribution: 'Routing by <a href="https://www.cyclestreets.net/">CycleStreets</a>'
 			}
-			/* OSRM example:
+			/* Other routing engine example:
 			,
 			{
 				id: 'routing',
@@ -105,7 +102,8 @@ var routing = (function ($) {
 				baseUrl: 'https://www.example.com/routing/',
 				parameters: {},
 				lineColour: '#336699',
-				format: 'osrm'
+				routeRequest: routeRequest,			// Name of callback function to be defined in calling code, to assemble the routing request URL, as "function routeRequest (waypointStrings, strategyBaseUrl, strategyParameters) {...; return url}"
+				geojsonConversion: outputToGeojson	// Name of callback function to be defined in calling code, to convert that engine's output to the CycleStreets GeoJSON format, as "function outputToGeojson (result, strategy) {...; return geojson}"
 			}
 			*/
 		],
@@ -549,34 +547,23 @@ var routing = (function ($) {
 			var url;
 			$.each (_settings.strategies, function (index, strategy) {
 				
-				// Construct the route request based on the format
-				switch (strategy.format) {
+				// If another routing engine is defined, define the request URL
+				if (strategy.routeRequest) {
+					url = strategy.routeRequest (waypointStrings, strategy.baseUrl, strategy.parameters);
 					
-					// CycleStreets API V2
-					case 'cyclestreets':
-						parameters = $.extend (true, {}, strategy.parameters);	// i.e. clone
-						parameters.key = _settings.cyclestreetsApiKey;
-						parameters.waypoints = waypointStrings.join ('|');
-						parameters.archive = 'full';
-						parameters.itineraryFields = 'id,start,finish,waypointCount';
-						url = _settings.cyclestreetsApiBaseUrl + '/v2/journey.plan' + '?' + $.param (parameters, false);
-						break;
-						
-					// OSRM (V5+)
-					case 'osrm':
-						parameters = $.extend (true, {}, strategy.parameters);	// i.e. clone
-						parameters.alternatives = 'false';
-						parameters.overview = 'full';
-						parameters.steps = 'true';
-						parameters.geometries = 'geojson';
-						var waypoints = waypointStrings.join (';');
-						url = strategy.baseUrl + '/' + waypoints + '?' + $.param (parameters, false);
-						break;
+				// Otherwise use the standard CycleStreets implementation
+				} else {
+					parameters = $.extend (true, {}, strategy.parameters);	// i.e. clone
+					parameters.key = _settings.cyclestreetsApiKey;
+					parameters.waypoints = waypointStrings.join ('|');
+					parameters.archive = 'full';
+					parameters.itineraryFields = 'id,start,finish,waypointCount';
+					url = _settings.cyclestreetsApiBaseUrl + '/v2/journey.plan' + '?' + $.param (parameters, false);
 				}
 				
 				// Load the route
 				//console.log (url);
-				routing.loadRoute (url, strategy.format, strategy);
+				routing.loadRoute (url, strategy);
 			});
 		},
 		
@@ -981,7 +968,7 @@ var routing = (function ($) {
 				url = _settings.cyclestreetsApiBaseUrl + '/v2/journey.retrieve' + '?' + $.param (parameters, false);
 				
 				// Load the route
-				routing.loadRoute (url, 'cyclestreets', strategy);
+				routing.loadRoute (url, strategy);
 			});
 			
 			// Add results tabs
@@ -990,7 +977,7 @@ var routing = (function ($) {
 		
 		
 		// Function to load a route over AJAX
-		loadRoute: function (url, format, strategy)
+		loadRoute: function (url, strategy)
 		{
 			// Load over AJAX; see: https://stackoverflow.com/a/48655332/180733
 			$.ajax({
@@ -1004,9 +991,9 @@ var routing = (function ($) {
 						return;
 					}
 					
-					// For OSRM format, convert to (emulate) the CycleStreets GeoJSON format
-					if (format == 'osrm') {
-						result = routing.osrmToGeojson (result, strategy.id);
+					// If another routing engine is defined, convert its output format to emulate the CycleStreets GeoJSON format
+					if (strategy.geojsonConversion) {
+						result = strategy.geojsonConversion (result, strategy.id);
 					}
 					
 					// For a single CycleStreets route, emulate /properties/plans present in the multiple route type
@@ -1032,103 +1019,6 @@ var routing = (function ($) {
 					console.log (errorThrown);
 				}
 			});
-		},
-		
-		
-		// Function to convert an OSRM route result to the CycleStreets GeoJSON format
-		// OSRM format: https://github.com/Project-OSRM/osrm-backend/blob/master/docs/http.md
-		// CycleStreets format: https://www.cyclestreets.net/api/v2/journey.plan/
-		osrmToGeojson: function (osrm, strategy)
-		{
-			// Determine the number of waypoints
-			var totalWaypoints = osrm.waypoints.length;
-			var lastWaypoint = totalWaypoints - 1;
-			
-			// Start the features list
-			var features = [];
-			
-			// First, add each waypoint as a feature
-			var waypointNumber;
-			$.each (osrm.waypoints, function (index, waypoint) {
-				waypointNumber = index + 1;
-				features.push ({
-					type: 'Feature',
-					properties: {
-						path: 'waypoint/' + waypointNumber,
-						number: waypointNumber,
-						markerTag: (waypointNumber == 1 ? 'start' : (waypointNumber == totalWaypoints ? 'finish' : 'intermediate'))
-					},
-					geometry: {
-						type: 'Point',
-						coordinates: waypoint.location	// Already present as [lon, lat]
-					}
-				});
-			});
-			
-			// Next, add the full route, facilitated using overview=full
-			features.push ({
-				type: 'Feature',
-				properties: {
-					path: 'plan/' + strategy,
-					plan: strategy,
-					lengthMetres: osrm.routes[0].distance,
-					timeSeconds: osrm.routes[0].duration
-				},
-				geometry: osrm.routes[0].geometry	// Already in GeoJSON coordinates format
-			});
-			
-			// Next, add each step
-			$.each (osrm.routes[0].legs[0].steps, function (index, step) {
-				
-				// Skip final arrival node
-				if (step.maneuver.type == 'arrive') {return 'continue;'}
-				
-				// Add the feature
-				features.push ({
-					type: 'Feature',
-					properties: {
-						path: 'plan/' + strategy + '/street/' + (index + 1),
-						number: (index + 1),
-						name: step.name,
-						distanceMetres: step.distance,
-						durationSeconds: step.duration,
-						ridingSurface: '',				// Not available in OSRM
-						color: '',						// Not available in OSRM
-						travelMode: step.mode,
-						signalledJunctions: step.intersections.length,
-						signalledCrossings: -1,			// Not available in OSRM
-						startBearing: step.maneuver.bearing_before
-					},
-					geometry: step.geometry	// Already in GeoJSON coordinates format
-				});
-			});
-			
-			// Assemble the plan summaries
-			var plans = {};
-			plans[strategy] = {		// Cannot be assigned directly in the array below; see https://stackoverflow.com/questions/11508463/javascript-set-object-key-by-variable
-				length: osrm.routes[0].distance,
-				time: osrm.routes[0].duration
-				// Others not yet added, e.g. signalledJunctions, signalledCrossings, etc.
-			};
-			
-			// Assemble the GeoJSON structure
-			var geojson = {
-				type: 'FeatureCollection',
-				properties: {
-					id: null,							// Not available in OSRM
-					start: osrm.waypoints[0].name,
-					finish: osrm.waypoints[lastWaypoint].name,
-					waypointCount: totalWaypoints,
-					plans: plans
-				},
-				features: features
-			};
-			
-			//console.log (geojson);
-			//console.log (JSON.stringify (geojson));
-			
-			// Return the result
-			return geojson;
 		},
 		
 		
