@@ -521,21 +521,22 @@ var routing = (function ($) {
 				// Add the waypoint marker
 				routing.addWaypointMarker (waypoint);
 				
-				// Once there are two waypoints, load the route
-				if (_waypoints.length == 2) {
-					routing.loadRouteFromWaypoints (_waypoints);
-				}
+				// Load the route if it is plannable, i.e. once there are two waypoints
+				routing.plannable ();
 			});
 		},
 		
 		
-		// Function to load a route from specified waypoints, each containing a lng,lat pair
-		loadRouteFromWaypoints: function (waypoints)
+		// Function to load a route if it is plannable from the registered waypoints, each containing a lng,lat,label collection
+		plannable: function ()
 		{
+			// End if the route is not yet plannable
+			if (_waypoints.length != 2) {return;}
+			
 			// Convert waypoints to strings
 			var waypointStrings = [];
 			var waypointString;
-			$.each (waypoints, function (index, waypoint) {
+			$.each (_waypoints, function (index, waypoint) {
 				waypointString = parseFloat(waypoint.lng).toFixed(6) + ',' + parseFloat(waypoint.lat).toFixed(6);
 				waypointStrings.push (waypointString);
 			});
@@ -1168,8 +1169,8 @@ var routing = (function ($) {
 						// Remove the route for each strategy
 						routing.removeRoute ();
 						
-						// Load the route from the waypoints
-						routing.loadRouteFromWaypoints (_waypoints);
+						// Load the route if it is plannable, i.e. once there are two waypoints
+						routing.plannable ();
 						
 						// Remove the current handler and the other handlers for the other markers
 						// See: https://stackoverflow.com/questions/21415897/removing-a-jquery-event-handler-while-inside-the-event-handler
