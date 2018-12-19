@@ -519,12 +519,8 @@ var routing = (function ($) {
 				waypoints.push (e.lngLat);
 				totalWaypoints = waypoints.length;
 				
-				// Obtain the label
-				// #!# Replace to using nearestpoint
-				var label = (totalWaypoints == 1 ? 'Start' : 'Finish');
-				
 				// Add the waypoint marker
-				routing.addWaypointMarker (e.lngLat, totalWaypoints, label, totalWaypoints);
+				routing.addWaypointMarker (e.lngLat, totalWaypoints, null, totalWaypoints);
 				
 				// Once there are two waypoints, load the route
 				if (totalWaypoints == 2) {
@@ -1317,6 +1313,12 @@ var routing = (function ($) {
 		// Unfortunately Mapbox GL makes this much more difficult than Leaflet.js and has to be done at DOM level; see: https://github.com/mapbox/mapbox-gl-js/issues/656
 		addWaypointMarker: function (coordinates, waypointNumber, label, totalWaypoints)
 		{
+			// Auto-assign label if required
+			// #!# Replace to using nearestpoint
+			if (label == null) {
+				label = (totalWaypoints == 1 ? 'Start' : 'Finish');
+			}
+			
 			// Determine the image and text to use
 			var image;
 			var text;
