@@ -516,11 +516,12 @@ var routing = (function ($) {
 				if (!$.isEmptyObject (_routeGeojson)) {return;}
 				
 				// Register the waypoint
+				var waypoint = {lng: e.lngLat.lng, lat: e.lngLat.lat, label: null /* i.e. determine automatically */};
 				waypoints.push (e.lngLat);
 				totalWaypoints = waypoints.length;
 				
 				// Add the waypoint marker
-				routing.addWaypointMarker (e.lngLat, totalWaypoints, null, totalWaypoints);
+				routing.addWaypointMarker (waypoint, totalWaypoints, totalWaypoints);
 				
 				// Once there are two waypoints, load the route
 				if (totalWaypoints == 2) {
@@ -1152,10 +1153,10 @@ var routing = (function ($) {
 						case 'finish'      : label = geojson.properties.finish; break;
 						case 'intermediate': label = false;                     break;
 					}
-					var coordinates = {lng: feature.geometry.coordinates[0], lat: feature.geometry.coordinates[1]};
+					var waypoint = {lng: feature.geometry.coordinates[0], lat: feature.geometry.coordinates[1], label: label};
 					
 					// Add the marker
-					routing.addWaypointMarker (coordinates, feature.properties.number, label, totalWaypoints);
+					routing.addWaypointMarker (waypoint, feature.properties.number, totalWaypoints);
 				}
 			});
 			
@@ -1311,12 +1312,12 @@ var routing = (function ($) {
 		
 		// Function to add a waypoint marker
 		// Unfortunately Mapbox GL makes this much more difficult than Leaflet.js and has to be done at DOM level; see: https://github.com/mapbox/mapbox-gl-js/issues/656
-		addWaypointMarker: function (coordinates, waypointNumber, label, totalWaypoints)
+		addWaypointMarker: function (waypoint, waypointNumber, totalWaypoints)
 		{
 			// Auto-assign label if required
 			// #!# Replace to using nearestpoint
-			if (label == null) {
-				label = (totalWaypoints == 1 ? 'Start' : 'Finish');
+			if (waypoint.label == null) {
+				waypoint.label = (totalWaypoints == 1 ? 'Start' : 'Finish');
 			}
 			
 			// Determine the image and text to use
@@ -1325,11 +1326,11 @@ var routing = (function ($) {
 			switch (waypointNumber) {
 				case 1:
 					image = _settings.images.start;
-					text = 'Start at: <strong>' + routing.htmlspecialchars (label) + '</strong>';
+					text = 'Start at: <strong>' + routing.htmlspecialchars (waypoint.label) + '</strong>';
 					break;
 				case totalWaypoints:
 					image = _settings.images.finish;
-					text = 'Finish at: <strong>' + routing.htmlspecialchars (label) + '</strong>';
+					text = 'Finish at: <strong>' + routing.htmlspecialchars (waypoint.label) + '</strong>';
 					break;
 				default:
 					image = _settings.images.waypoint;
@@ -1343,12 +1344,12 @@ var routing = (function ($) {
 			
 			// Add the marker
 			var marker = new mapboxgl.Marker({element: itinerarymarker, offset: [0, -22], draggable: true})	// See: https://www.mapbox.com/mapbox-gl-js/api/#marker
-				.setLngLat(coordinates)
+				.setLngLat(waypoint)
 				.setPopup( new mapboxgl.Popup({ offset: 25 }).setHTML(text) )
 				.addTo(_map);
 			
 			// Perform a reverse geocoding of the marker location initially and when moved
-			routing.reverseGeocode (coordinates, waypointNumber);
+			routing.reverseGeocode (waypoint, waypointNumber);
 			marker.on ('dragend', function (e) {
 				routing.reverseGeocode (e.target._lngLat, waypointNumber);
 			});
