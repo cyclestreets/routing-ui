@@ -1305,7 +1305,6 @@ var routing = (function ($) {
 		
 		
 		// Function to add a waypoint marker
-		// Unfortunately Mapbox GL makes this much more difficult than Leaflet.js and has to be done at DOM level; see: https://github.com/mapbox/mapbox-gl-js/issues/656
 		addWaypointMarker: function (waypoint)
 		{
 			// Register the waypoint
@@ -1341,6 +1340,7 @@ var routing = (function ($) {
 			}
 			
 			// Assemble the image as a DOM element
+			// Unfortunately Mapbox GL makes image markers more difficult than Leaflet.js and has to be done at DOM level; see: https://github.com/mapbox/mapbox-gl-js/issues/656
 			var itinerarymarker = document.createElement('div');
 			itinerarymarker.className = 'itinerarymarker';
 			itinerarymarker.style.backgroundImage = "url('" + image + "')";
