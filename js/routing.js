@@ -509,7 +509,7 @@ var routing = (function ($) {
 			// Get map locations
 			// https://www.mapbox.com/mapbox-gl-js/example/mouse-position/
 			var waypoints = [];
-			var totalWaypoints = 0;
+			var totalWaypoints;
 			_map.on ('click', function (e) {
 				
 				// Take no action on the click handler if a route is loaded
@@ -528,13 +528,7 @@ var routing = (function ($) {
 				
 				// Once there are two waypoints, load the route
 				if (totalWaypoints == 2) {
-					
-					// Load the route
 					routing.loadRouteFromWaypoints (waypoints);
-					
-					// Reset the waypoints count
-					waypoints = [];
-					totalWaypoints = 0;
 				}
 			});
 		},
