@@ -1146,16 +1146,16 @@ var routing = (function ($) {
 				if (feature.properties.path.match (/^waypoint/)) {
 					
 					// Construct the marker attributes
-					var text;
+					var label;
 					switch (feature.properties.markerTag) {
-						case 'start'       : text = geojson.properties.start;  break;
-						case 'finish'      : text = geojson.properties.finish; break;
-						case 'intermediate': text = false;                     break;
+						case 'start'       : label = geojson.properties.start;  break;
+						case 'finish'      : label = geojson.properties.finish; break;
+						case 'intermediate': label = false;                     break;
 					}
 					var coordinates = {lng: feature.geometry.coordinates[0], lat: feature.geometry.coordinates[1]};
 					
 					// Add the marker
-					routing.addWaypointMarker (coordinates, feature.properties.number, text, totalWaypoints);
+					routing.addWaypointMarker (coordinates, feature.properties.number, label, totalWaypoints);
 				}
 			});
 			
