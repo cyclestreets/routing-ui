@@ -7,24 +7,24 @@
 /*
 	Route planning UI specification:
 	
-	- The journey planner operates on the basis of a stack of points, e.g. start,waypoint,finish
+	- The journey planner operates on the basis of a stack of points, e.g. start,intermediate,finish
 	- The stack is indexed from 0 internally
 	- Each marker has an associated geocoder (also expressable in reverse - each geocoder affects a marker).
 	- Marker/geocoder pairs operate in sync - setting/moving/updating one affects its pair with the same geographical result.
-	- A marker/geocoder pair is referred to as a 'point'.
-	- There can be as many points as the user wants.
-	- Whenever two or more points are set, a route should be displayed.
-	- Whenever no or one point is set, no route should be displayed.
+	- A marker/geocoder pair is referred to as a 'waypoint'.
+	- There can be as many waypoints as the user wants.
+	- Whenever two or more waypoints are set, a route should be displayed.
+	- Whenever no or one waypoint is set, no route should be displayed.
 	- When the map is clicked on to set a marker, the marker is shown as gray until the geocoder provides a resolved actual location.
-	- A route request is triggered whenever any change to any point is made, with the result being added or replacing any existing result.
-	- The marker for each point has a popup which gives the resolved name matching the geocoder.
-	- The marker's popup and the associated geocoder each have an 'X' button to delete that point.
-	- When a route is present, the only map-based way to add another point is to drag part of the existing line to pull out a new waypoint.
+	- A route request is triggered whenever any change to any waypoint is made, with the result being added or replacing any existing result.
+	- The marker for each waypoint has a popup which gives the resolved name matching the geocoder.
+	- The marker's popup and the associated geocoder each have an 'X' button to delete that waypoint.
+	- When a route is present, the only map-based way to add another waypoint is to drag part of the existing line to pull out (create) a new intermediate waypoint.
 	- The geocoder list contains a + button between each to create a new empty geocoder.
 	- Empty geocoders are not treated as part of the stack counted.
 	- When a route is present, adding a successful geocoder result inserts this into the stack in the order shown.
 	- The geocoders, whether empty or complete, can be reordered without restriction, using drag-and-drop.
-	- When markers are present, the start point shall be green, the finish point red, and intermediate points yellow, labelled as "Via #1", "Via #2", etc.
+	- When markers are present, the start waypoint shall be green, the finish waypoint red, and intermediate waypoints yellow, labelled as "Via #1", "Via #2", etc.
 	- When a previously-planned route number is loaded, this effectively pre-loads the stack, and the rest of the logic then works as normal.
 	- When a route is present, the associated itinerary set is shown in a set of tabs.
 	- When a itinerary street is hovered on, the associated part of the line is highlighted.
