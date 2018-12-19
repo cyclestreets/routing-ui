@@ -122,6 +122,7 @@ var routing = (function ($) {
 	var _map = null;
 	var _urlParameters = {};
 	var _itineraryId = null;
+	var _waypoints = [];	// Ordered stack of waypoints, each with lng/lat/label
 	var _markers = [];
 	var _routeGeojson = {};
 	var _panningEnabled = false;
@@ -508,7 +509,6 @@ var routing = (function ($) {
 			
 			// Get map locations
 			// https://www.mapbox.com/mapbox-gl-js/example/mouse-position/
-			var waypoints = [];
 			var totalWaypoints;
 			_map.on ('click', function (e) {
 				
@@ -517,15 +517,13 @@ var routing = (function ($) {
 				
 				// Register the waypoint
 				var waypoint = {lng: e.lngLat.lng, lat: e.lngLat.lat, label: null /* i.e. determine automatically */};
-				waypoints.push (e.lngLat);
-				totalWaypoints = waypoints.length;
 				
 				// Add the waypoint marker
-				routing.addWaypointMarker (waypoint, totalWaypoints, totalWaypoints);
+				routing.addWaypointMarker (waypoint);
 				
 				// Once there are two waypoints, load the route
-				if (totalWaypoints == 2) {
-					routing.loadRouteFromWaypoints (waypoints);
+				if (_waypoints.length == 2) {
+					routing.loadRouteFromWaypoints (_waypoints);
 				}
 			});
 		},
@@ -1133,6 +1131,7 @@ var routing = (function ($) {
 				marker.remove();
 			});
 			_markers = [];
+			_waypoints = [];
 			
 			// Determine the number of waypoints
 			var totalWaypoints = 0;
@@ -1156,7 +1155,7 @@ var routing = (function ($) {
 					var waypoint = {lng: feature.geometry.coordinates[0], lat: feature.geometry.coordinates[1], label: label};
 					
 					// Add the marker
-					routing.addWaypointMarker (waypoint, feature.properties.number, totalWaypoints);
+					routing.addWaypointMarker (waypoint);
 				}
 			});
 			
@@ -1166,17 +1165,11 @@ var routing = (function ($) {
 				$.each (_markers, function (index, marker) {
 					_markers[index].on ('dragend', function (e) {
 						
-						// Construct the waypoints lng,lon list
-						var waypoints = [];
-						$.each (_markers, function (index, marker) {
-							waypoints.push (marker._lngLat);
-						});
-						
 						// Remove the route for each strategy
 						routing.removeRoute ();
 						
 						// Load the route from the waypoints
-						routing.loadRouteFromWaypoints (waypoints);
+						routing.loadRouteFromWaypoints (_waypoints);
 						
 						// Remove the current handler and the other handlers for the other markers
 						// See: https://stackoverflow.com/questions/21415897/removing-a-jquery-event-handler-while-inside-the-event-handler
@@ -1312,13 +1305,22 @@ var routing = (function ($) {
 		
 		// Function to add a waypoint marker
 		// Unfortunately Mapbox GL makes this much more difficult than Leaflet.js and has to be done at DOM level; see: https://github.com/mapbox/mapbox-gl-js/issues/656
-		addWaypointMarker: function (waypoint, waypointNumber, totalWaypoints)
+		addWaypointMarker: function (waypoint)
 		{
+			// Register the waypoint
+			_waypoints.push (waypoint);
+
+			// Determine the total number of waypoints
+			var totalWaypoints = _waypoints.length;
+			
 			// Auto-assign label if required
 			// #!# Replace to using nearestpoint
 			if (waypoint.label == null) {
 				waypoint.label = (totalWaypoints == 1 ? 'Start' : 'Finish');
 			}
+			
+			// Auto-assign the waypoint number, i.e. add next, indexed from one
+			var waypointNumber = totalWaypoints;
 			
 			// Determine the image and text to use
 			var image;
