@@ -1307,17 +1307,17 @@ var routing = (function ($) {
 		// Function to add a waypoint marker
 		addWaypointMarker: function (waypoint)
 		{
-			// Register the waypoint
-			_waypoints.push (waypoint);
-
-			// Determine the total number of waypoints
-			var totalWaypoints = _waypoints.length;
-			
 			// Auto-assign label if required
 			// #!# Replace to using nearestpoint
 			if (waypoint.label == null) {
 				waypoint.label = (totalWaypoints == 1 ? 'Start' : 'Finish');
 			}
+			
+			// Register the waypoint
+			_waypoints.push (waypoint);
+
+			// Determine the total number of waypoints
+			var totalWaypoints = _waypoints.length;
 			
 			// Auto-assign the waypoint number, i.e. add next, indexed from one
 			var waypointNumber = totalWaypoints;
