@@ -290,7 +290,7 @@ var routing = (function ($) {
 			// Determine whether route loading from ID is supported; for this, all engines need to be native CycleStreets type
 			var routeLoadingSupported = true;
 			$.each (_settings.strategies, function (index, strategy) {
-				if (!strategy.routeRequest) {
+				if (strategy.routeRequest) {
 					routeLoadingSupported = false;
 				}
 			});
