@@ -883,10 +883,17 @@ var routing = (function ($) {
 			
 			// If a table row is clicked on, zoom to that section of the route (for that strategy)
 			$('#itineraries table.strategy-' + strategy.id).on('click', 'tr', function (e) {
-				var feature = segmentsIndex[e.currentTarget.dataset.segment];
-				var boundingBox = routing.getBoundingBox (geojson.features[feature].geometry.coordinates);
-				_map.fitBounds (boundingBox, {maxZoom: 14});	// Bounding box version of flyTo
+				var segment = segmentsIndex[e.currentTarget.dataset.segment];
+				routing.zoomToSegment (geojson, segment);
 			});
+		},
+		
+		
+		// Function to zoom to a specified feature
+		zoomToSegment: function (geojson, segment)
+		{
+			var boundingBox = routing.getBoundingBox (geojson.features[segment].geometry.coordinates);
+			_map.fitBounds (boundingBox, {maxZoom: 14});	// Bounding box version of flyTo
 		},
 		
 		
