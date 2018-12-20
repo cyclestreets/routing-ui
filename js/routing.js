@@ -573,6 +573,12 @@ var routing = (function ($) {
 		// Function to create result tabs; see: https://jqueryui.com/tabs/
 		resultsTabs: function ()
 		{
+			// Remove any current content
+			$('#results').remove ();
+			
+			// Add a link to clear the route
+			var clearRouteHtml = '<p><a id="clearroute" href="#">Clear route &hellip;</a></p>';
+			
 			// Create tabs and content panes for each of the strategies
 			var tabsHtml = '<ul id="strategies">';
 			var contentPanesHtml = '<div id="itineraries">';
@@ -586,14 +592,10 @@ var routing = (function ($) {
 			contentPanesHtml += '</div>';
 			
 			// Assemble the HTML
-			var html = tabsHtml + contentPanesHtml;
+			var html = clearRouteHtml + tabsHtml + contentPanesHtml;
 			
 			// Surround with a div for styling
 			html = '<div id="results">' + html + '</div>';
-			
-			// Add a link to clear the route
-			var clearRouteHtml = '<p><a id="clearroute" href="#">Clear route &hellip;</a></p>';
-			html = clearRouteHtml + html;
 			
 			// Append the panel to the route planning UI
 			$('#routeplanning').append (html);
@@ -1170,7 +1172,7 @@ var routing = (function ($) {
 						_waypoints[index] = {lng: e.target._lngLat.lng, lat: e.target._lngLat.lat, label: _waypoints[index].label};
 						
 						// Remove the route for each strategy
-						routing.removeRoute ();
+						routing.removeRoute (true);
 						
 						// Load the route if it is plannable, i.e. once there are two waypoints
 						routing.plannable ();
@@ -1275,7 +1277,7 @@ var routing = (function ($) {
 		
 		
 		// Function to remove a drawn route currently present
-		removeRoute: function ()
+		removeRoute: function (retainWaypoints)
 		{
 			// Remove the layer for each strategy
 			$.each (_routeGeojson, function (id, routeGeojson) {
@@ -1291,6 +1293,11 @@ var routing = (function ($) {
 				marker.remove();
 			});
 			_markers = [];
+			
+			// Retain waypoints in memory if required
+			if (!retainWaypoints) {
+				_waypoints = [];
+			}
 			
 			// Remove the itinerary ID
 			_itineraryId = false;

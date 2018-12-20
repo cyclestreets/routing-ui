@@ -25,10 +25,11 @@
 
 #routeplanning h2 {font-size: 1.4em;}
 #routeplanning .geocoder {margin-bottom: 5px; padding: 5px;}
-
 #routeplanning #results.ui-tabs {border: 0; padding: 0; border-radius: 0; margin-top: 20px;}
 #routeplanning #results.ui-tabs ul#strategies li a {padding: 5px 7px;}
 #routeplanning #results.ui-tabs ul#strategies .ui-tabs-active {background-color: #eee;}
+#routeplanning .ui-widget-header, #routeplanning .ui-widget-content {background-color: transparent;}
+#routeplanning #itineraries {background-color: white;}
 #routeplanning #results.ui-tabs #itineraries {height: 500px; overflow-y: auto;}
 #routeplanning #results.ui-tabs .ui-tabs-panel {padding: 15px 10px;}
 table.itinerary tr {cursor: zoom-in;}
