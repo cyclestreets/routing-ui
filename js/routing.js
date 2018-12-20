@@ -1166,6 +1166,9 @@ var routing = (function ($) {
 				$.each (_markers, function (index, marker) {
 					_markers[index].on ('dragend', function (e) {
 						
+						// Update the waypoint in the registry
+						_waypoints[index] = {lng: e.target._lngLat.lng, lat: e.target._lngLat.lat, label: _waypoints[index].label};
+						
 						// Remove the route for each strategy
 						routing.removeRoute ();
 						
