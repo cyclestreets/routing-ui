@@ -850,14 +850,20 @@ var routing = (function ($) {
 			html += '<h3>' + distanceFormatted + '</h3>';
 			
 			// Loop through each feature
+			var segmentsIndex = {};
+			var segment = 0;
 			html += '<table class="itinerary lines strategy-' + strategy.id + '">';
 			$.each (geojson.features, function (index, feature) {
 				
 				// Skip non-streets
 				if (!feature.properties.path.match (/street/)) {return 'continue';}
 				
+				// Register this row in the segment index, starting from 1
+				segment++;
+				segmentsIndex[segment] = index;
+				
 				// Add this row
-				html += '<tr data-feature="' + index + '">';
+				html += '<tr data-segment="' + segment + '">';
 				html += '<td class="travelmode">' + routing.travelModeIcon (feature.properties.travelMode, strategy.id) + '</td>';
 				html += '<td>' + routing.turnsIcon (feature.properties.startBearing) + '</td>';
 				html += '<td><strong>' + routing.htmlspecialchars (feature.properties.name) + '</strong></td>';
@@ -877,7 +883,7 @@ var routing = (function ($) {
 			
 			// If a table row is clicked on, zoom to that section of the route (for that strategy)
 			$('#itineraries table.strategy-' + strategy.id).on('click', 'tr', function (e) {
-				var feature = e.currentTarget.dataset.feature;
+				var feature = segmentsIndex[e.currentTarget.dataset.segment];
 				var boundingBox = routing.getBoundingBox (geojson.features[feature].geometry.coordinates);
 				_map.fitBounds (boundingBox, {maxZoom: 14});	// Bounding box version of flyTo
 			});
