@@ -78,6 +78,7 @@ var routing = (function ($) {
 				label: 'Fastest route',
 				parameters: {plans: 'fastest'},
 				lineColour: '#cc0000',
+				lineColourOutline: 'red',
 				attribution: 'Routing by <a href="https://www.cyclestreets.net/">CycleStreets</a>'
 			},
 			{
@@ -85,6 +86,7 @@ var routing = (function ($) {
 				label: 'Balanced route',
 				parameters: {plans: 'balanced'},
 				lineColour: '#ffc200',
+				lineColourOutline: 'orange',
 				attribution: 'Routing by <a href="https://www.cyclestreets.net/">CycleStreets</a>'
 			},
 			{
@@ -92,6 +94,7 @@ var routing = (function ($) {
 				label: 'Quietest route',
 				parameters: {plans: 'quietest'},
 				lineColour: '#00cc00',
+				lineColourOutline: 'green',
 				attribution: 'Routing by <a href="https://www.cyclestreets.net/">CycleStreets</a>'
 			}
 			/* Other routing engine example:
@@ -113,6 +116,7 @@ var routing = (function ($) {
 			selected: 8,
 			unselected: 3
 		},
+		lineOutlines: true,
 		
 		// Define the supported travel mode colours
 		travelModeColours: {
@@ -173,6 +177,11 @@ var routing = (function ($) {
 			// If not showing all routes, set the line thickness to zero, so that it is does not display, but leave all other interaction in place
 			if (!_settings.showAllRoutes) {
 				_settings.lineThickness.unselected = 0;
+			}
+			
+			// If line outlines are enabled, add the width
+			if (_settings.lineOutlines) {
+				_settings.lineThickness.selectedOutline = (_settings.lineThickness.selected + 4);
 			}
 			
 			// Load route from URL if present
@@ -625,9 +634,15 @@ var routing = (function ($) {
 			$('#results').on ('tabsactivate', function (event, ui) {
 				var newStrategyId = ui.newTab.attr ('li', 'innerHTML')[0].getElementsByTagName ('a')[0].dataset.strategy;	// https://stackoverflow.com/a/21114766/180733
 				_map.setPaintProperty (newStrategyId, 'line-width', _settings.lineThickness.selected);
+				if (_settings.lineOutlines) {
+					_map.setPaintProperty (newStrategyId + '-outline', 'line-width', _settings.lineThickness.selectedOutline);
+				}
 				routing.setSelectedStrategy (newStrategyId);
 				var oldStrategyId = ui.oldTab.attr ('li', 'innerHTML')[0].getElementsByTagName ('a')[0].dataset.strategy;
 				_map.setPaintProperty (oldStrategyId, 'line-width', _settings.lineThickness.unselected);
+				if (_settings.lineOutlines) {
+					_map.setPaintProperty (oldStrategyId + '-outline', 'line-width', _settings.lineThickness.unselected);
+				}
 			} );
 		},
 		
@@ -1133,6 +1148,15 @@ var routing = (function ($) {
 			};
 			_map.addLayer (layer);
 			
+			// Add an outline for the line under the layer
+			if (_settings.lineOutlines) {
+				var outline = $.extend (true, {}, layer);	// i.e. clone
+				outline['id'] += '-outline';
+				outline['paint']['line-color'] = (strategy.lineColourOutline || '#999'),
+				outline['paint']['line-width'] = (strategy.id == _selectedStrategy ? _settings.lineThickness.selectedOutline : _settings.lineThickness.unselected),
+				_map.addLayer (outline, strategy.id);
+			}
+			
 			// Add a hover popup giving a summary of the route details, unless only one route is set to be shown at a time
 			if (_settings.showAllRoutes) {
 				routing.hoverPopup (strategy, geojson.properties.plans[strategy.id]);
@@ -1322,7 +1346,13 @@ var routing = (function ($) {
 			// Remove the layer for each strategy
 			$.each (_routeGeojson, function (id, routeGeojson) {
 				_map.removeLayer (id);
+				if (_settings.lineOutlines) {
+					_map.removeLayer (id + '-outline');
+				}
 				_map.removeSource (id);
+				if (_settings.lineOutlines) {
+					_map.removeSource (id + '-outline');
+				}
 			});
 			
 			// Unset the route data
