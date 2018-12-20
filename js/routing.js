@@ -271,10 +271,20 @@ var routing = (function ($) {
 		{
 			// Add layer switcher UI
 			var control = this.createControl ('toolbox', 'bottom-left');
-
+			
+			// Determine whether route loading from ID is supported; for this, all engines need to be native CycleStreets type
+			var routeLoadingSupported = true;
+			$.each (_settings.strategies, function (index, strategy) {
+				if (!strategy.routeRequest) {
+					routeLoadingSupported = false;
+				}
+			});
+			
 			// Construct HTML for layer switcher
 			var html = '<ul id="toolbox">';
-			html += '<li><a id="loadrouteid" href="#">Load route ID &hellip;</a></li>';
+			if (routeLoadingSupported) {
+				html += '<li><a id="loadrouteid" href="#">Load route ID &hellip;</a></li>';
+			}
 			html += '<li><a id="panning" href="#" class="hidden">Panning: disabled</a></li>';
 			html += '</ul>';
 			$('#toolbox').append (html);
