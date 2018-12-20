@@ -137,6 +137,7 @@ var routing = (function ($) {
 	var _panningEnabled = false;
 	var _routeIndexes = {};
 	var _selectedStrategy = false;
+	var _keyboardFeaturePosition = {};
 	
 	
 	return {
@@ -874,6 +875,9 @@ var routing = (function ($) {
 			});
 			html += '</table>';
 			
+			// Save the last segment number
+			var lastSegment = segment;
+			
 			// Set the content in the tab pane, overwriting any previous content
 			$('#itineraries #' + strategy.id).html (html);
 			
@@ -885,7 +889,11 @@ var routing = (function ($) {
 			$('#itineraries table.strategy-' + strategy.id).on('click', 'tr', function (e) {
 				var segment = segmentsIndex[e.currentTarget.dataset.segment];
 				routing.zoomToSegment (geojson, segment);
+				_keyboardFeaturePosition[strategy.id] = segment;
 			});
+			
+			// Handle left/right keyboard navigation through the route, for this strategy
+			routing.itineraryKeyboardNavigation (strategy.id, geojson, segmentsIndex, lastSegment);
 		},
 		
 		
@@ -916,6 +924,48 @@ var routing = (function ($) {
 			
 			// Return the bounds, in LngLatBoundsLike format; see: https://www.mapbox.com/mapbox-gl-js/api/#lnglatboundslike
 			return [bounds.w, bounds.s, bounds.e, bounds.n];
+		},
+		
+		
+		// Function to provide keyboard navigation through an itinerary listing
+		itineraryKeyboardNavigation: function (strategyId, geojson, segmentsIndex, lastSegment)
+		{
+			// Set initially as the whole route
+			_keyboardFeaturePosition[strategyId] = 0;
+			
+			// Register a handler for keyboard navigation
+			$(document).on ('keyup', function (event) {
+				
+				// Do not apply when inside an input field; see: https://stackoverflow.com/a/11112169/180733
+				if (!$(event.target).is('input')) {
+					
+					// Take effect on only the currently-selected strategy's itinerary
+					if (strategyId == _selectedStrategy) {
+						
+						// Detect keyboard key
+						var key = event.which;
+						if (key == 39 || key == 40) {	// right/down - move forward along the route
+							_keyboardFeaturePosition[strategyId]++;
+							if (_keyboardFeaturePosition[strategyId] > lastSegment) {_keyboardFeaturePosition[strategyId] = 0;}	// Wrap around to start if after end
+						}
+						if (key == 37 || key == 38) {	// left/up - move back along the route
+							_keyboardFeaturePosition[strategyId]--;
+							if (_keyboardFeaturePosition[strategyId] < 0) {_keyboardFeaturePosition[strategyId] = lastSegment;}	// Wrap around to end if before start
+						}
+						//console.log (_keyboardFeaturePosition);
+						
+						// Move to the selected feature, or the whole route if set to 0
+						if (_keyboardFeaturePosition[strategyId] == 0) {
+							routing.fitBoundsGeojson (geojson, strategyId);
+						} else {
+							routing.zoomToSegment (geojson, segmentsIndex[_keyboardFeaturePosition[strategyId]]);
+						}
+						
+						// Prevent map movement / tab switching
+						event.preventDefault ();
+					}
+				}
+			});
 		},
 		
 		
