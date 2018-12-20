@@ -114,6 +114,11 @@ var routing = (function ($) {
 			unselected: 3
 		},
 		
+		// Define the supported travel mode colours
+		travelModeColours: {
+			'dismounted': 'gray',
+		},
+		
 		// Whether to show all route line results or just the currently-selected
 		showAllRoutes: true
 	};
@@ -1102,7 +1107,13 @@ var routing = (function ($) {
 		// Function to render a route onto the map
 		showRoute: function (geojson, strategy)
 		{
+			// Add in colours based on travel mode; see: https://www.mapbox.com/mapbox-gl-js/example/data-driven-lines/
+			$.each (geojson.features, function (index, feature) {
+				geojson.features[index].properties.color = routing.travelModeToColour (feature.properties.travelMode, strategy.lineColour);
+			});
+			
 			// https://www.mapbox.com/mapbox-gl-js/example/geojson-line/
+			// Data-driven styling support shown at: https://www.mapbox.com/mapbox-gl-js/style-spec/#layers-line
 			var layer = {
 				"id": strategy.id,
 				"type": "line",
@@ -1116,7 +1127,7 @@ var routing = (function ($) {
 					"line-cap": "round"
 				},
 				"paint": {
-					"line-color": strategy.lineColour,
+					"line-color": ['get', 'color'],
 					"line-width": (strategy.id == _selectedStrategy ? _settings.lineThickness.selected : _settings.lineThickness.unselected)
 				}
 			};
@@ -1139,6 +1150,19 @@ var routing = (function ($) {
 			
 			// Add the itinerary listing
 			routing.itineraryListing (strategy, geojson);
+		},
+		
+		
+		// Function to map travel mode to colour
+		travelModeToColour: function (travelMode, defaultValue)
+		{
+			// If supported, return the value
+			if (_settings.travelModeColours[travelMode]) {
+				return _settings.travelModeColours[travelMode];
+			}
+			
+			// Otherwise return the default value
+			return defaultValue;
 		},
 		
 		
