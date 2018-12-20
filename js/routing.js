@@ -824,11 +824,13 @@ var routing = (function ($) {
 			var html = '';
 			
 			// Add the total distance and time
-			html += '<h3 class="right">' + routing.formatDuration (geojson.properties.plans[strategy].time) + '</h3>';
-			html += '<h3>' + routing.formatDistance (geojson.properties.plans[strategy].length) + '</h3>';
+			var timeFormatted = routing.formatDuration (geojson.properties.plans[strategy.id].time);
+			var distanceFormatted = routing.formatDistance (geojson.properties.plans[strategy.id].length);
+			html += '<h3 class="right">' + timeFormatted + '</h3>';
+			html += '<h3>' + distanceFormatted + '</h3>';
 			
 			// Loop through each feature
-			html += '<table class="itinerary lines strategy-' + strategy + '">';
+			html += '<table class="itinerary lines strategy-' + strategy.id + '">';
 			$.each (geojson.features, function (index, feature) {
 				
 				// Skip non-streets
@@ -836,7 +838,7 @@ var routing = (function ($) {
 				
 				// Add this row
 				html += '<tr data-feature="' + index + '">';
-				html += '<td class="travelmode">' + routing.travelModeIcon (feature.properties.travelMode, strategy) + '</td>';
+				html += '<td class="travelmode">' + routing.travelModeIcon (feature.properties.travelMode, strategy.id) + '</td>';
 				html += '<td>' + routing.turnsIcon (feature.properties.startBearing) + '</td>';
 				html += '<td><strong>' + routing.htmlspecialchars (feature.properties.name) + '</strong></td>';
 				html += '<td>' + feature.properties.ridingSurface + '</td>';
@@ -847,10 +849,14 @@ var routing = (function ($) {
 			html += '</table>';
 			
 			// Set the content in the tab pane, overwriting any previous content
-			$('#itineraries #' + strategy).html (html);
+			$('#itineraries #' + strategy.id).html (html);
+			
+			// Add a tooltip to the tab, giving the main route details
+			var title = strategy.label + ':\nDistance: ' + distanceFormatted + '\nTime: ' + timeFormatted;
+			$('#strategies li a[data-strategy="' + strategy.id + '"]').attr ('title', title);
 			
 			// If a table row is clicked on, zoom to that section of the route (for that strategy)
-			$('#itineraries table.strategy-' + strategy).on('click', 'tr', function (e) {
+			$('#itineraries table.strategy-' + strategy.id).on('click', 'tr', function (e) {
 				var feature = e.currentTarget.dataset.feature;
 				var boundingBox = routing.getBoundingBox (geojson.features[feature].geometry.coordinates);
 				_map.fitBounds (boundingBox, {maxZoom: 14});	// Bounding box version of flyTo
@@ -964,7 +970,7 @@ var routing = (function ($) {
 			}
 			
 			// Assemble the string
-			var result = components.join (',&nbsp;');
+			var result = components.join (', ');
 			
 			// Return the result
 			return result;
@@ -1132,7 +1138,7 @@ var routing = (function ($) {
 			}
 			
 			// Add the itinerary listing
-			routing.itineraryListing (strategy.id, geojson);
+			routing.itineraryListing (strategy, geojson);
 		},
 		
 		
