@@ -190,6 +190,9 @@ var routing = (function ($) {
 				_settings.lineThickness.selectedOutline = (_settings.lineThickness.selected + 4);
 			}
 			
+			// Add route planning UI
+			routing.routePlanning ();
+			
 			// Load route from URL (itinerary/waypoints) if present
 			routing.loadRouteInitialUrl ();
 			
@@ -198,9 +201,6 @@ var routing = (function ($) {
 			
 			// Add load route ID functionality
 			routing.loadRouteId ();
-			
-			// Add route planning UI
-			routing.routePlanning ();
 			
 			// Add routing
 			routing.routingInit ();
