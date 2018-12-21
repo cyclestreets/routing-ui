@@ -37,6 +37,8 @@
 	- A tooltip shows the summary for each strategy at all times.
 	- Clicking on a route strategy on the map selects its associated tab in the itinerary panel.
 	- Conversely, selecting a tab in the itinerary panel selects its associated route strategy on the map.
+	- When a journey is planned, the URL is updated to include the lat,lon pairs
+	- If a URL is present with lat,lon pairs, this is loaded as the intial route
 	
 */
 
@@ -185,7 +187,7 @@ var routing = (function ($) {
 				_settings.lineThickness.selectedOutline = (_settings.lineThickness.selected + 4);
 			}
 			
-			// Load route from URL if present
+			// Load route from URL (itinerary/waypoints) if present
 			routing.loadRouteInitialUrl ();
 			
 			// Add load route ID functionality
@@ -271,9 +273,28 @@ var routing = (function ($) {
 			
 			// Extract journey URL
 			urlParameters.itineraryId = false;
-			var matches = window.location.pathname.match (/^\/journey\/([0-9]+)\/$/);
-			if (matches) {
-				urlParameters.itineraryId = matches[1];
+			var matchesItinerary = window.location.pathname.match (/^\/journey\/([0-9]+)\/$/);
+			if (matchesItinerary) {
+				urlParameters.itineraryId = matchesItinerary[1];
+			}
+			
+			// Extract journey URL
+			urlParameters.waypoints = [];
+			var matchesWaypoints = window.location.pathname.match (/^\/journey\/([-.0-9]+,[-.,\/0-9]+)\/$/);
+			if (matchesWaypoints) {
+				var waypointPairs = matchesWaypoints[1].split ('/');
+				var waypoints = [];
+				var waypointLatLon;
+				$.each (waypointPairs, function (index, waypointPair) {
+					var matches = waypointPair.match (/^([-.0-9]+),([-.0-9]+)$/);
+					if (matches) {
+						waypointLatLon = waypointPair.split (',');
+						waypoints.push ({lng: waypointLatLon[1], lat: waypointLatLon[0], label: null});
+					}
+				});
+				if (waypoints.length >=2) {
+					urlParameters.waypoints = waypoints;
+				}
 			}
 			
 			// Set the parameters
@@ -370,17 +391,26 @@ var routing = (function ($) {
 		},
 		
 		
-		// Function to an initial route
+		// Function to load an initial route from URL (itinerary/waypoints) if present
 		loadRouteInitialUrl: function ()
 		{
-			// Load the route if an itinerary ID is set
+			// Load the route from an itinerary ID if set
 			if (_urlParameters.itineraryId) {
 				_itineraryId = _urlParameters.itineraryId;
 				routing.loadRouteFromId (_itineraryId);
 				
 				// Add results tabs
 				routing.resultsTabs ();
+				
+				// End, i.e. take precedence over waypoints
+				return;
 			}
+			
+			// Load the route from waypoints if set
+			if (_urlParameters.waypoints) {
+				_waypoints = _urlParameters.waypoints;
+				routing.plannable ();
+			};
 		},
 		
 		
@@ -559,7 +589,7 @@ var routing = (function ($) {
 			if (_waypoints.length != 2) {return;}
 			
 			// Convert waypoints to strings
-			var waypointStrings = routing.waypointStrings (_waypoints);
+			var waypointStrings = routing.waypointStrings (_waypoints, 'lng,lat');
 			
 			// Add results tabs
 			routing.resultsTabs ();
@@ -591,12 +621,16 @@ var routing = (function ($) {
 		
 		
 		// Function to convert waypoints to strings
-		waypointStrings: function (waypoints)
+		waypointStrings: function (waypoints, order)
 		{
 			var waypointStrings = [];
 			var waypointString;
 			$.each (waypoints, function (index, waypoint) {
-				waypointString = parseFloat (waypoint.lng).toFixed(6) + ',' + parseFloat (waypoint.lat).toFixed(6);
+				if (order == 'lng,lat') {
+					waypointString = parseFloat (waypoint.lng).toFixed(6) + ',' + parseFloat (waypoint.lat).toFixed(6);
+				} else {
+					waypointString = parseFloat (waypoint.lat).toFixed(6) + ',' + parseFloat (waypoint.lng).toFixed(6);
+				}
 				waypointStrings.push (waypointString);
 			});
 			return waypointStrings;
@@ -1125,7 +1159,7 @@ var routing = (function ($) {
 					
 					// Set the itinerary number permalink in the URL
 					var itineraryId = _routeGeojson[strategy.id].properties.id;
-					routing.updateUrl (itineraryId);
+					routing.updateUrl (itineraryId, _waypoints);
 					
 					// Fit bounds
 					routing.fitBoundsGeojson (_routeGeojson[strategy.id], strategy.id);
@@ -1383,13 +1417,21 @@ var routing = (function ($) {
 		
 		
 		// Function to update the URL, to provide persistency when a route is present
-		updateUrl: function (itineraryId)
+		updateUrl: function (itineraryId, waypoints)
 		{
 			// End if not supported, e.g. IE9
 			if (!history.pushState) {return;}
 			
-			// Construct the URL slug
+			// Default URL slug
 			var urlSlug = '/';
+			
+			// Construct the URL slug from waypoints, if any
+			if (waypoints) {
+				var waypointStrings = routing.waypointStrings (waypoints, 'lat,lng');	// Lat,lng order is as used historically and is as per OSM, Google Maps
+				urlSlug = '/journey/' + waypointStrings.join ('/') + '/';
+			}
+			
+			// Construct the URL slug from an itinerary ID, which takes precedence
 			if (itineraryId) {
 				urlSlug = '/journey/' + itineraryId + '/';
 			}
@@ -1451,7 +1493,7 @@ var routing = (function ($) {
 			routing.parseUrl ();
 			
 			// Update the URL
-			routing.updateUrl (_itineraryId);
+			routing.updateUrl (_itineraryId, null);
 		},
 		
 		
