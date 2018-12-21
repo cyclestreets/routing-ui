@@ -559,12 +559,7 @@ var routing = (function ($) {
 			if (_waypoints.length != 2) {return;}
 			
 			// Convert waypoints to strings
-			var waypointStrings = [];
-			var waypointString;
-			$.each (_waypoints, function (index, waypoint) {
-				waypointString = parseFloat(waypoint.lng).toFixed(6) + ',' + parseFloat(waypoint.lat).toFixed(6);
-				waypointStrings.push (waypointString);
-			});
+			var waypointStrings = routing.waypointStrings (_waypoints);
 			
 			// Add results tabs
 			routing.resultsTabs ();
@@ -592,6 +587,19 @@ var routing = (function ($) {
 				//console.log (url);
 				routing.loadRoute (url, strategy);
 			});
+		},
+		
+		
+		// Function to convert waypoints to strings
+		waypointStrings: function (waypoints)
+		{
+			var waypointStrings = [];
+			var waypointString;
+			$.each (waypoints, function (index, waypoint) {
+				waypointString = parseFloat (waypoint.lng).toFixed(6) + ',' + parseFloat (waypoint.lat).toFixed(6);
+				waypointStrings.push (waypointString);
+			});
+			return waypointStrings;
 		},
 		
 		
