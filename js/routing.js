@@ -714,7 +714,10 @@ var routing = (function ($) {
 				if (_settings.lineOutlines) {
 					_map.setPaintProperty (oldStrategyId + '-outline', 'line-width', _settings.lineThickness.unselected);
 				}
-			} );
+				
+				// Set keyboard focus away from the tabs, to enable keyboard navigation of the route; see: https://stackoverflow.com/questions/23241606/
+				ui.newTab.blur ();
+			});
 		},
 		
 		
