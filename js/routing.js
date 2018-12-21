@@ -51,6 +51,9 @@ var routing = (function ($) {
 	// Settings defaults
 	var _settings = {
 		
+		// Title
+		title: 'CycleStreets',
+		
 		// CycleStreets API
 		cyclestreetsApiBaseUrl: 'https://api.cyclestreets.net',
 		cyclestreetsApiKey: 'YOUR_CYCLESTREETS_API_KEY',
@@ -1468,7 +1471,7 @@ var routing = (function ($) {
 			url += window.location.hash;
 			
 			// Construct the page title, based on the enabled layers
-			var title = 'CycleStreets';
+			var title = _settings.title;
 			if (itineraryId) {
 				title += ': journey #' + itineraryId;
 			}
