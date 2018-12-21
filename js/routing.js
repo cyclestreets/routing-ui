@@ -1244,7 +1244,8 @@ var routing = (function ($) {
 			
 			// Fit bounds
 			_map.setMaxZoom (17);	// Prevent excessive zoom to give context
-			_map.fitBounds (bounds, {padding: 60});
+			// #!# padding values currently assume a large desktop screen
+			_map.fitBounds (bounds, {padding: {top: 20, bottom: 20, left: 270, right: 320}});
 			_map.setMaxZoom (_settings.maxZoom);	// Reset
 		},
 		
