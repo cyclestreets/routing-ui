@@ -72,6 +72,9 @@ var routing = (function ($) {
 			finish: '/images/itinerarymarkers/finish.png'
 		},
 		
+		// Initial route
+		initialRoute: false,	// E.g. [[0.123902, 52.202968], [-0.127669, 51.507318]], as array of lon,lat pairs, or false to disable
+		
 		// Routing strategies, in order of appearance in the UI, and the default
 		defaultStrategy: 'balanced',
 		strategies: [
@@ -189,6 +192,9 @@ var routing = (function ($) {
 			
 			// Load route from URL (itinerary/waypoints) if present
 			routing.loadRouteInitialUrl ();
+			
+			// Load route from settings if present (if URL not loaded)
+			routing.loadRouteFromSettings ();
 			
 			// Add load route ID functionality
 			routing.loadRouteId ();
@@ -409,6 +415,25 @@ var routing = (function ($) {
 			// Load the route from waypoints if set
 			if (_urlParameters.waypoints) {
 				_waypoints = _urlParameters.waypoints;
+				routing.plannable ();
+			};
+		},
+		
+		
+		// Function to load a route from settings
+		loadRouteFromSettings: function ()
+		{
+			// End if not enabled in settings
+			if (!_settings.initialRoute) {return;}
+			
+			// Take no action if waypoints already set
+			if (_waypoints.length > 0) {return;}
+			
+			// Load the route from waypoints if set
+			if (_settings.initialRoute) {
+				$.each (_settings.initialRoute, function (index, waypoint) {
+					_waypoints.push ({lng: waypoint[0], lat: waypoint[1], label: null});
+				});
 				routing.plannable ();
 			};
 		},
