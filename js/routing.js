@@ -60,6 +60,7 @@ var routing = (function ($) {
 		
 		// Max zoom
 		maxZoom: 20,
+		maxZoomToSegment: 17,
 		
 		// Geocoder API URL; re-use of settings values represented as placeholders {%cyclestreetsApiBaseUrl}, {%cyclestreetsApiKey}, {%autocompleteBbox}, are supported
 		geocoderApiUrl:        '{%cyclestreetsApiBaseUrl}/v2/geocoder?key={%cyclestreetsApiKey}&bounded=1&bbox={%autocompleteBbox}',
@@ -974,7 +975,7 @@ var routing = (function ($) {
 		zoomToSegment: function (geojson, segment)
 		{
 			var boundingBox = routing.getBoundingBox (geojson.features[segment].geometry.coordinates);
-			_map.fitBounds (boundingBox, {maxZoom: 14});	// Bounding box version of flyTo
+			_map.fitBounds (boundingBox, {maxZoom: _settings.maxZoomToSegment});	// Bounding box version of flyTo
 		},
 		
 		
