@@ -145,6 +145,7 @@ var routing = (function ($) {
 	var _routeGeojson = {};
 	var _panningEnabled = false;
 	var _routeIndexes = {};
+	var _popups = {};
 	var _selectedStrategy = false;
 	var _keyboardFeaturePosition = {};
 	
@@ -1297,7 +1298,7 @@ var routing = (function ($) {
 			
 			// Add a hover popup giving a summary of the route details, unless only one route is set to be shown at a time
 			if (_settings.showAllRoutes) {
-				routing.hoverPopup (strategy, geojson.properties.plans[strategy.id]);
+				routing.routeSummaryPopups (strategy, geojson.properties.plans[strategy.id], geojson);
 			}
 			
 			// Set the route line to be clickable, which makes it the selected route, unless only one route is set to be shown at a time
@@ -1388,36 +1389,45 @@ var routing = (function ($) {
 		},
 		
 		
-		// Function to handle a hover popup; see: http://bl.ocks.org/kejace/356a4f31773a2edc9b1b1fec676bdfaf
-		hoverPopup: function (strategy, plan)
+		// Function to add route summary popups; see: http://bl.ocks.org/kejace/356a4f31773a2edc9b1b1fec676bdfaf
+		routeSummaryPopups: function (strategy, plan, geojson)
 		{
-			// Create a popup, but do not add it to the map yet
+			// Determine the location along the route to place the marker (e.g. if three strategies, place in the midpoint of the thirds of each route)
+			var index = _routeIndexes[strategy.id];
+			var totalStrategies = _settings.strategies.length;
+			var fractionOfRoutePoint = (((index + (index + 1)) * 0.5) / totalStrategies);	// e.g. first strategy should be 1/6th of the way along the route
+			var lengthUntilPoint = plan.length * fractionOfRoutePoint;
+			
+			// Iterate through the route to find the point along the route
+			var length = 0;		// Start
+			var coordinates;
+			$.each (geojson.features, function (index, feature) {
+				if (!feature.properties.path.match (/street/)) {return 'continue';}
+				length += feature.properties.distanceMetres;
+				if (length >= lengthUntilPoint) {
+					coordinates = feature.geometry.coordinates[0];	// First within segment
+					return false;	// break
+				}
+			});
+			
+			// Construct the HTML for the popup
+			var html = '<div class="details" style="background-color: ' + strategy.lineColour + '">';
+			html += '<p><strong>' + routing.htmlspecialchars (strategy.label) + '</strong></p>';
+			html += '<p>' + routing.formatDuration (plan.time) + '<br />' + routing.formatDistance (plan.length) + '</p>';
+			html += '</div>';
+			
+			// Create the popup, set its coordinates, and add its HTML
 			var popup = new mapboxgl.Popup ({
 				closeButton: false,
 				closeOnClick: false,
 				className: 'strategypopup'
 			});
+			popup.setLngLat (coordinates)
+				.setHTML (html)
+				.addTo (_map);
 			
-			// Add hover for this line; see: https://stackoverflow.com/questions/51039362/popup-for-a-line-in-mapbox-gl-js-requires-padding-or-approximate-mouse-over
-			_map.on ('mousemove', strategy.id /* i.e. the ID of the element being hovered on */, function (e) {
-				var coordinates = e.lngLat;
-				
-				// Construct the HTML for the popup
-				var html = '<div class="details" style="background-color: ' + strategy.lineColour + '">';
-				html += '<p><strong>' + routing.htmlspecialchars (strategy.label) + '</strong></p>';
-				html += '<p>' + routing.formatDuration (plan.time) + '<br />' + routing.formatDistance (plan.length) + '</p>';
-				html += '</div>';
-				
-				// Populate the popup and set its coordinates based on the feature found
-				popup.setLngLat (coordinates)
-					.setHTML (html)
-					.addTo (_map);
-			});
-			
-			// Remove the popup when leaving the line
-			_map.on ('mouseleave', strategy.id, function () {
-				popup.remove ();
-			});
+			// Register the popup to enable it to be deleted when the line is removed
+			_popups[strategy.id] = popup;
 		},
 		
 		
@@ -1507,6 +1517,11 @@ var routing = (function ($) {
 			
 			// Unset the route data
 			_routeGeojson = {};
+			
+			// Clear any popups
+			$.each (_popups, function (index, popup) {
+				popup.remove();
+			});
 
 			// Clear any existing markers
 			$.each (_markers, function (index, marker) {
