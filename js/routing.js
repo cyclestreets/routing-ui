@@ -1302,7 +1302,7 @@ var routing = (function ($) {
 			
 			// Set the route line to be clickable, which makes it the selected route, unless only one route is set to be shown at a time
 			if (_settings.showAllRoutes) {
-				routing.clickSelect (strategy.id);
+				routing.routeLineHighlighting (strategy.id);
 			}
 			
 			// Add markers; this is only done once (using the exact endpoints of the selected strategy), to avoid re-laying markers and setting handlers multiple times
@@ -1400,7 +1400,6 @@ var routing = (function ($) {
 			
 			// Add hover for this line; see: https://stackoverflow.com/questions/51039362/popup-for-a-line-in-mapbox-gl-js-requires-padding-or-approximate-mouse-over
 			_map.on ('mousemove', strategy.id /* i.e. the ID of the element being hovered on */, function (e) {
-				_map.getCanvas ().style.cursor = 'pointer';
 				var coordinates = e.lngLat;
 				
 				// Construct the HTML for the popup
@@ -1408,9 +1407,6 @@ var routing = (function ($) {
 				html += '<p><strong>' + routing.htmlspecialchars (strategy.label) + '</strong></p>';
 				html += '<p>' + routing.formatDuration (plan.time) + '<br />' + routing.formatDistance (plan.length) + '</p>';
 				html += '</div>';
-				
-				// Highlight the line with a thicker width
-				_map.setPaintProperty (strategy.id, 'line-width', _settings.lineThickness.selected);
 				
 				// Populate the popup and set its coordinates based on the feature found
 				popup.setLngLat (coordinates)
@@ -1420,20 +1416,28 @@ var routing = (function ($) {
 			
 			// Remove the popup when leaving the line
 			_map.on ('mouseleave', strategy.id, function () {
-				_map.getCanvas ().style.cursor = '';
 				popup.remove ();
-				
-				// Reset the line width, if it is was not already the originally-selected (thick) line
-				if (strategy.id != _selectedStrategy) {
-					_map.setPaintProperty (strategy.id, 'line-width', _settings.lineThickness.unselected);
-				}
 			});
 		},
 		
 		
 		// Function to set the route line to be clickable, which makes it the selected route
-		clickSelect: function (strategyId)
+		routeLineHighlighting: function (strategyId)
 		{
+			// Add thickness on hover for this line; see: https://stackoverflow.com/questions/51039362/popup-for-a-line-in-mapbox-gl-js-requires-padding-or-approximate-mouse-over
+			_map.on ('mousemove', strategyId /* i.e. the ID of the element being hovered on */, function (e) {
+				_map.getCanvas().style.cursor = 'pointer';
+				_map.setPaintProperty (strategyId, 'line-width', _settings.lineThickness.selected);
+			});
+			
+			// Reset the line width, if it is was not already the originally-selected (thick) line
+			_map.on ('mouseleave', strategyId, function () {
+				_map.getCanvas().style.cursor = '';
+				if (strategyId != _selectedStrategy) {
+					_map.setPaintProperty (strategyId, 'line-width', _settings.lineThickness.unselected);
+				}
+			});
+			
 			// For this line, set a handler when clicked on
 			_map.on ('click', strategyId, function (e) {
 				
