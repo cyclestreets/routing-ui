@@ -138,6 +138,7 @@ var routing = (function ($) {
 	
 	// Internal class properties
 	var _map = null;
+	var _isMobileDevice = false;
 	var _urlParameters = {};
 	var _itineraryId = null;
 	var _waypoints = [];	// Ordered stack of waypoints, each with lng/lat/label
@@ -153,7 +154,7 @@ var routing = (function ($) {
 	return {
 		
 		// Main entry point
-		initialise: function (config, map, panningEnabled)
+		initialise: function (config, map, isMobileDevice, panningEnabled)
 		{
 			// Merge the configuration into the settings
 			$.each (_settings, function (setting, value) {
@@ -164,6 +165,7 @@ var routing = (function ($) {
 			
 			// Create handles
 			_map = map;
+			_isMobileDevice = isMobileDevice;
 			_panningEnabled = panningEnabled;
 			
 			// Parse the URL

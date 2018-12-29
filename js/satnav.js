@@ -74,6 +74,7 @@ var satnav = (function ($) {
 	
 	// Internal class properties
 	var _map = null;
+	var _isMobileDevice = false;
 	var _styles = {};
 	var _panningEnabled = false;
 	
@@ -89,6 +90,12 @@ var satnav = (function ($) {
 					_settings[setting] = config[setting];
 				}
 			});
+			
+			// Determine if the interface is a mobile interface
+			_isMobileDevice = satnav.isMobileDevice ();
+			
+			// Load pull-up Card UI for mobile
+			satnav.mobileCardUi ();
 			
 			// Load styles
 			satnav.getStyles ();
@@ -119,6 +126,54 @@ var satnav = (function ($) {
 			
 			// Add routing
 			satnav.routing ();
+		},
+		
+		
+		// Function to detect whether a mobile device; see: https://coderwall.com/p/i817wa/one-line-function-to-detect-mobile-devices-with-javascript
+		isMobileDevice: function () {
+			return (typeof window.orientation !== 'undefined') || (navigator.userAgent.indexOf('IEMobile') !== -1);
+		},
+		
+		
+		// Function to create a pull-up Card UI
+		mobileCardUi: function ()
+		{
+			// End if not a mobile device
+			if (!_isMobileDevice) {return;}
+			
+			// Make visible, as normally hidden by CSS
+			$('#card').show();
+			
+			// See: http://jsfiddle.net/tovic/mkUJf/
+			$('#card').on ('mousedown touchstart', function(e) {
+				
+				// Prevent whole page scrolling, exemmpting interactive widgets to prevent non-clickability
+				if ((e.target.tagName != 'INPUT') && (e.target.tagName != 'A')) {	// https://stackoverflow.com/a/27234803/180733
+					e.preventDefault ();
+				}
+				
+				// Make draggable
+				$(this).addClass('draggable').parents().on('mousemove touchmove', function(e) {
+					
+					// Avoid text on page being highlighted; see: https://stackoverflow.com/a/5432363/180733
+					e.preventDefault();
+					
+					// Get the location, and constrain to just below the bottom and just above the top
+					var top = e.pageY;
+					top = Math.max(top, 50);
+					top = Math.min(top, $(window).height() - 35);
+					
+					// Make draggable
+					$('.draggable').offset({
+						top: top,
+						left: 0
+					}).on('mouseup touchend', function() {
+						$(this).removeClass('draggable');
+					});
+				});
+			}).on('mouseup touchend', function() {
+				$('.draggable').removeClass('draggable');
+			});
 		},
 		
 		
@@ -535,7 +590,7 @@ var satnav = (function ($) {
 		routing: function ()
 		{
 			// Delegate to separate class
-			routing.initialise (_settings, _map, _panningEnabled);
+			routing.initialise (_settings, _map, _isMobileDevice, _panningEnabled);
 		}
 	};
 	
