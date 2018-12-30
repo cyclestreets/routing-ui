@@ -144,6 +144,21 @@ var satnav = (function ($) {
 			// Make visible, as normally hidden by CSS
 			$('#card').show();
 			
+			// Make draggable; see: https://jqueryui.com/draggable/
+			// Requires the the jQuery UI Touch Punch monkey-patch; see: https://stackoverflow.com/a/13940644/180733
+			$('#card').draggable ({
+				axis: 'y',
+				containment: [0, 50, 0, $(window).height() - 35],
+				scroll: false,
+				cancel: ''	// Remove default selectors to enable these to be part of the overall draggability; see: https://stackoverflow.com/questions/26756771/
+			});
+			
+			// Exempt input from draggable; see: https://stackoverflow.com/a/26757725/180733
+			$('#card').on ('click touch', 'input', function() {	// Late binding, as input created dynamically
+				$(this).focus();
+			});
+			
+/*
 			// See: http://jsfiddle.net/tovic/mkUJf/
 			$('#card').on ('mousedown touchstart', function(e) {
 				
@@ -174,6 +189,7 @@ var satnav = (function ($) {
 			}).on('mouseup touchend', function() {
 				$('.draggable').removeClass('draggable');
 			});
+*/
 		},
 		
 		
