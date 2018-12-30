@@ -89,7 +89,13 @@ var autocomplete = (function ($) {
 			
  			// Prevent the widget from inserting the value.
 			return false;
+		    },
+		    
+		    // Fix iOS double-tap requirement problem; see: https://stackoverflow.com/a/27622899/180733
+		    open: function (event, ui) {
+			$('.ui-autocomplete').off('menufocus hover mouseover mouseenter');
 		    }
+		    
 		}).data("ui-autocomplete")._renderItem = options.renderItem;
 	    });
 	},
