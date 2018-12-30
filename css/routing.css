@@ -35,7 +35,7 @@
 table.itinerary tr {cursor: zoom-in;}
 h3 {color: #603;}
 h3.right {float: right;}
-.strategypopup {max-width: 100px; max-height: 80px;}
+.strategypopup {max-width: 100px; max-height: 80px; cursor: pointer;}
 .strategypopup .details {padding: 5px;}
 .strategypopup .details p {padding: 0; margin: 0 0 5px;}
 .travelmode {font-size: 1.3em;}

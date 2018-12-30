@@ -1422,11 +1422,16 @@ var routing = (function ($) {
 			var popup = new mapboxgl.Popup ({
 				closeButton: false,
 				closeOnClick: false,
-				className: 'strategypopup'
+				className: 'strategypopup ' + strategy.id
 			});
 			popup.setLngLat (coordinates)
 				.setHTML (html)
 				.addTo (_map);
+			
+			// For this popup, set a handler when clicked on to switch to that strategy
+			$('.strategypopup.' + strategy.id).on ('click', function (e) {
+				routing.switchToStrategy (strategy.id);
+			});
 			
 			// Register the popup to enable it to be deleted when the line is removed
 			_popups[strategy.id] = popup;
