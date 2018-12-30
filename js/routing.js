@@ -1450,18 +1450,24 @@ var routing = (function ($) {
 				}
 			});
 			
-			// For this line, set a handler when clicked on
+			// For this line, set a handler when clicked on to switch to that strategy
 			_map.on ('click', strategyId, function (e) {
-				
-				// Set to be the selected strategy
-				routing.setSelectedStrategy (strategyId);
-				
-				// Set to the thicker line style
-				_map.setPaintProperty (strategyId, 'line-width', _settings.lineThickness.selected);
-				
-				// Switch to its tab
-				$('#results').tabs ('option', 'active', _routeIndexes[strategyId]);
+				routing.switchToStrategy (strategyId);
 			});
+		},
+		
+		
+		// Function to switch to a different strategy
+		switchToStrategy: function (strategyId)
+		{
+			// Set to be the selected strategy
+			routing.setSelectedStrategy (strategyId);
+			
+			// Set to the thicker line style
+			_map.setPaintProperty (strategyId, 'line-width', _settings.lineThickness.selected);
+			
+			// Switch to its tab
+			$('#results').tabs ('option', 'active', _routeIndexes[strategyId]);
 		},
 		
 		
