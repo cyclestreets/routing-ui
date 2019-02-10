@@ -22,7 +22,7 @@
 
 /* UI control */
 #routeplanning #clearroute {display: block; text-align: right;}
-#routeplanning {width: 300px; background-color: #ddd;}
+.mapboxgl-ctrl-group#routeplanning {width: 300px; background-color: #ddd;}
 #routeplanning input {width: 95%;}
 #routeplanning h2 {font-size: 1.4em;}
 #routeplanning .geocoder {margin-bottom: 5px; padding: 5px;}

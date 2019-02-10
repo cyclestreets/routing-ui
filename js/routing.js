@@ -478,8 +478,12 @@ var routing = (function ($) {
 		// Function to add a route planning UI
 		routePlanning: function ()
 		{
-			// Add layer switcher UI
-			var control = this.createControl ('routeplanning', 'bottom-right');
+			// Attach the route planning UI either to the Card UI (for mobile) or to the bottom-right of the map (for desktop)
+			if (_isMobileDevice) {
+				$('#cardcontent').append ('<div id="routeplanning"></div>');
+			} else {
+				var control = this.createControl ('routeplanning', 'bottom-right');
+			}
 			
 			// Add title
 			var html = '<h2>Route planner</h2>';
@@ -519,7 +523,9 @@ var routing = (function ($) {
 			}
 			
 			// Put focus on the first available geocoder
-			routing.focusFirstAvailableGeocoder (totalWaypoints);
+			if (!_isMobileDevice) {
+				routing.focusFirstAvailableGeocoder (totalWaypoints);
+			}
 		},
 		
 		
