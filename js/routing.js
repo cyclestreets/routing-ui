@@ -946,8 +946,8 @@ var routing = (function ($) {
 				html += '<td>' + routing.turnsIcon (feature.properties.startBearing) + '</td>';
 				html += '<td><strong>' + routing.htmlspecialchars (feature.properties.name) + '</strong></td>';
 				html += '<td>' + feature.properties.ridingSurface + '</td>';
-				html += '<td>' + routing.formatDistance (feature.properties.distanceMetres) + '</td>';
-				html += '<td>' + routing.formatDuration (feature.properties.durationSeconds) + '</td>';
+				html += '<td>' + routing.formatDistance (feature.properties.lengthMetres) + '</td>';
+				html += '<td>' + routing.formatDuration (feature.properties.timeSeconds) + '</td>';
 				html += '</tr>';
 			});
 			html += '</table>';
@@ -1405,7 +1405,7 @@ var routing = (function ($) {
 			var coordinates;
 			$.each (geojson.features, function (index, feature) {
 				if (!feature.properties.path.match (/street/)) {return 'continue';}
-				length += feature.properties.distanceMetres;
+				length += feature.properties.lengthMetres;
 				if (length >= lengthUntilPoint) {
 					coordinates = feature.geometry.coordinates[0];	// First within segment
 					return false;	// break
