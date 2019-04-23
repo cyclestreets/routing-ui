@@ -512,14 +512,10 @@ var routing = (function ($) {
 				waypointName = 'waypoint' + waypointNumber;
 				input = '<p><input name="' + waypointName + '" type="search" placeholder="' + label + '" class="geocoder" /></p>';
 				$('#routeplanning').append (input);
+				
+				// Attach a geocoder, firing a map click when selected, and moving focus to the next geocoder input box if present
 				routing.geocoder ('#routeplanning input[name="' + waypointName + '"]', function (item, callbackData) {
-					
-					// Fire a click on the map
-					// #!# Note that use of map.fire is now deprecated: https://gis.stackexchange.com/a/210289/58752
-					point = _map.project ([item.lon, item.lat]);	// https://github.com/mapbox/mapbox-gl-js/issues/5060
-					_map.fire ('click', { lngLat: {lng: item.lon, lat: item.lat} }, point);
-					
-					// Move focus to next geocoder input box if present
+					routing.fireMapClick (item.lon, item.lat, totalWaypoints);
 					routing.focusFirstAvailableGeocoder (totalWaypoints);
 					
 				}, {totalWaypoints: totalWaypoints});
@@ -527,6 +523,16 @@ var routing = (function ($) {
 			
 			// Put focus on the first available geocoder
 			routing.focusFirstAvailableGeocoder (totalWaypoints);
+		},
+		
+		
+		// Function to fire a map click
+		// #!# Note that use of map.fire is now deprecated: https://gis.stackexchange.com/a/210289/58752
+		fireMapClick: function (longitude, latitude)
+		{
+			// Fire a click on the map
+			var point = _map.project ([longitude, latitude]);	// https://github.com/mapbox/mapbox-gl-js/issues/5060
+			_map.fire ('click', { lngLat: {lng: longitude, lat: latitude} }, point);
 		},
 		
 		
