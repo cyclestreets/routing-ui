@@ -79,6 +79,9 @@ var routing = (function ($) {
 		// Initial route
 		initialRoute: false,	// E.g. [[0.123902, 52.202968], [-0.127669, 51.507318]], as array of lon,lat pairs, or false to disable
 		
+		// Total default waypoint UI controls
+		totalWaypoints: 2,
+		
 		// Routing strategies, in order of appearance in the UI, and the default
 		defaultStrategy: 'balanced',
 		strategies: [
@@ -248,7 +251,7 @@ var routing = (function ($) {
 		
 		
 		// Function to add a geocoder control
-		geocoder: function (addTo, callbackFunction, callbackData)
+		geocoder: function (addTo, callbackFunction)
 		{
 			// Geocoder URL; re-use of settings values is supported, represented as placeholders {%cyclestreetsApiBaseUrl}, {%cyclestreetsApiKey}, {%autocompleteBbox}
 			var geocoderApiUrl = routing.settingsPlaceholderSubstitution (_settings.geocoderApiUrl, ['cyclestreetsApiBaseUrl', 'cyclestreetsApiKey', 'autocompleteBbox']);
@@ -262,7 +265,7 @@ var routing = (function ($) {
 					_map.fitBounds([ [bbox[0], bbox[1]], [bbox[2], bbox[3]] ]);	// Note that Mapbox GL JS uses sw,ne rather than ws,en as in Leaflet.js
 					_map.setMaxZoom (_settings.maxZoom);	// Reset
 					if (callbackFunction) {
-						callbackFunction (ui.item, callbackData);
+						callbackFunction (ui.item);
 					}
 					event.preventDefault();
 				}
@@ -493,18 +496,16 @@ var routing = (function ($) {
 			$('#routeplanning').append (html);
 			
 			// Add input widgets
-			var totalWaypoints = 2;
 			var waypointName;
 			var label;
 			var waypointNumber;
 			var input;
-			var point;
-			for (waypointNumber = 0; waypointNumber < totalWaypoints; waypointNumber++) {
+			for (waypointNumber = 0; waypointNumber < _settings.totalWaypoints; waypointNumber++) {
 				
 				// Set the label
 				switch (waypointNumber) {
 					case 0: label = 'Start'; break;
-					case (totalWaypoints - 1): label = 'Finish'; break;
+					case (_settings.totalWaypoints - 1): label = 'Finish'; break;
 					default: label = 'Waypoint';
 				}
 				
@@ -513,16 +514,15 @@ var routing = (function ($) {
 				input = '<p><input name="' + waypointName + '" type="search" placeholder="' + label + '" class="geocoder" /></p>';
 				$('#routeplanning').append (input);
 				
-				// Attach a geocoder, firing a map click when selected, and moving focus to the next geocoder input box if present
-				routing.geocoder ('#routeplanning input[name="' + waypointName + '"]', function (item, callbackData) {
-					routing.fireMapClick (item.lon, item.lat, totalWaypoints);
-					routing.focusFirstAvailableGeocoder (totalWaypoints);
-					
-				}, {totalWaypoints: totalWaypoints});
+				// Attach a geocoder, firing a map click when selected, and moving focus to the first available geocoder input box if present
+				routing.geocoder ('#routeplanning input[name="' + waypointName + '"]', function (location) {
+					routing.fireMapClick (location.lon, location.lat);
+					routing.focusFirstAvailableGeocoder ();
+				});
 			}
 			
 			// Put focus on the first available geocoder
-			routing.focusFirstAvailableGeocoder (totalWaypoints);
+			routing.focusFirstAvailableGeocoder ();
 		},
 		
 		
@@ -537,13 +537,13 @@ var routing = (function ($) {
 		
 		
 		// Helper function to put focus in the first available geocoder control
-		focusFirstAvailableGeocoder: function (totalWaypoints)
+		focusFirstAvailableGeocoder: function ()
 		{
 			// Loop through each available slot
 			var waypointName;
 			var element;
 			var waypointNumber;
-			for (waypointNumber = 0; waypointNumber < totalWaypoints; waypointNumber++) {
+			for (waypointNumber = 0; waypointNumber < _settings.totalWaypoints; waypointNumber++) {
 				
 				// Check if this geocoder input exists
 				waypointName = 'waypoint' + waypointNumber;
