@@ -55,6 +55,10 @@ var satnav = (function ($) {
 				vectorTiles: 'mapbox://styles/mapbox/satellite-v9',
 				label: 'Satellite',
 			},
+			"os": {
+				vectorTiles: 'https://s3-eu-west-1.amazonaws.com/tiles.os.uk/styles/open-zoomstack-outdoor/style.json',
+				label: 'OS Open Zoomstack',
+			},
 			"opencyclemap": {
 				tiles: 'https://{s}.tile.cyclestreets.net/opencyclemap/{z}/{x}/{y}.png',
 				maxZoom: 22,
