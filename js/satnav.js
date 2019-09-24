@@ -3,6 +3,12 @@
 /*jslint browser: true, white: true, single: true, for: true */
 /*global $, alert, console, window, mapboxgl, FULLTILT, routing */
 
+
+// TODO:
+// #!# Speech synthesis: https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API/Using_the_Web_Speech_API#Demo_2
+// #!# No-sleep: https://github.com/richtr/NoSleep.js
+
+
 var satnav = (function ($) {
 	
 	'use strict';
