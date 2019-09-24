@@ -222,6 +222,7 @@ var satnav = (function ($) {
 		enableTilt: function ()
 		{
 			// Obtain a new *world-oriented* Full Tilt JS DeviceOrientation Promise
+			// #!# Needs to be updated for iOS13 and other browsers: https://dev.to/li/how-to-requestpermission-for-devicemotion-and-deviceorientation-events-in-ios-13-46g2
 			var promise = FULLTILT.getDeviceOrientation ({ 'type': 'world' });
 
 			// Wait for Promise result
