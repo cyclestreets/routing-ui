@@ -163,6 +163,13 @@ var routing = (function ($) {
 				}
 			});
 			
+			// Prevent viewport zooming, which is problematic for iOS Safari; see: https://stackoverflow.com/questions/37808180/
+			document.addEventListener ('touchmove', function (event) {
+				if (event.scale !== 1) {
+					event.preventDefault ();
+				}
+			}, {passive: false});
+			
 			// Create handles
 			_map = map;
 			_isMobileDevice = isMobileDevice;
