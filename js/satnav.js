@@ -223,18 +223,39 @@ var satnav = (function ($) {
 		},
 		
 		
+		// Wrapper to enable tilt
+		enableTilt: function ()
+		{
+			// Request permission where required on iOS13 and other supporting browsers; see:
+			// https://github.com/w3c/deviceorientation/issues/57
+			// https://dev.to/li/how-to-requestpermission-for-devicemotion-and-deviceorientation-events-in-ios-13-46g2
+			$('body').on ('click', '#panning', function () {
+				if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+					DeviceOrientationEvent.requestPermission()
+						.then(permissionState => {
+							if (permissionState === 'granted') {
+								satnav.implementTilt ();
+							}
+						})
+						.catch(console.error);
+				} else {
+					satnav.implementTilt ();
+				}
+			});
+		},
+		
+		
 		// Function to tilt and orientate the map direction automatically based on the phone position
 		// Note that the implementation of the W3C spec is inconsistent and is split between "world-orientated" and "game-orientated" implementations; accordingly a library is used
 		// https://developer.mozilla.org/en-US/docs/Web/API/Detecting_device_orientation
 		// https://developers.google.com/web/fundamentals/native-hardware/device-orientation/
 		// https://stackoverflow.com/a/26275869/180733
 		// https://www.w3.org/2008/geolocation/wiki/images/e/e0/Device_Orientation_%27alpha%27_Calibration-_Implementation_Status_and_Challenges.pdf
-		enableTilt: function ()
+		implementTilt: function ()
 		{
 			// Obtain a new *world-oriented* Full Tilt JS DeviceOrientation Promise
-			// #!# Needs to be updated for iOS13 and other browsers: https://dev.to/li/how-to-requestpermission-for-devicemotion-and-deviceorientation-events-in-ios-13-46g2
 			var promise = FULLTILT.getDeviceOrientation ({ 'type': 'world' });
-
+			
 			// Wait for Promise result
 			promise.then (function (deviceOrientation) { // Device Orientation Events are supported
 				
