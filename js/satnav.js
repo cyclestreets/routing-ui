@@ -63,7 +63,7 @@ var satnav = (function ($) {
 			},
 			"os": {
 				vectorTiles: 'https://s3-eu-west-1.amazonaws.com/tiles.os.uk/styles/open-zoomstack-outdoor/style.json',
-				label: 'OS Open Zoomstack',
+				label: 'Ordnance Survey',
 			},
 			"opencyclemap": {
 				tiles: 'https://{s}.tile.cyclestreets.net/opencyclemap/{z}/{x}/{y}@2x.png',
