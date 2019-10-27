@@ -1,7 +1,7 @@
 // Route planning / satnav user interface
 
 /*jslint browser: true, white: true, single: true, for: true */
-/*global $, jQuery, alert, console, window, confirm, prompt, mapboxgl, autocomplete */
+/*global $, jQuery, alert, console, window, confirm, prompt, mapboxgl, autocomplete, satnav */
 
 
 /*
@@ -129,7 +129,7 @@ var routing = (function ($) {
 		
 		// Define the supported travel mode colours
 		travelModeColours: {
-			'dismounted': 'gray',
+			'dismounted': 'gray'
 		},
 		
 		// Whether to show all route line results or just the currently-selected
@@ -227,8 +227,7 @@ var routing = (function ($) {
 		{
 			var myControl = function () {};
 			
-			myControl.prototype.onAdd = function(_map) {
-				this.map = map;
+			myControl.prototype.onAdd = function () {
 				this.container = document.createElement('div');
 				this.container.setAttribute ('id', id);
 				this.container.className = 'mapboxgl-ctrl-group mapboxgl-ctrl local';
@@ -326,7 +325,7 @@ var routing = (function ($) {
 		toolbox: function ()
 		{
 			// Add layer switcher UI
-			var control = this.createControl ('toolbox', 'bottom-left');
+			var control = routing.createControl ('toolbox', 'bottom-left');
 			
 			// Determine whether route loading from ID is supported; for this, all engines need to be native CycleStreets type
 			var routeLoadingSupported = true;
@@ -430,7 +429,7 @@ var routing = (function ($) {
 			if (_urlParameters.waypoints) {
 				_waypoints = _urlParameters.waypoints;
 				routing.plannable ();
-			};
+			}
 		},
 		
 		
@@ -449,7 +448,7 @@ var routing = (function ($) {
 					_waypoints.push ({lng: waypoint[0], lat: waypoint[1], label: null});
 				});
 				routing.plannable ();
-			};
+			}
 		},
 		
 		
@@ -489,7 +488,7 @@ var routing = (function ($) {
 			if (_isMobileDevice) {
 				$('#cardcontent').append ('<div id="routeplanning"></div>');
 			} else {
-				var control = this.createControl ('routeplanning', 'bottom-right');
+				var control = routing.createControl ('routeplanning', 'bottom-right');
 			}
 			
 			// Add title
@@ -977,9 +976,9 @@ var routing = (function ($) {
 			
 			// If a table row is clicked on, zoom to that section of the route (for that strategy)
 			$('#itineraries table.strategy-' + strategy.id).on('click', 'tr', function (e) {
-				var segment = segmentsIndex[e.currentTarget.dataset.segment];
-				routing.zoomToSegment (geojson, segment);
-				_keyboardFeaturePosition[strategy.id] = segment;
+				var zoomToSegment = segmentsIndex[e.currentTarget.dataset.segment];
+				routing.zoomToSegment (geojson, zoomToSegment);
+				_keyboardFeaturePosition[strategy.id] = zoomToSegment;
 			});
 			
 			// Handle left/right keyboard navigation through the route, for this strategy
@@ -1069,8 +1068,8 @@ var routing = (function ($) {
 				'cycling':    '&#x1f6b2',	// https://emojipedia.org/bicycle/
 				'driving':    '&#x1f697',	// https://emojipedia.org/automobile/
 				'railway':    '&#xf683',	// https://emojipedia.org/railway-car/
-				'horse':      '&#x1f40e',	// https://emojipedia.org/horse/
-			}
+				'horse':      '&#x1f40e'	// https://emojipedia.org/horse/
+			};
 			
 			// Return the icon
 			return icons[travelMode];
@@ -1305,9 +1304,9 @@ var routing = (function ($) {
 			// Add an outline for the line under the layer
 			if (_settings.lineOutlines) {
 				var outline = $.extend (true, {}, layer);	// i.e. clone
-				outline['id'] += '-outline';
-				outline['paint']['line-color'] = (strategy.lineColourOutline || '#999'),
-				outline['paint']['line-width'] = (strategy.id == _selectedStrategy ? _settings.lineThickness.selectedOutline : _settings.lineThickness.unselected),
+				outline.id += '-outline';
+				outline.paint['line-color'] = (strategy.lineColourOutline || '#999');
+				outline.paint['line-width'] = (strategy.id == _selectedStrategy ? _settings.lineThickness.selectedOutline : _settings.lineThickness.unselected);
 				_map.addLayer (outline, strategy.id);
 			}
 			

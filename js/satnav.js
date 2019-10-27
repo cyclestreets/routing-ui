@@ -1,7 +1,8 @@
 // CycleStreets HTML5 satnav in a browser
 
 /*jslint browser: true, white: true, single: true, for: true */
-/*global $, alert, console, window, mapboxgl, FULLTILT, routing */
+/*global $, jQuery, alert, console, window, DeviceOrientationEvent, mapboxgl, autocomplete, FULLTILT, routing */
+
 
 
 // TODO:
@@ -47,23 +48,23 @@ var satnav = (function ($) {
 		tileUrls: {
 			"streets": {
 				vectorTiles: 'mapbox://styles/mapbox/streets-v9',
-				label: 'Streets',
+				label: 'Streets'
 			},
 			"bright": {
 				vectorTiles: 'mapbox://styles/mapbox/bright-v9',
-				label: 'Bright',
+				label: 'Bright'
 			},
 			"dark": {
 				vectorTiles: 'mapbox://styles/mapbox/dark-v9',
-				label: 'Night',
+				label: 'Night'
 			},
 			"satellite": {
 				vectorTiles: 'mapbox://styles/mapbox/satellite-v9',
-				label: 'Satellite',
+				label: 'Satellite'
 			},
 			"os": {
 				vectorTiles: 'https://s3-eu-west-1.amazonaws.com/tiles.os.uk/styles/open-zoomstack-outdoor/style.json',
-				label: 'Ordnance Survey',
+				label: 'Ordnance Survey'
 			},
 			"opencyclemap": {
 				tiles: 'https://{s}.tile.cyclestreets.net/opencyclemap/{z}/{x}/{y}@2x.png',
@@ -232,12 +233,12 @@ var satnav = (function ($) {
 			$('body').on ('click', '#panning', function () {
 				if (typeof DeviceOrientationEvent.requestPermission === 'function') {
 					DeviceOrientationEvent.requestPermission()
-						.then(permissionState => {
+						.then ( (permissionState) => {
 							if (permissionState === 'granted') {
 								satnav.implementTilt ();
 							}
 						})
-						.catch(console.error);
+						.catch (console.error);
 				} else {
 					satnav.implementTilt ();
 				}
@@ -351,7 +352,8 @@ var satnav = (function ($) {
 				
 				// Insert the layer beneath any symbol layer.
 				var labelLayerId;
-				for (var i = 0; i < layers.length; i++) {
+				var i;
+				for (i = 0; i < layers.length; i++) {
 					if (layers[i].type === 'symbol' && layers[i].layout['text-field']) {
 						labelLayerId = layers[i].id;
 						break;
@@ -380,7 +382,7 @@ var satnav = (function ($) {
 							15, 0,
 							15.05, ["get", "min_height"]
 						],
-						'fill-extrusion-opacity': .6
+						'fill-extrusion-opacity': 0.6
 					}
 				}, labelLayerId);
 			});
@@ -391,7 +393,8 @@ var satnav = (function ($) {
 		styleHasLayer: function (layers, layerName)
 		{
 			// Ensure the layer has buildings, or end
-			for (var i = 0; i < layers.length; i++) {
+			var i;
+			for (i = 0; i < layers.length; i++) {
 				if (layers[i].id == layerName) {
 					return true;
 				}
@@ -419,7 +422,7 @@ var satnav = (function ($) {
 					center: [crd.longitude, crd.latitude],
 					zoom: 15
 				});
-			};
+			}
 			
 			function error (err) {
 				console.log (err);
@@ -467,14 +470,14 @@ var satnav = (function ($) {
 							tileLayerAttributes.tiles.replace ('{s}', 'a'),
 							tileLayerAttributes.tiles.replace ('{s}', 'b'),
 							tileLayerAttributes.tiles.replace ('{s}', 'c')
-						]
+						];
 					}
 					
 					// Convert string (without {s}) to array
 					if (typeof tileLayerAttributes.tiles === 'string') {
 						tileLayerAttributes.tiles = [
 							tileLayerAttributes.tiles
-						]
+						];
 					}
 					
 					// Register the definition
@@ -530,8 +533,9 @@ var satnav = (function ($) {
 				
 				// Fire an event; see: https://javascript.info/dispatch-events
 				satnav.styleChanged ();
-			};
-			for (var i = 0; i < inputs.length; i++) {
+			}
+			var i;
+			for (i = 0; i < inputs.length; i++) {
 				inputs[i].onclick = switchLayer;
 			}
 		},
@@ -568,10 +572,9 @@ var satnav = (function ($) {
 		// See: https://www.mapbox.com/mapbox-gl-js/api/#icontrol
 		createControl: function (id, position, className)
 		{
-			function myControl() { }
+			var myControl = function () {};
 			
-			myControl.prototype.onAdd = function(_map) {
-				this._map = map;
+			myControl.prototype.onAdd = function() {
 				this._container = document.createElement('div');
 				this._container.setAttribute ('id', id);
 				this._container.className = 'mapboxgl-ctrl-group mapboxgl-ctrl local';
@@ -583,7 +586,6 @@ var satnav = (function ($) {
 			
 			myControl.prototype.onRemove = function () {
 				this._container.parentNode.removeChild(this._container);
-				this._map = undefined;
 			};
 			
 			// #!# Need to add icon and hover; partial example at: https://github.com/schulzsebastian/mapboxgl-legend/blob/master/index.js
