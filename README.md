@@ -1,1 +1,1 @@
-Prototype new mobile web interface for journey planning.
+Web interface for journey planning.
