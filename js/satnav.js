@@ -47,19 +47,19 @@ var satnav = (function ($) {
 		defaultStyle: 'opencyclemap',
 		tileUrls: {
 			"streets": {
-				vectorTiles: 'mapbox://styles/mapbox/streets-v9',
+				vectorTiles: 'mapbox://styles/mapbox/streets-v11',
 				label: 'Streets'
 			},
 			"bright": {
-				vectorTiles: 'mapbox://styles/mapbox/bright-v9',
+				vectorTiles: 'mapbox://styles/mapbox/bright-v11',
 				label: 'Bright'
 			},
 			"dark": {
-				vectorTiles: 'mapbox://styles/mapbox/dark-v9',
+				vectorTiles: 'mapbox://styles/mapbox/dark-v11',
 				label: 'Night'
 			},
 			"satellite": {
-				vectorTiles: 'mapbox://styles/mapbox/satellite-v9',
+				vectorTiles: 'mapbox://styles/mapbox/satellite-v11',
 				label: 'Satellite'
 			},
 			"os": {
