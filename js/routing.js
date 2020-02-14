@@ -990,7 +990,7 @@ var routing = (function ($) {
 		zoomToSegment: function (geojson, segment)
 		{
 			var boundingBox = routing.getBoundingBox (geojson.features[segment].geometry.coordinates);
-			_map.fitBounds (boundingBox, {maxZoom: _settings.maxZoomToSegment});	// Bounding box version of flyTo
+			_map.fitBounds (boundingBox, {maxZoom: _settings.maxZoomToSegment, animate: true, essential: true, duration: 500});	// Bounding box version of flyTo
 		},
 		
 		
