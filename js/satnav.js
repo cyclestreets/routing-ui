@@ -51,15 +51,15 @@ var satnav = (function ($) {
 				label: 'Streets'
 			},
 			"bright": {
-				vectorTiles: 'mapbox://styles/mapbox/bright-v11',
+				vectorTiles: 'mapbox://styles/mapbox/bright-v9',
 				label: 'Bright'
 			},
 			"dark": {
-				vectorTiles: 'mapbox://styles/mapbox/dark-v11',
+				vectorTiles: 'mapbox://styles/mapbox/dark-v10',
 				label: 'Night'
 			},
 			"satellite": {
-				vectorTiles: 'mapbox://styles/mapbox/satellite-v11',
+				vectorTiles: 'mapbox://styles/mapbox/satellite-v9',
 				label: 'Satellite'
 			},
 			"os": {
