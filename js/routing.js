@@ -221,6 +221,13 @@ var routing = (function ($) {
 		},
 		
 		
+		// Getter
+		getSelectedStrategy: function ()
+		{
+			return _selectedStrategy;
+		},
+		
+		
 		// Function to create a control in a corner
 		// See: https://www.mapbox.com/mapbox-gl-js/api/#icontrol
 		createControl: function (id, position)
