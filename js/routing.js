@@ -55,16 +55,16 @@ var routing = (function ($) {
 		title: 'CycleStreets',
 		
 		// CycleStreets API
-		cyclestreetsApiBaseUrl: 'https://api.cyclestreets.net',
-		cyclestreetsApiKey: 'YOUR_CYCLESTREETS_API_KEY',
+		apiBaseUrl: 'https://api.cyclestreets.net',
+		apiKey: 'YOUR_CYCLESTREETS_API_KEY',
 		
 		// Max zoom
 		maxZoom: 20,
 		maxZoomToSegment: 17,
 		
-		// Geocoder API URL; re-use of settings values represented as placeholders {%cyclestreetsApiBaseUrl}, {%cyclestreetsApiKey}, {%autocompleteBbox}, are supported
-		geocoderApiUrl:        '{%cyclestreetsApiBaseUrl}/v2/geocoder?key={%cyclestreetsApiKey}&bounded=1&bbox={%autocompleteBbox}',
-		reverseGeocoderApiUrl: '{%cyclestreetsApiBaseUrl}/v2/nearestpoint?key={%cyclestreetsApiKey}',
+		// Geocoder API URL; re-use of settings values represented as placeholders {%apiBaseUrl}, {%apiKey}, {%autocompleteBbox}, are supported
+		geocoderApiUrl:        '{%apiBaseUrl}/v2/geocoder?key={%apiKey}&bounded=1&bbox={%autocompleteBbox}',
+		reverseGeocoderApiUrl: '{%apiBaseUrl}/v2/nearestpoint?key={%apiKey}',
 		
 		// BBOX for autocomplete results biasing
 		autocompleteBbox: '-6.6577,49.9370,1.7797,57.6924',
@@ -256,8 +256,8 @@ var routing = (function ($) {
 		// Function to add a geocoder control
 		geocoder: function (addTo, callbackFunction, callbackData)
 		{
-			// Geocoder URL; re-use of settings values is supported, represented as placeholders {%cyclestreetsApiBaseUrl}, {%cyclestreetsApiKey}, {%autocompleteBbox}
-			var geocoderApiUrl = routing.settingsPlaceholderSubstitution (_settings.geocoderApiUrl, ['cyclestreetsApiBaseUrl', 'cyclestreetsApiKey', 'autocompleteBbox']);
+			// Geocoder URL; re-use of settings values is supported, represented as placeholders {%apiBaseUrl}, {%apiKey}, {%autocompleteBbox}
+			var geocoderApiUrl = routing.settingsPlaceholderSubstitution (_settings.geocoderApiUrl, ['apiBaseUrl', 'apiKey', 'autocompleteBbox']);
 			
 			// Attach the autocomplete library behaviour to the location control
 			autocomplete.addTo (addTo, {
@@ -657,11 +657,11 @@ var routing = (function ($) {
 				// Otherwise use the standard CycleStreets implementation
 				} else {
 					parameters = $.extend (true, {}, strategy.parameters);	// i.e. clone
-					parameters.key = _settings.cyclestreetsApiKey;
+					parameters.key = _settings.apiKey;
 					parameters.waypoints = waypointStrings.join ('|');
 					parameters.archive = 'full';
 					parameters.itineraryFields = 'id,start,finish,waypointCount';
-					url = _settings.cyclestreetsApiBaseUrl + '/v2/journey.plan' + '?' + $.param (parameters, false);
+					url = _settings.apiBaseUrl + '/v2/journey.plan' + '?' + $.param (parameters, false);
 				}
 				
 				// Load the route
@@ -1166,10 +1166,10 @@ var routing = (function ($) {
 				
 				// Construct the route request
 				parameters = $.extend (true, {}, strategy.parameters);	// i.e. clone
-				parameters.key = _settings.cyclestreetsApiKey;
+				parameters.key = _settings.apiKey;
 				parameters.id = itineraryId;
 				parameters.itineraryFields = 'id,start,finish,waypointCount';
-				url = _settings.cyclestreetsApiBaseUrl + '/v2/journey.retrieve' + '?' + $.param (parameters, false);
+				url = _settings.apiBaseUrl + '/v2/journey.retrieve' + '?' + $.param (parameters, false);
 				
 				// Load the route
 				routing.loadRoute (url, strategy);
@@ -1643,7 +1643,7 @@ var routing = (function ($) {
 		reverseGeocode: function (coordinates, waypointNumber)
 		{
 			// Assemble API URL; see: https://www.cyclestreets.net/api/v2/nearestpoint/
-			var reverseGeocoderApiUrl = routing.settingsPlaceholderSubstitution (_settings.reverseGeocoderApiUrl, ['cyclestreetsApiBaseUrl', 'cyclestreetsApiKey']);
+			var reverseGeocoderApiUrl = routing.settingsPlaceholderSubstitution (_settings.reverseGeocoderApiUrl, ['apiBaseUrl', 'apiKey']);
 			reverseGeocoderApiUrl += '&lonlat=' + coordinates.lng + ',' + coordinates.lat;
 			
 			// Fetch the result
