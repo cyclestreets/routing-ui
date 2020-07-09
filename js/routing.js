@@ -136,7 +136,10 @@ var routing = (function ($) {
 		showAllRoutes: true,
 
 		// Whether to plan routes the moment the map is clicked rather than wait until a routing button is pressed
-		planRoutingOnMapClick: true
+		planRoutingOnMapClick: true,
+
+		// Whether to show the primitive Mapbox toolbox
+		showToolBox: true
 	};
 	
 	// Internal class properties
@@ -339,25 +342,27 @@ var routing = (function ($) {
 		// Function to add a toolbox
 		toolbox: function ()
 		{
-			// Add layer switcher UI
-			var control = routing.createControl ('toolbox', 'bottom-left');
-			
-			// Determine whether route loading from ID is supported; for this, all engines need to be native CycleStreets type
-			var routeLoadingSupported = true;
-			$.each (_settings.strategies, function (index, strategy) {
-				if (strategy.routeRequest) {
-					routeLoadingSupported = false;
+			if (_settings.showToolBox) {
+				// Add layer switcher UI
+				var control = routing.createControl ('toolbox', 'bottom-left');
+							
+				// Determine whether route loading from ID is supported; for this, all engines need to be native CycleStreets type
+				var routeLoadingSupported = true;
+				$.each (_settings.strategies, function (index, strategy) {
+					if (strategy.routeRequest) {
+						routeLoadingSupported = false;
+					}
+				});
+
+				// Construct HTML for layer switcher
+				var html = '<ul id="toolbox">';
+				if (routeLoadingSupported) {
+					html += '<li><a id="loadrouteid" href="#">Load route ID &hellip;</a></li>';
 				}
-			});
-			
-			// Construct HTML for layer switcher
-			var html = '<ul id="toolbox">';
-			if (routeLoadingSupported) {
-				html += '<li><a id="loadrouteid" href="#">Load route ID &hellip;</a></li>';
+				html += '<li><a id="panning" href="#" class="hidden">Panning: disabled</a></li>';
+				html += '</ul>';
+				$('#toolbox').append (html);
 			}
-			html += '<li><a id="panning" href="#" class="hidden">Panning: disabled</a></li>';
-			html += '</ul>';
-			$('#toolbox').append (html);
 		},
 		
 		
