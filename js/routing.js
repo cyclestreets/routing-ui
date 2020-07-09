@@ -208,7 +208,12 @@ var routing = (function ($) {
 			}
 			
 			// Add route planning UI
-			routing.routePlanning ();
+			//routing.routePlanning ();
+			// Connect existing inputs to goecoder autocomplete
+			routing.routePlanningAlt ();
+
+			// Add waypoint handlers
+			routing.registerWaypointHandlers ();
 			
 			// Load route from URL (itinerary/waypoints) if present
 			routing.loadRouteInitialUrl ();
@@ -491,9 +496,89 @@ var routing = (function ($) {
 		},
 		
 		
-		// Function to add a route planning UI
-		routePlanning: function ()
+		// Function run at launch to hook inputs up to geocoder
+		routePlanningAlt: function ()
 		{
+
+			var journeyplannerInputs = $('.panel.journeyplanner input');
+			var totalWaypoints = 2; // Default amount of waypoings, i.e. (1) Start and (2) Finish
+
+			$.each(journeyplannerInputs, function( index, value ) {
+				// Register a handler for geocoding, attachable to any input
+				routing.geocoder ('.panel.journeyplanner input[name="' + value.name + '"]', function (item, callbackData) {
+				
+				// Add the waypoint marker
+				var waypoint = {lng: item.lon, lat: item.lat, label: null /* i.e. determine automatically */};
+				routing.addWaypointMarker (waypoint);
+				
+			}, {totalWaypoints: totalWaypoints});
+			});
+		},
+		
+		// Function run at startup to register remove waypoint handler
+		registerWaypointHandlers: function ()
+		{			
+			$('.panel.journeyplanner.search').on('click', 'a.removeWaypoint', function(e) {
+				routing.removeWaypointGeocoder(e.target);
+			});
+		},
+
+		// Add a geocoder input at a certain position 
+		addWaypointGeocoder: function (waypointElement)
+		{			
+			// Get total amount o waypoints
+			var totalWaypoints = _waypoints.length; 
+			
+			// New waypoint number (indexed from 0) will be == to _waypoints.length
+			var waypointName = 'waypoint' + totalWaypoints // Indexed from 0
+			
+			// Append the new input
+			var newInputHtml = '<input name="' + waypointName +'" type="text" spellcheck="false" class="geocoder" placeholder="Add a waypoint" value="" />';
+			
+			// Add a add waypoint button
+			var addWaypointButtonHtml = '<a class="waypoint" href="#" title="Add waypoint"><img src="/images/icon-add-waypoint.svg" alt="Add waypoint" /></a>';
+			newInputHtml += addWaypointButtonHtml;
+			
+			// Add a remove waypoint button
+			var removeWaypointButtonHtml = '<a class="removeWaypoint" href="#" ><img src="/images/btn-clear-field-amber.svg" alt="Remove waypoint" /></a>'
+			newInputHtml += removeWaypointButtonHtml
+
+			var divHtml = '<div class="inputDiv">' + newInputHtml + '</div>';
+			
+			// Append this HTML to the waypoint element div
+			$(waypointElement).parent().after(divHtml);
+
+			// Register a handler for geocoding, attachable to any input
+			routing.geocoder ('.panel.journeyplanner input[name="' + waypointName + '"]', function (item, callbackData) {
+			
+				// Add the waypoint marker
+				var waypoint = {lng: item.lon, lat: item.lat, label: null /* i.e. determine automatically */};
+				routing.addWaypointMarker (waypoint);
+				
+			}, {totalWaypoints: totalWaypoints});
+		},
+
+		// Function to remove a geocoder input
+		removeWaypointGeocoder: function (waypointElement)
+		{
+			// Get the container of this input (img> a.removeWaypoing > div.inputDiv)
+			var divContainer = $(waypointElement).parent().parent();
+			
+			// Calculate the index, to remove the corresponding waypoint
+			var containerIndex = $(divContainer).index();
+			console.log(containerIndex);
+			
+			// Remove the container
+			$(divContainer).remove();
+
+			// Remove the waypoint from waypoints array
+			_waypoints.splice(containerIndex + 1, 1);
+		},
+		
+		// Function to add a route planning UI
+		routePlanning: function (createHtml)
+		{
+			
 			// Attach the route planning UI either to the Card UI (for mobile) or to the bottom-right of the map (for desktop)
 			if (_isMobileDevice) {
 				$('#cardcontent').append ('<div id="routeplanning"></div>');
@@ -504,8 +589,8 @@ var routing = (function ($) {
 			// Add title
 			var html = '<h2>Route planner</h2>';
 			$('#routeplanning').append (html);
-			
-			// Add input widgets
+		
+			// Add or assign input widgets
 			var totalWaypoints = 2;
 			var waypointName;
 			var label;
@@ -525,19 +610,25 @@ var routing = (function ($) {
 				waypointName = 'waypoint' + waypointNumber;
 				input = '<p><input name="' + waypointName + '" type="search" placeholder="' + label + '" class="geocoder" /></p>';
 				$('#routeplanning').append (input);
-				routing.geocoder ('#routeplanning input[name="' + waypointName + '"]', function (item, callbackData) {
-					
-					// Fire a click on the map
-					// #!# Note that use of map.fire is now deprecated: https://gis.stackexchange.com/a/210289/58752
-					point = _map.project ([item.lon, item.lat]);	// https://github.com/mapbox/mapbox-gl-js/issues/5060
-					_map.fire ('click', { lngLat: {lng: item.lon, lat: item.lat} }, point);
-					
-					// Move focus to next geocoder input box if present
-					routing.focusFirstAvailableGeocoder (totalWaypoints);
-					
-				}, {totalWaypoints: totalWaypoints});
+				
+				//var routeplanningInput = '#routeplanning input[name="' + waypointName + '"]';
+	
 			}
 			
+			// Register a handler for geocoding, attachable to any input
+			routing.geocoder ('#routeplanning input[name="waypoint0"]', function (item, callbackData) {
+				
+				// Fire a click on the map
+				// #!# Note that use of map.fire is now deprecated: https://gis.stackexchange.com/a/210289/58752
+				point = _map.project ([item.lon, item.lat]);	// https://github.com/mapbox/mapbox-gl-js/issues/5060
+				_map.fire ('click', { lngLat: {lng: item.lon, lat: item.lat} }, point);
+				
+				// Move focus to next geocoder input box if present
+				//routing.focusFirstAvailableGeocoder (totalWaypoints);
+				
+			}, {totalWaypoints: totalWaypoints});
+
+
 			// Put focus on the first available geocoder
 			if (!_isMobileDevice) {
 				routing.focusFirstAvailableGeocoder (totalWaypoints);
@@ -579,7 +670,7 @@ var routing = (function ($) {
 			
 			// Set the value if the input box is present
 			var waypointName = 'waypoint' + (waypointNumber - 1);
-			var element = '#routeplanning input[name="' + waypointName + '"]';
+			var element = '.panel.journeyplanner input[name="' + waypointName + '"]';
 			if ($(element).length) {
 				$(element).val (name);
 			}
