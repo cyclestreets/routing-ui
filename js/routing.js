@@ -133,7 +133,10 @@ var routing = (function ($) {
 		},
 		
 		// Whether to show all route line results or just the currently-selected
-		showAllRoutes: true
+		showAllRoutes: true,
+
+		// Whether to plan routes the moment the map is clicked rather than wait until a routing button is pressed
+		planRoutingOnMapClick: true
 	};
 	
 	// Internal class properties
