@@ -520,11 +520,15 @@ var routing = (function ($) {
 			});
 		},
 		
-		// Function run at startup to register remove waypoint handler
+		// Function run at startup to register add and remove waypoint handler
 		registerWaypointHandlers: function ()
 		{			
 			$('.panel.journeyplanner.search').on('click', 'a.removeWaypoint', function(e) {
 				routing.removeWaypointGeocoder(e.target);
+			});
+
+			$('.panel.journeyplanner.search').on('click', 'a.addWaypoint', function(e) {
+				routing.addWaypointGeocoder(e.target);
 			});
 		},
 
@@ -540,14 +544,15 @@ var routing = (function ($) {
 			// Append the new input
 			var newInputHtml = '<input name="' + waypointName +'" type="text" spellcheck="false" class="geocoder" placeholder="Add a waypoint" value="" />';
 			
-			// Add a add waypoint button
-			var addWaypointButtonHtml = '<a class="waypoint" href="#" title="Add waypoint"><img src="/images/icon-add-waypoint.svg" alt="Add waypoint" /></a>';
-			newInputHtml += addWaypointButtonHtml;
-			
 			// Add a remove waypoint button
 			var removeWaypointButtonHtml = '<a class="removeWaypoint" href="#" ><img src="/images/btn-clear-field-amber.svg" alt="Remove waypoint" /></a>'
 			newInputHtml += removeWaypointButtonHtml
 
+			// Add a add waypoint button
+			var addWaypointButtonHtml = '<a class="addWaypoint" href="#" title="Add waypoint"><img src="/images/icon-add-waypoint.svg" alt="Add waypoint" /></a>';
+			newInputHtml += addWaypointButtonHtml;
+			
+			// Wrap this in a inputDiv div
 			var divHtml = '<div class="inputDiv">' + newInputHtml + '</div>';
 			
 			// Append this HTML to the waypoint element div
@@ -561,6 +566,9 @@ var routing = (function ($) {
 				routing.addWaypointMarker (waypoint);
 				
 			}, {totalWaypoints: totalWaypoints});
+
+			// Resize map element
+			cyclestreetsui.fitMap ();
 		},
 
 		// Function to remove a geocoder input
@@ -575,8 +583,16 @@ var routing = (function ($) {
 			// Remove the container
 			$(divContainer).remove();
 
+			// Remove the market from the screen and registry
+			_markers[_markers.length - 1].remove();
+			// #¡# This only removes the last one, what about if we have several waypoints?
+
 			// Remove the waypoint from waypoints array
 			_waypoints.splice(containerIndex + 1, 1);
+
+			// Resize map element
+			cyclestreetsui.fitMap ();
+
 		},
 		
 		// Function to add a route planning UI
@@ -1731,7 +1747,7 @@ var routing = (function ($) {
 					image = _settings.images.start;
 					text = 'Start at: ' + routing.htmlspecialchars (waypoint.label);
 					break;
-				case totalWaypoints:
+				case 2:
 					image = _settings.images.finish;
 					text = 'Finish at: ' + routing.htmlspecialchars (waypoint.label);
 					break;
