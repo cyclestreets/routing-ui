@@ -689,6 +689,19 @@ var routing = (function ($) {
 			});
 		},
 		
+		// Add a pin to the map center
+		addMapCenter: function ()
+		{
+			var center = _map.getCenter();
+			
+			// Register the waypoint
+			// This overwrites any existing waypoints
+			var waypoint = {lng: center.lng, lat: center.lat, label: null /* i.e. determine automatically */};
+				
+			// Add the waypoint marker
+			routing.addWaypointMarker (waypoint);
+
+		},
 		
 		// Function to add the routing
 		routing: function ()
