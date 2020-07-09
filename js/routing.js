@@ -566,7 +566,6 @@ var routing = (function ($) {
 			
 			// Calculate the index, to remove the corresponding waypoint
 			var containerIndex = $(divContainer).index();
-			console.log(containerIndex);
 			
 			// Remove the container
 			$(divContainer).remove();
@@ -723,28 +722,33 @@ var routing = (function ($) {
 			// Get map locations
 			// https://www.mapbox.com/mapbox-gl-js/example/mouse-position/
 			var totalWaypoints;
+			
+			// Handler for clicking on the map and adding a wapoint
 			_map.on ('click', function (e) {
 				
 				// Take no action on the click handler if a route is loaded
 				if (!$.isEmptyObject (_routeGeojson)) {return;}
-				
 				// Register the waypoint
 				var waypoint = {lng: e.lngLat.lng, lat: e.lngLat.lat, label: null /* i.e. determine automatically */};
 				
 				// Add the waypoint marker
-				routing.addWaypointMarker (waypoint);
+				var addInput = true
+				routing.addWaypointMarker (waypoint, addInput);
+
 				
 				// Load the route if it is plannable, i.e. once there are two waypoints
-				routing.plannable ();
+				// Loading routeon map click is a setting an can be disable
+				if (_settings.planRoutingOnMapClick) {
+					routing.plannable ();
+				}
 			});
 		},
-		
 		
 		// Function to load a route if it is plannable from the registered waypoints, each containing a lng,lat,label collection
 		plannable: function ()
 		{
-			// End if the route is not yet plannable
-			if (_waypoints.length != 2) {return;}
+			// End if we have less than 2 waypoints
+			if (_waypoints.length < 2) {return;}
 			
 			// Convert waypoints to strings
 			var waypointStrings = routing.waypointStrings (_waypoints, 'lng,lat');
@@ -802,7 +806,7 @@ var routing = (function ($) {
 			$('#results').remove ();
 			
 			// Add a link to clear the route
-			var clearRouteHtml = '<p><a id="clearroute" href="#">Clear route &hellip;</a></p>';
+			//var clearRouteHtml = '<p><a id="clearroute" href="#">Clear route &hellip;</a></p>';
 			
 			// Create tabs and content panes for each of the strategies
 			var tabsHtml = '<ul id="strategies">';
@@ -817,13 +821,14 @@ var routing = (function ($) {
 			contentPanesHtml += '</div>';
 			
 			// Assemble the HTML
-			var html = clearRouteHtml + tabsHtml + contentPanesHtml;
+			//var html = clearRouteHtml + tabsHtml + contentPanesHtml;
+			var html = tabsHtml + contentPanesHtml;
 			
 			// Surround with a div for styling
 			html = '<div id="results">' + html + '</div>';
 			
 			// Append the panel to the route planning UI
-			$('#routeplanning').append (html);
+			$('.panel.journeyplanner.select').append (html);
 			
 			// Add jQuery UI tabs behaviour
 			$('#results').tabs ();
@@ -848,6 +853,7 @@ var routing = (function ($) {
 				// Set keyboard focus away from the tabs, to enable keyboard navigation of the route; see: https://stackoverflow.com/questions/23241606/
 				ui.newTab.blur ();
 			});
+
 		},
 		
 		
@@ -1685,38 +1691,44 @@ var routing = (function ($) {
 			
 			// Update the URL
 			routing.updateUrl (_itineraryId, null);
+
+			// #¡# Clear and geocoder and input boxes?
 		},
 		
 		
 		// Function to add a waypoint marker
-		addWaypointMarker: function (waypoint)
+		addWaypointMarker: function (waypoint, addInput = false)
 		{
+			
+			// Determine the total number of waypoints
+			var totalWaypoints = _waypoints.length;
+			
 			// Auto-assign label if required
 			// #!# Replace to using nearestpoint
 			if (waypoint.label == null) {
-				waypoint.label = (totalWaypoints == 1 ? 'Start' : 'Finish');
+				waypoint.label = (totalWaypoints == 0 ? 'Start' : 'Finish');
 			}
 			
 			// Register the waypoint
 			_waypoints.push (waypoint);
-
-			// Determine the total number of waypoints
-			var totalWaypoints = _waypoints.length;
 			
+			// Update the total number of waypoints
+			totalWaypoints = _waypoints.length;
+
 			// Auto-assign the waypoint number, i.e. add next, indexed from one
 			var waypointNumber = totalWaypoints;
-			
+
 			// Determine the image and text to use
 			var image;
 			var text;
 			switch (waypointNumber) {
 				case 1:
 					image = _settings.images.start;
-					text = 'Start at: <strong>' + routing.htmlspecialchars (waypoint.label) + '</strong>';
+					text = 'Start at: ' + routing.htmlspecialchars (waypoint.label);
 					break;
 				case totalWaypoints:
 					image = _settings.images.finish;
-					text = 'Finish at: <strong>' + routing.htmlspecialchars (waypoint.label) + '</strong>';
+					text = 'Finish at: ' + routing.htmlspecialchars (waypoint.label);
 					break;
 				default:
 					image = _settings.images.waypoint;
@@ -1743,6 +1755,13 @@ var routing = (function ($) {
 			
 			// Register the marker
 			_markers.push (marker);
+
+			// If add input is enabled, add an input
+			if (addInput) {
+				var input = '<input name="waypoint' + waypointNumber + '" type="text" spellcheck="false" class="geocoder" placeholder="' + text + '" value="" />'
+				$('#journeyPlannerInputs').append (input);
+			}
+
 		},
 		
 		
