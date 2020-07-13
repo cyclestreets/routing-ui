@@ -530,6 +530,50 @@ var routing = (function ($) {
 			$('.panel.journeyplanner.search').on('click', 'a.addWaypoint', function(e) {
 				routing.addWaypointGeocoder(e.target);
 			});
+
+			// Make journey planner inputs sortable via drag and drop
+			$('#journeyPlannerInputs').sortable({
+				items: '.inputDiv',
+				forcePlaceholderSize: true,
+				helper: 'original',
+				opacity: 0.5,
+				revert: 250,
+				axis: "y"
+			}).disableSelection();
+
+			// Disable the waypoints when list item is moved
+			$('#journeyPlannerInputs').on("sort", function(event, ui) {
+				$('.removeWaypoint').hide();
+				$('.addWaypoint').hide(250);
+			} );
+
+			// Update the waypoints when list item is dropped
+			$('#journeyPlannerInputs').on('sortstop', function(event, ui) {
+
+				// Update traffic light remove buttons and
+				// rebuild the waypoint add buttons (attach to all inputs except end)
+				var inputDivs = $('.inputDiv');
+				var totalDivs = inputDivs.length;
+				$('.addWaypoint').hide();
+				$(inputDivs).each(function(index, div) {
+					// Set the appropriate traffic light colour and show add waypoint
+					switch (index) {
+						case 0:
+							$(div).children('a.removeWaypoint').find('img').attr('src', '/images/btn-clear-field-green.svg');
+							$(div).children('a.addWaypoint').show();
+							break;
+						case (totalDivs - 1): 
+							$(div).children('a.removeWaypoint').find('img').attr('src', '/images/btn-clear-field-red.svg');
+							break;
+						default: 
+							$(div).children('a.removeWaypoint').find('img').attr('src', '/images/btn-clear-field-amber.svg');
+							$(div).children('a.addWaypoint').show();
+					}
+				});
+				
+				// Show the rebuilt waypoint traffic lights
+				$('.removeWaypoint').show(300);
+			} );
 		},
 
 		// Add a geocoder input at a certain position 
@@ -551,6 +595,9 @@ var routing = (function ($) {
 			// Add a add waypoint button
 			var addWaypointButtonHtml = '<a class="addWaypoint" href="#" title="Add waypoint"><img src="/images/icon-add-waypoint.svg" alt="Add waypoint" /></a>';
 			newInputHtml += addWaypointButtonHtml;
+
+			var reorderWaypointHtml = '<a class="reorderWaypoint" href="#" title="Reorder waypoint"><img src="/images/icon-reorder.svg" /></a>';
+			newInputHtml += reorderWaypointHtml;
 			
 			// Wrap this in a inputDiv div
 			var divHtml = '<div class="inputDiv">' + newInputHtml + '</div>';
