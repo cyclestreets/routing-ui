@@ -1824,8 +1824,7 @@ var routing = (function ($) {
 		
 		// Function to add a waypoint marker
 		addWaypointMarker: function (waypoint, addInput = false)
-		{
-			
+		{			
 			// Auto-assign label if required
 			if (waypoint.label == null) {
 				// Is there an empty waypoint? If so, we want to associate this waypoint
@@ -1868,7 +1867,7 @@ var routing = (function ($) {
 				var markerIndex = _markers.findIndex(marker => marker._lngLat.lng == oldWaypoint.lng && marker._lngLat.lat == oldWaypoint.lat);
 				if (markerIndex > -1) {
 					_markers[markerIndex].setLngLat ([waypoint.lng, waypoint.lat]);
-				}
+				} 
 
 			} else { // We did not match any, so adding a new waypoint
 				// Register the waypoint
@@ -1909,24 +1908,23 @@ var routing = (function ($) {
 				
 				// When marker is dragged, perform reverseGeocode and also update the waypoints
 				marker.on ('dragend', function (e) {
-					// Set the waypoint label
+					// Build waypoint
 					var label = 'waypoint' + (waypointNumber);
-					
-					// Find this waypoint in the indes
-					var waypointIndex = _waypoints.findIndex(wp => wp.label == label);
-					
-					// Build the new waypoint
 					var waypoint = {lng: e.target._lngLat.lng, lat: e.target._lngLat.lat, label: label};
 					
-					// Replace the old waypoint
+					// Find waypoint index
+					var waypointIndex = _waypoints.findIndex(wp => wp.label == label);
+					
+					// Replace waypoint in _waypoints index
 					_waypoints[waypointIndex] = waypoint;
 					
-					// Perform reverseGeocode to fill input box
+					// Reverse geocode to fill input box
 					routing.reverseGeocode (e.target._lngLat, waypointNumber);
 				});
 
 				// Register the marker
 				_markers.push (marker);
+				_currentWaypointIndex += 1;
 
 				// If add input is enabled, add an input
 				if (addInput) {
@@ -1946,9 +1944,7 @@ var routing = (function ($) {
 						var inputName = 'waypoint' + (waypointNumber) ;
 						$('#journeyPlannerInputs').append (routing.getInputHtml (inputName));
 					}
-				} else {
-					_currentWaypointIndex += 1;
-				}
+				} 
 			}
 		},
 		
