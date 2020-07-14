@@ -551,73 +551,77 @@ var routing = (function ($) {
 
 			// Update the waypoints when list item is dropped
 			$('#journeyPlannerInputs').on('sortstop', function(event, ui) {
-
-				// Save a copy of the old waypoints, and start a fresh _waypoints
-				var oldWaypoints = _waypoints;
-				_waypoints = []
-
-				// Get all the input divs in their new order
-				var inputDivs = $('.inputDiv');
-				var arrayPosition = 0 // Keep track of where we are in the new waypoints array, i.e., for traffic light colours
-
-				$(inputDivs).each (function(index, inputDiv) {
-					// Get the input child of each div
-					var inputWaypointName = $(inputDiv).children('input').attr('name');
-
-					// Get the matching waypoint
-					// If this geocoder has a contributed to a waypoint, find it
-					var waypointIndex = oldWaypoints.findIndex(wp => wp.label == inputWaypointName);
-					var waypoint = oldWaypoints[waypointIndex];
-
-					// Add new waypoint to our waypoints array
-					_waypoints.push(waypoint);
-
-					// Get a matching marker by lat and long, and change it to the appropriate colour
-					var markerIndex = _markers.findIndex(marker => marker._lngLat.lng == waypoint.lng && marker._lngLat.lat == waypoint.lat);
-					if (markerIndex > -1) {
-						var markerElement = _markers[markerIndex]._element;
-						var markerImage;
-						switch (arrayPosition) {
-							case 0:
-								markerImage = _settings.images.start;
-								break;
-							case (inputDivs.length-1):
-								markerImage = _settings.images.finish;
-								break;
-							default:
-								markerImage = _settings.images.waypoint;
-						}
-
-						markerElement.style.backgroundImage = "url('" + markerImage + "')";
-					} 
-
-					arrayPosition += 1;
-				});
-				
-				// Update traffic light remove buttons and
-				// rebuild the waypoint add buttons (attach to all inputs except end)
-				var inputDivs = $('.inputDiv');
-				var totalDivs = inputDivs.length;
-				$('.addWaypoint').hide ();
-				$(inputDivs).each (function(index, div) {
-					// Set the appropriate traffic light colour and show add waypoint
-					switch (index) {
-						case 0:
-							$(div).children('a.removeWaypoint').find('img').attr('src', '/images/btn-clear-field-green.svg');
-							$(div).children('a.addWaypoint').show();
-							break;
-						case (totalDivs - 1): 
-							$(div).children('a.removeWaypoint').find('img').attr('src', '/images/btn-clear-field-red.svg');
-							break;
-						default: 
-							$(div).children('a.removeWaypoint').find('img').attr('src', '/images/btn-clear-field-amber.svg');
-							$(div).children('a.addWaypoint').show();
-					}
-				});
-				
-				// Show the rebuilt waypoint traffic lights
-				$('.removeWaypoint').show(300);
+				routing.sortWaypoints ();
 			} );
+		},
+
+		sortWaypoints: function ()
+		{
+			// Save a copy of the old waypoints, and start a fresh _waypoints
+			var oldWaypoints = _waypoints;
+			_waypoints = []
+
+			// Get all the input divs in their new order
+			var inputDivs = $('.inputDiv');
+			var arrayPosition = 0 // Keep track of where we are in the new waypoints array, i.e., for traffic light colours
+
+			$(inputDivs).each (function(index, inputDiv) {
+				// Get the input child of each div
+				var inputWaypointName = $(inputDiv).children('input').attr('name');
+
+				// Get the matching waypoint
+				// If this geocoder has a contributed to a waypoint, find it
+				var waypointIndex = oldWaypoints.findIndex(wp => wp.label == inputWaypointName);
+				var waypoint = oldWaypoints[waypointIndex];
+
+				// Add new waypoint to our waypoints array
+				_waypoints.push(waypoint);
+
+				// Get a matching marker by lat and long, and change it to the appropriate colour
+				var markerIndex = _markers.findIndex(marker => marker._lngLat.lng == waypoint.lng && marker._lngLat.lat == waypoint.lat);
+				if (markerIndex > -1) {
+					var markerElement = _markers[markerIndex]._element;
+					var markerImage;
+					switch (arrayPosition) {
+						case 0:
+							markerImage = _settings.images.start;
+							break;
+						case (inputDivs.length-1):
+							markerImage = _settings.images.finish;
+							break;
+						default:
+							markerImage = _settings.images.waypoint;
+					}
+
+					markerElement.style.backgroundImage = "url('" + markerImage + "')";
+				} 
+
+				arrayPosition += 1;
+			});
+			
+			// Update traffic light remove buttons and
+			// rebuild the waypoint add buttons (attach to all inputs except end)
+			var inputDivs = $('.inputDiv');
+			var totalDivs = inputDivs.length;
+			$('.addWaypoint').hide ();
+			$(inputDivs).each (function(index, div) {
+				// Set the appropriate traffic light colour and show add waypoint
+				switch (index) {
+					case 0:
+						$(div).children('a.removeWaypoint').find('img').attr('src', '/images/btn-clear-field-green.svg');
+						$(div).children('a.addWaypoint').show();
+						break;
+					case (totalDivs - 1): 
+						$(div).children('a.removeWaypoint').find('img').attr('src', '/images/btn-clear-field-red.svg');
+						break;
+					default: 
+						$(div).children('a.removeWaypoint').find('img').attr('src', '/images/btn-clear-field-amber.svg');
+						$(div).children('a.addWaypoint').show();
+				}
+			});
+			
+			// Show the rebuilt waypoint traffic lights
+			$('.removeWaypoint').show(300);
 		},
 
 		// Add a geocoder input at a certain position 
@@ -644,6 +648,9 @@ var routing = (function ($) {
 
 			// Resize map element
 			cyclestreetsui.fitMap ();
+
+			// Rescan and fix colour
+			routing.sortWaypoints();
 		},
 
 		// Helper function to construct a geocoder input HTML + waypoint elements
@@ -699,6 +706,9 @@ var routing = (function ($) {
 			if (_waypoints.length < 2) {
 				$('.panel.journeyplanner.search #getRoutes').css('opacity',0.3);
 			}
+
+			// Rescan and fix colour
+			routing.sortWaypoints();
 
 			// Resize map element
 			cyclestreetsui.fitMap ();
@@ -1953,6 +1963,8 @@ var routing = (function ($) {
 					if (!emptyInputExists) {
 						var inputName = 'waypoint' + (waypointNumber) ;
 						$('#journeyPlannerInputs').append (routing.getInputHtml (inputName));
+						// Rescan and fix colour
+						routing.sortWaypoints();
 					}
 				} 
 			}
