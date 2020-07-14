@@ -155,6 +155,7 @@ var routing = (function ($) {
 	var _popups = {};
 	var _selectedStrategy = false;
 	var _keyboardFeaturePosition = {};
+	var _currentWaypointIndex = 0; // We start with no waypoints in our index
 	
 	
 	return {
@@ -281,6 +282,7 @@ var routing = (function ($) {
 					if (callbackFunction) {
 						callbackFunction (ui.item, callbackData);
 					}
+
 					event.preventDefault();
 				}
 			});
@@ -505,18 +507,18 @@ var routing = (function ($) {
 		routePlanningAlt: function ()
 		{
 
-			var journeyplannerInputs = $('.panel.journeyplanner input');
-			var totalWaypoints = 2; // Default amount of waypoings, i.e. (1) Start and (2) Finish
+			var journeyplannerInputs = $('.panel.journeyplanner.search input');
+			var totalWaypoints = 2; // Default amount of waypoints, i.e. (0) Start and (1) Finish
 
-			$.each(journeyplannerInputs, function( index, value ) {
+			$.each(journeyplannerInputs, function(index, input) {
 				// Register a handler for geocoding, attachable to any input
-				routing.geocoder ('.panel.journeyplanner input[name="' + value.name + '"]', function (item, callbackData) {
+				routing.geocoder ('.panel.journeyplanner input[name="' + input.name + '"]', function (item, callbackData) {
 				
-				// Add the waypoint marker
-				var waypoint = {lng: item.lon, lat: item.lat, label: null /* i.e. determine automatically */};
-				routing.addWaypointMarker (waypoint);
-				
-			}, {totalWaypoints: totalWaypoints});
+					// Add the waypoint marker
+					var waypoint = {lng: item.lon, lat: item.lat, label: input.name};
+					routing.addWaypointMarker (waypoint);
+					
+				}, {totalWaypoints: totalWaypoints});
 			});
 		},
 		
@@ -550,12 +552,54 @@ var routing = (function ($) {
 			// Update the waypoints when list item is dropped
 			$('#journeyPlannerInputs').on('sortstop', function(event, ui) {
 
+				// Save a copy of the old waypoints, and start a fresh _waypoints
+				var oldWaypoints = _waypoints;
+				_waypoints = []
+
+				// Get all the input divs in their new order
+				var inputDivs = $('.inputDiv');
+				var arrayPosition = 0 // Keep track of where we are in the new waypoints array, i.e., for traffic light colours
+
+				$(inputDivs).each (function(index, inputDiv) {
+					// Get the input child of each div
+					var inputWaypointName = $(inputDiv).children('input').attr('name');
+
+					// Get the matching waypoint
+					// If this geocoder has a contributed to a waypoint, find it
+					var waypointIndex = oldWaypoints.findIndex(wp => wp.label == inputWaypointName);
+					var waypoint = oldWaypoints[waypointIndex];
+
+					// Add new waypoint to our waypoints array
+					_waypoints.push(waypoint);
+
+					// Get a matching marker by lat and long, and change it to the appropriate colour
+					var markerIndex = _markers.findIndex(marker => marker._lngLat.lng == waypoint.lng && marker._lngLat.lat == waypoint.lat);
+					if (markerIndex > -1) {
+						var markerElement = _markers[markerIndex]._element;
+						var markerImage;
+						switch (arrayPosition) {
+							case 0:
+								markerImage = _settings.images.start;
+								break;
+							case (inputDivs.length-1):
+								markerImage = _settings.images.finish;
+								break;
+							default:
+								markerImage = _settings.images.waypoint;
+						}
+
+						markerElement.style.backgroundImage = "url('" + markerImage + "')";
+					} 
+
+					arrayPosition += 1;
+				});
+				
 				// Update traffic light remove buttons and
 				// rebuild the waypoint add buttons (attach to all inputs except end)
 				var inputDivs = $('.inputDiv');
 				var totalDivs = inputDivs.length;
-				$('.addWaypoint').hide();
-				$(inputDivs).each(function(index, div) {
+				$('.addWaypoint').hide ();
+				$(inputDivs).each (function(index, div) {
 					// Set the appropriate traffic light colour and show add waypoint
 					switch (index) {
 						case 0:
@@ -579,14 +623,34 @@ var routing = (function ($) {
 		// Add a geocoder input at a certain position 
 		addWaypointGeocoder: function (waypointElement)
 		{			
-			// Get total amount o waypoints
-			var totalWaypoints = _waypoints.length; 
 			
-			// New waypoint number (indexed from 0) will be == to _waypoints.length
-			var waypointName = 'waypoint' + totalWaypoints // Indexed from 0
+			// Increment current waypoint index
+			_currentWaypointIndex += 1;
+			var inputName = 'waypoint' + _currentWaypointIndex 
 			
+			var divHtml = routing.getInputHtml (inputName)
+			
+			// Append this HTML to the waypoint element div
+			$(waypointElement).parent().parent().after(divHtml);
+
+			// Register a handler for geocoding, attachable to any input
+			routing.geocoder ('.panel.journeyplanner input[name="' + inputName + '"]', function (item, callbackData) {
+			
+				// Add the waypoint marker
+				var waypoint = {lng: item.lon, lat: item.lat, label: inputName};
+				routing.addWaypointMarker (waypoint);
+				
+			}, {_currentWaypointIndex: _currentWaypointIndex});
+
+			// Resize map element
+			cyclestreetsui.fitMap ();
+		},
+
+		// Helper function to construct a geocoder input HTML + waypoint elements
+		getInputHtml: function (inputName) 
+		{
 			// Append the new input
-			var newInputHtml = '<input name="' + waypointName +'" type="text" spellcheck="false" class="geocoder" placeholder="Add a waypoint" value="" />';
+			var newInputHtml = '<input name="' + inputName +'" type="text" spellcheck="false" class="geocoder" placeholder="Add a waypoint" value="" />';
 			
 			// Add a remove waypoint button
 			var removeWaypointButtonHtml = '<a class="removeWaypoint" href="#" ><img src="/images/btn-clear-field-amber.svg" alt="Remove waypoint" /></a>'
@@ -596,46 +660,40 @@ var routing = (function ($) {
 			var addWaypointButtonHtml = '<a class="addWaypoint" href="#" title="Add waypoint"><img src="/images/icon-add-waypoint.svg" alt="Add waypoint" /></a>';
 			newInputHtml += addWaypointButtonHtml;
 
+			// Add a reorder handle	
 			var reorderWaypointHtml = '<a class="reorderWaypoint" href="#" title="Reorder waypoint"><img src="/images/icon-reorder.svg" /></a>';
 			newInputHtml += reorderWaypointHtml;
 			
 			// Wrap this in a inputDiv div
 			var divHtml = '<div class="inputDiv">' + newInputHtml + '</div>';
-			
-			// Append this HTML to the waypoint element div
-			$(waypointElement).parent().after(divHtml);
 
-			// Register a handler for geocoding, attachable to any input
-			routing.geocoder ('.panel.journeyplanner input[name="' + waypointName + '"]', function (item, callbackData) {
-			
-				// Add the waypoint marker
-				var waypoint = {lng: item.lon, lat: item.lat, label: null /* i.e. determine automatically */};
-				routing.addWaypointMarker (waypoint);
-				
-			}, {totalWaypoints: totalWaypoints});
-
-			// Resize map element
-			cyclestreetsui.fitMap ();
+			return divHtml;
 		},
 
 		// Function to remove a geocoder input
 		removeWaypointGeocoder: function (waypointElement)
 		{
-			// Get the container of this input (img> a.removeWaypoing > div.inputDiv)
+			// Get the container of this input (img> a.removeWaypoint > div.inputDiv)
 			var divContainer = $(waypointElement).parent().parent();
-			
-			// Calculate the index, to remove the corresponding waypoint
-			var containerIndex = $(divContainer).index();
-			
+
+			// Get the waypoint name from the input
+			var inputElementName = $(waypointElement).parent().siblings('input').first().attr('name');
+
 			// Remove the container
 			$(divContainer).remove();
 
-			// Remove the market from the screen and registry
-			_markers[_markers.length - 1].remove();
-			// #¡# This only removes the last one, what about if we have several waypoints?
+			// If this geocoder has a contributed to a waypoint, find it
+			var waypointIndex = _waypoints.findIndex(wp => wp.label == inputElementName);
+			var waypoint = _waypoints[waypointIndex];
+			
+			// Remove any markers with the lngLat of the _waypoint
+			var markerIndex = _markers.findIndex(marker => marker._lngLat.lng == waypoint.lng && marker._lngLat.lat == waypoint.lat);
+			if (markerIndex > -1) {
+				_markers[markerIndex].remove();
+			} 
 
 			// Remove the waypoint from waypoints array
-			_waypoints.splice(containerIndex + 1, 1);
+			_waypoints.splice(waypointIndex, 1);
 
 			// Resize map element
 			cyclestreetsui.fitMap ();
@@ -734,9 +792,9 @@ var routing = (function ($) {
 			if (name === false) {
 				name = '(Could not find location name)';
 			}
-			
+
 			// Set the value if the input box is present
-			var waypointName = 'waypoint' + (waypointNumber - 1);
+			var waypointName = 'waypoint' + (waypointNumber);
 			var element = '.panel.journeyplanner input[name="' + waypointName + '"]';
 			if ($(element).length) {
 				$(element).val (name);
@@ -756,14 +814,14 @@ var routing = (function ($) {
 			});
 		},
 		
-		// Add a pin to the map center
+		// Add a pin to the map center, used only at start when clicking to open the map card to initialise JP
 		addMapCenter: function ()
 		{
 			var center = _map.getCenter();
 			
 			// Register the waypoint
 			// This overwrites any existing waypoints
-			var waypoint = {lng: center.lng, lat: center.lat, label: null /* i.e. determine automatically */};
+			var waypoint = {lng: center.lng, lat: center.lat, label: 'waypoint0'};
 				
 			// Add the waypoint marker
 			routing.addWaypointMarker (waypoint);
@@ -791,19 +849,20 @@ var routing = (function ($) {
 			// https://www.mapbox.com/mapbox-gl-js/example/mouse-position/
 			var totalWaypoints;
 			
-			// Handler for clicking on the map and adding a wapoint
+			// Handler for clicking on the map and adding a waypoint
 			_map.on ('click', function (e) {
 				
 				// Take no action on the click handler if a route is loaded
 				if (!$.isEmptyObject (_routeGeojson)) {return;}
-				// Register the waypoint
-				var waypoint = {lng: e.lngLat.lng, lat: e.lngLat.lat, label: null /* i.e. determine automatically */};
+				
+				// Build the waypoint
+				var waypoint = {lng: e.lngLat.lng, lat: e.lngLat.lat, label: null /* i.e., autodetermine label */};
 				
 				// Add the waypoint marker
+				// This will fill the first empty inputs, then if none are empty, add an input
 				var addInput = true
 				routing.addWaypointMarker (waypoint, addInput);
 
-				
 				// Load the route if it is plannable, i.e. once there are two waypoints
 				// Loading routeon map click is a setting an can be disable
 				if (_settings.planRoutingOnMapClick) {
@@ -1572,7 +1631,6 @@ var routing = (function ($) {
 			if (!$.isEmptyObject (_routeGeojson)) {
 				$.each (_markers, function (index, marker) {
 					_markers[index].on ('dragend', function (e) {
-						
 						// Update the waypoint in the registry
 						_waypoints[index] = {lng: e.target._lngLat.lng, lat: e.target._lngLat.lat, label: _waypoints[index].label};
 						
@@ -1768,68 +1826,130 @@ var routing = (function ($) {
 		addWaypointMarker: function (waypoint, addInput = false)
 		{
 			
-			// Determine the total number of waypoints
-			var totalWaypoints = _waypoints.length;
-			
 			// Auto-assign label if required
-			// #!# Replace to using nearestpoint
 			if (waypoint.label == null) {
-				waypoint.label = (totalWaypoints == 0 ? 'Start' : 'Finish');
-			}
-			
-			// Register the waypoint
-			_waypoints.push (waypoint);
-			
-			// Update the total number of waypoints
-			totalWaypoints = _waypoints.length;
+				// Is there an empty waypoint? If so, we want to associate this waypoint
+				var isEmptyInput = false
+				
+				// Loop through all the inputs and find if there's an empty one
+				var inputElements = $('.panel.journeyplanner input');
+				$.each (inputElements, function (index, inputElement) {
+					if (!$(inputElement).val()) {
+						isEmptyInput = true;
+						
+						// If there is an empty input, use its waypointID
+						waypoint.label = $(inputElement).attr('name');
+						return false; // i.e., break and leave the loop
+					}
+				});
+				
+				// There was no empty input, so we need to increment the latest input
+				if (!isEmptyInput) {
+					waypoint.label = 'waypoint' + (_currentWaypointIndex+1);
 
-			// Auto-assign the waypoint number, i.e. add next, indexed from one
-			var waypointNumber = totalWaypoints;
-
-			// Determine the image and text to use
-			var image;
-			var text;
-			switch (waypointNumber) {
-				case 1:
-					image = _settings.images.start;
-					text = 'Start at: ' + routing.htmlspecialchars (waypoint.label);
-					break;
-				case 2:
-					image = _settings.images.finish;
-					text = 'Finish at: ' + routing.htmlspecialchars (waypoint.label);
-					break;
-				default:
-					image = _settings.images.waypoint;
-					text = 'Via: Waypoint #' + (waypointNumber - 1);	// #!# API needs to provide street location name
-			}
-			
-			// Assemble the image as a DOM element
-			// Unfortunately Mapbox GL makes image markers more difficult than Leaflet.js and has to be done at DOM level; see: https://github.com/mapbox/mapbox-gl-js/issues/656
-			var itinerarymarker = document.createElement('div');
-			itinerarymarker.className = 'itinerarymarker';
-			itinerarymarker.style.backgroundImage = "url('" + image + "')";
-			
-			// Add the marker
-			var marker = new mapboxgl.Marker({element: itinerarymarker, offset: [0, -22], draggable: true})	// See: https://www.mapbox.com/mapbox-gl-js/api/#marker
-				.setLngLat(waypoint)
-				.setPopup( new mapboxgl.Popup({ offset: 25 }).setHTML(text) )
-				.addTo(_map);
-			
-			// Perform a reverse geocoding of the marker location initially and when moved
-			routing.reverseGeocode (waypoint, waypointNumber);
-			marker.on ('dragend', function (e) {
-				routing.reverseGeocode (e.target._lngLat, waypointNumber);
-			});
-			
-			// Register the marker
-			_markers.push (marker);
-
-			// If add input is enabled, add an input
-			if (addInput) {
-				var input = '<input name="waypoint' + waypointNumber + '" type="text" spellcheck="false" class="geocoder" placeholder="' + text + '" value="" />'
-				$('#journeyPlannerInputs').append (input);
+					// If addInput wasn't enabled, enable it now, so we have a input for the new marker
+					addInput = true;
+				}
 			}
 
+			// Are we replacing a current waypoint, or registering a new one?
+			// Search for a waypoint wht LngLat matching our new candidate
+			var waypointIndex = _waypoints.findIndex(wp => wp.label == waypoint.label);
+			
+			// var waypointIndex will be -1 if not matched, of else returns index of match
+			if (waypointIndex > -1) {
+				// Store old waypoint
+				var oldWaypoint = _waypoints[waypointIndex];
+				
+				// Replace the waypoint
+				_waypoints[waypointIndex] = waypoint;
+				
+				// Locate the previous marker (at the old location), and setLngLat to new waypoint coordinates
+				var markerIndex = _markers.findIndex(marker => marker._lngLat.lng == oldWaypoint.lng && marker._lngLat.lat == oldWaypoint.lat);
+				if (markerIndex > -1) {
+					_markers[markerIndex].setLngLat ([waypoint.lng, waypoint.lat]);
+				}
+
+			} else { // We did not match any, so adding a new waypoint
+				// Register the waypoint
+				_waypoints.push (waypoint);
+				
+				// Get the final waypoint number
+				var waypointNumber = Number(waypoint.label.replace('waypoint',''));
+
+				// Determine the image and text to use
+				var image;
+				var text;
+				switch (waypointNumber) {
+					case 0:
+						image = _settings.images.start;
+						break;
+					case 1:
+						image = _settings.images.finish;
+						break;
+					default:
+						image = _settings.images.waypoint;
+				}
+				text = waypoint.label;
+				
+				// Assemble the image as a DOM element
+				// Unfortunately Mapbox GL makes image markers more difficult than Leaflet.js and has to be done at DOM level; see: https://github.com/mapbox/mapbox-gl-js/issues/656
+				var itinerarymarker = document.createElement('div');
+				itinerarymarker.className = 'itinerarymarker';
+				itinerarymarker.style.backgroundImage = "url('" + image + "')";
+				
+				// Add the marker
+				var marker = new mapboxgl.Marker({element: itinerarymarker, offset: [0, -22], draggable: true})	// See: https://www.mapbox.com/mapbox-gl-js/api/#marker
+					.setLngLat(waypoint)
+					.setPopup( new mapboxgl.Popup({ offset: 25 }).setHTML(text) )
+					.addTo(_map);
+				
+				// Perform a reverse geocoding of the marker location initially 
+				routing.reverseGeocode (waypoint, waypointNumber);
+				
+				// When marker is dragged, perform reverseGeocode and also update the waypoints
+				marker.on ('dragend', function (e) {
+					// Set the waypoint label
+					var label = 'waypoint' + (waypointNumber);
+					
+					// Find this waypoint in the indes
+					var waypointIndex = _waypoints.findIndex(wp => wp.label == label);
+					
+					// Build the new waypoint
+					var waypoint = {lng: e.target._lngLat.lng, lat: e.target._lngLat.lat, label: label};
+					
+					// Replace the old waypoint
+					_waypoints[waypointIndex] = waypoint;
+					
+					// Perform reverseGeocode to fill input box
+					routing.reverseGeocode (e.target._lngLat, waypointNumber);
+				});
+
+				// Register the marker
+				_markers.push (marker);
+
+				// If add input is enabled, add an input
+				if (addInput) {
+					
+					// Is there an empty input? Add to this, instead
+					var inputElements = $('.panel.journeyplanner input');
+					var emptyInputExists = false;
+					$.each (inputElements, function (index, inputElement) {
+						if (!$(inputElement).val()) {
+							emptyInputExists = true
+							return false;
+						}
+					});
+					
+					// If no empty input, add a new HTML block
+					if (!emptyInputExists) {
+						var inputName = 'waypoint' + (waypointNumber) ;
+						$('#journeyPlannerInputs').append (routing.getInputHtml (inputName));
+					}
+				} else {
+					_currentWaypointIndex += 1;
+				}
+			}
 		},
 		
 		
