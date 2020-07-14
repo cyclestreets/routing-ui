@@ -138,7 +138,7 @@ var routing = (function ($) {
 		// Whether to plan routes the moment the map is clicked rather than wait until a routing button is pressed
 		planRoutingOnMapClick: true,
 
-		// Whether to show the primitive Mapbox toolbox
+		// Whether to show the basic Mapbox toolbox
 		showToolBox: true
 	};
 	
@@ -694,6 +694,11 @@ var routing = (function ($) {
 
 			// Remove the waypoint from waypoints array
 			_waypoints.splice(waypointIndex, 1);
+
+			// If we now have fewer than 2 waypoints, grey out the routing button
+			if (_waypoints.length < 2) {
+				$('.panel.journeyplanner.search #getRoutes').css('opacity',0.3);
+			}
 
 			// Resize map element
 			cyclestreetsui.fitMap ();
@@ -1926,6 +1931,11 @@ var routing = (function ($) {
 				_markers.push (marker);
 				_currentWaypointIndex += 1;
 
+				// Enable the routing button, if we have more than 2 waypoints
+				if (_waypoints.length >= 2) {
+					$('#getRoutes').css('opacity',1);
+				}
+
 				// If add input is enabled, add an input
 				if (addInput) {
 					
@@ -1976,6 +1986,13 @@ var routing = (function ($) {
 					console.log (errorThrown);
 				}
 			});
+		},
+
+
+		// Getter to access waypoints index
+		getWaypoints: function ()
+		{
+			return _waypoints;
 		},
 		
 		
