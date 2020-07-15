@@ -501,6 +501,16 @@ var routing = (function ($) {
 				e.preventDefault ();
 			});
 		},
+
+		enableOrDisableRoutePlanningButton: function ()
+		{
+			// If we now have fewer than 2 waypoints, grey out the routing button
+			if (_waypoints.length < 2) {
+				$('.panel.journeyplanner.search #getRoutes').css('opacity',0.3);
+			} else {
+				$('.panel.journeyplanner.search #getRoutes').css('opacity',1);
+			}
+		},
 		
 		
 		// Function run at launch to hook inputs up to geocoder
@@ -704,13 +714,11 @@ var routing = (function ($) {
 			// Remove the waypoint from waypoints array
 			_waypoints.splice(waypointIndex, 1);
 
-			// If we now have fewer than 2 waypoints, grey out the routing button
-			if (_waypoints.length < 2) {
-				$('.panel.journeyplanner.search #getRoutes').css('opacity',0.3);
-			}
+			// Enable or disale route planning button
+			routing.enableOrDisableRoutePlanningButton ();
 
 			// Rescan and fix colour
-			routing.sortWaypoints();
+			routing.sortWaypoints ();
 
 			// Resize map element
 			cyclestreetsui.fitMap ();
@@ -1943,10 +1951,8 @@ var routing = (function ($) {
 				_markers.push (marker);
 				_currentWaypointIndex += 1;
 
-				// Enable the routing button, if we have more than 2 waypoints
-				if (_waypoints.length >= 2) {
-					$('#getRoutes').css('opacity',1);
-				}
+				// Enable or disable route planning button
+				routing.enableOrDisableRoutePlanningButton ();
 
 				// If add input is enabled, add an input
 				if (addInput) {
