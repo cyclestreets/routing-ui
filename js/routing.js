@@ -1267,8 +1267,75 @@ var routing = (function ($) {
 				_keyboardFeaturePosition[strategy.id] = zoomToSegment;
 			});
 			
+			// Make elevation scrubber draggable
+			$('.elevation-scrubber').draggable ({axis: "x"});
+
+			// Generate elevation graph
+			routing.generateElevationGraph (strategy.id);
+			
 			// Handle left/right keyboard navigation through the route, for this strategy
 			routing.itineraryKeyboardNavigation (strategy.id, geojson, segmentsIndex, lastSegment);
+		},
+
+	
+		// Function to write an elevation graph, used when generating the itinerary listing
+		generateElevationGraph: function (strategyId)
+		{
+			// Display the elevation graph
+			var ctx = document.getElementById(strategyId + 'elevationChart').getContext ('2d');
+			var myChart = new Chart(ctx, {
+			  type: 'line',
+			  data: {
+				labels: [1, 5, 3, 5, 3, 2, 5],
+				datasets: [{
+				  label: '',
+				  data: [1, 3, 5, 3, 7, 8, 4],
+				  backgroundColor: "rgba(220,79,85,1)"
+				}]
+			  },
+			options: {
+					responsive:true,
+					maintainAspectRatio: false,
+					elements: {
+					    point:{
+					        radius: 0
+					    }
+					},
+					layout: {
+						padding: {
+						left: -10,
+						right: 0,
+						top: 0,
+						bottom: -10
+						}
+					},
+					legend: {
+						display: false,
+					},
+					scales: {
+						 xAxes: [{
+							ticks: {
+								display: false
+							},
+							gridLines: {
+								drawOnChartArea: false,
+								drawBorder: true,
+								display: false
+							}
+						}],
+						yAxes: [{
+							gridLines: {
+								drawOnChartArea: false,
+								drawBorder: true,
+								display: false
+							},
+							ticks: {
+								display: false
+							}
+						}]
+					}
+				}
+			});
 		},
 		
 		
