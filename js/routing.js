@@ -671,7 +671,7 @@ var routing = (function ($) {
 		getInputHtml: function (inputName) 
 		{
 			// Append the new input
-			var newInputHtml = '<input name="' + inputName +'" type="text" spellcheck="false" class="geocoder" placeholder="Add a waypoint" value="" />';
+			var newInputHtml = '<input name="' + inputName +'" type="text" spellcheck="false" class="geocoder" placeholder="Add a waypoint, or click the map" value="" />';
 			
 			// Add a remove waypoint button
 			var removeWaypointButtonHtml = '<a class="removeWaypoint" href="#" ><img src="/images/btn-clear-field-amber.svg" alt="Remove waypoint" /></a>'
@@ -1779,7 +1779,7 @@ var routing = (function ($) {
 			});
 			
 			// Construct the HTML for the popup
-			var html = '<div class="details" style="background-color: ' + strategy.lineColour + '">';
+			var html = '<div class="details" style="border-color: ' + strategy.lineColour + '">';
 			html += '<ul><li><img src="/images/icon-clock.svg" alt="Clock icon" /><p>' + routing.formatDuration (plan.time) + '</p></li>';
 			html += '<li><img src="/images/icon-cyclist.svg" alt="Cyclist icon" /><p>' + routing.formatDistance (plan.length) + '</p></li></ul>';
 			html += '</div>';
