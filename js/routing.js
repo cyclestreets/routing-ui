@@ -572,29 +572,31 @@ var routing = (function ($) {
 				// Get the matching waypoint
 				// If this geocoder has a contributed to a waypoint, find it
 				var waypointIndex = oldWaypoints.findIndex(wp => wp.label == inputWaypointName);
-				var waypoint = oldWaypoints[waypointIndex];
+				if (waypointIndex > -1) {
+					var waypoint = oldWaypoints[waypointIndex];
 
-				// Add new waypoint to our waypoints array
-				_waypoints.push(waypoint);
+					// Add new waypoint to our waypoints array
+					_waypoints.push(waypoint);
 
-				// Get a matching marker by lat and long, and change it to the appropriate colour
-				var markerIndex = _markers.findIndex(marker => marker._lngLat.lng == waypoint.lng && marker._lngLat.lat == waypoint.lat);
-				if (markerIndex > -1) {
-					var markerElement = _markers[markerIndex]._element;
-					var markerImage;
-					switch (arrayPosition) {
-						case 0:
-							markerImage = _settings.images.start;
-							break;
-						case (inputDivs.length-1):
-							markerImage = _settings.images.finish;
-							break;
-						default:
-							markerImage = _settings.images.waypoint;
-					}
+					// Get a matching marker by lat and long, and change it to the appropriate colour
+					var markerIndex = _markers.findIndex(marker => marker._lngLat.lng == waypoint.lng && marker._lngLat.lat == waypoint.lat);
+					if (markerIndex > -1) {
+						var markerElement = _markers[markerIndex]._element;
+						var markerImage;
+						switch (arrayPosition) {
+							case 0:
+								markerImage = _settings.images.start;
+								break;
+							case (inputDivs.length-1):
+								markerImage = _settings.images.finish;
+								break;
+							default:
+								markerImage = _settings.images.waypoint;
+						}
 
-					markerElement.style.backgroundImage = "url('" + markerImage + "')";
-				} 
+						markerElement.style.backgroundImage = "url('" + markerImage + "')";
+					} 
+				}
 
 				arrayPosition += 1;
 			});
