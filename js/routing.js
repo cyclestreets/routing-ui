@@ -1780,8 +1780,8 @@ var routing = (function ($) {
 			
 			// Construct the HTML for the popup
 			var html = '<div class="details" style="background-color: ' + strategy.lineColour + '">';
-			html += '<p><strong>' + routing.htmlspecialchars (strategy.label) + '</strong></p>';
-			html += '<p>' + routing.formatDuration (plan.time) + '<br />' + routing.formatDistance (plan.length) + '</p>';
+			html += '<ul><li><img src="/images/icon-clock.svg" alt="Clock icon" /><p>' + routing.formatDuration (plan.time) + '</p></li>';
+			html += '<li><img src="/images/icon-cyclist.svg" alt="Cyclist icon" /><p>' + routing.formatDistance (plan.length) + '</p></li></ul>';
 			html += '</div>';
 			
 			// Create the popup, set its coordinates, and add its HTML
