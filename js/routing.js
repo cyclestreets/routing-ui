@@ -502,9 +502,11 @@ var routing = (function ($) {
 			});
 		},
 
+
+		// Function to check whether or not the route planning button should display as enabled
 		enableOrDisableRoutePlanningButton: function ()
 		{
-			// If we now have fewer than 2 waypoints, grey out the routing button
+			// If we have fewer than 2 waypoints, grey out the routing button
 			if (_waypoints.length < 2) {
 				$('.panel.journeyplanner.search #getRoutes').css('opacity',0.3);
 			} else {
@@ -924,6 +926,7 @@ var routing = (function ($) {
 					parameters.waypoints = waypointStrings.join ('|');
 					parameters.archive = 'full';
 					parameters.itineraryFields = 'id,start,finish,waypointCount';
+					parameters.journeyFields = 'path,plan,lengthMetres,timeSeconds,grammesCO2saved,kiloCaloriesBurned';
 					url = _settings.apiBaseUrl + '/v2/journey.plan' + '?' + $.param (parameters, false);
 				}
 				
@@ -966,8 +969,8 @@ var routing = (function ($) {
 			var rgb;
 			$.each (_settings.strategies, function (index, strategy) {
 				rgb = routing.hexToRgb (strategy.lineColour);
-				tabsHtml += '<li><a data-strategy="' + strategy.id + '" href="#' + strategy.id + '" style="background-color: rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',' + '0.3' + ');">' + routing.htmlspecialchars (strategy.label) + '</a></li>';
-				contentPanesHtml += '<div id="' + strategy.id + '">' + routing.htmlspecialchars (strategy.label) + ' details loading &hellip;</div>';
+				tabsHtml += '<li><a data-strategy="' + strategy.id + '" href="#' + strategy.id + '" style="background-color: rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',' + '0.3' + ');"><h2>' + routing.htmlspecialchars (strategy.label).replace('route', '') + '</h2></a></li>';
+				contentPanesHtml += '<div id="' + strategy.id + '"><h2>' + routing.htmlspecialchars (strategy.label) + '</h2> details loading &hellip;</div>';
 			});
 			tabsHtml += '</ul>';
 			contentPanesHtml += '</div>';
@@ -980,7 +983,7 @@ var routing = (function ($) {
 			html = '<div id="results">' + html + '</div>';
 			
 			// Append the panel to the route planning UI
-			$('.panel.journeyplanner.select').append (html);
+			$('#resultsTabs').append (html);
 			
 			// Add jQuery UI tabs behaviour
 			$('#results').tabs ();
@@ -1204,13 +1207,24 @@ var routing = (function ($) {
 		{
 			// Start the HTML
 			var html = '';
-			
-			// Add the total distance and time
+
+			// Add the journey stats, like distance, calories, etc
 			var timeFormatted = routing.formatDuration (geojson.properties.plans[strategy.id].time);
 			var distanceFormatted = routing.formatDistance (geojson.properties.plans[strategy.id].length);
-			html += '<h3 class="right">' + timeFormatted + '</h3>';
-			html += '<h3>' + distanceFormatted + '</h3>';
 			
+			html += '<p class="location">' + geojson.properties.start + ' to ' + geojson.properties.finish + '</p>';
+			
+			html += '<ul class="journeyStats">';
+			html += '<li><img src="/images/icon-cyclist.svg" alt="Icon of a cyclist" /><p> ' + distanceFormatted + '</p>';
+			html += '<li><img src="/images/icon-clock.svg" alt="Clock icon" /><p> ' + timeFormatted + '</p></li>';
+			html += '<li><img src="/images/icon-flame.svg" alt="Flame icon" /><p> ' + geojson.properties.plans[strategy.id].kiloCaloriesBurned + '</p></li>';
+			html += '<li><img src="/images/icon-leaf.svg" alt="Leaf icon" /><p> ' + geojson.properties.plans[strategy.id].grammesCO2saved + 'g</p></li>';
+			html += '</ul>';
+
+			html += '<div class="elevation-chart-container"><canvas id="' + strategy.id + 'elevationChart"></canvas></div>';
+			html += '<span class="elevation"><img src="/images/icon-elevation.svg" alt="Elevation icon" />32m elevation</span>';
+			html += '<a href="#" class="elevation-scrubber"><img src="/images/elevation-dragger.svg" alt="Dragger icon" /></a>';
+
 			// Loop through each feature
 			var segmentsIndex = {};
 			var segment = 0;
@@ -1509,7 +1523,9 @@ var routing = (function ($) {
 			var plans = {};
 			plans[strategyId] = {		// Cannot be assigned directly in the array below; see https://stackoverflow.com/questions/11508463/javascript-set-object-key-by-variable
 				length: result.features[planIndex].properties.lengthMetres,
-				time: result.features[planIndex].properties.timeSeconds
+				time: result.features[planIndex].properties.timeSeconds,
+				grammesCO2saved: result.features[planIndex].properties.grammesCO2saved,
+				kiloCaloriesBurned: result.features[planIndex].properties.kiloCaloriesBurned,
 			};
 			result.properties.plans = plans;
 			
