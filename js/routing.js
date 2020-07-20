@@ -156,8 +156,9 @@ var routing = (function ($) {
 	var _selectedStrategy = false;
 	var _keyboardFeaturePosition = {};
 	var _currentWaypointIndex = 0; // We start with no waypoints in our index
-	
-	
+	var _myCharts = {}; // Store the elevation charts as global, so we can access them through the scrubber
+
+
 	return {
 		
 		// Main entry point
@@ -1268,52 +1269,118 @@ var routing = (function ($) {
 			});
 			
 			// Make elevation scrubber draggable
-			$('.elevation-scrubber').draggable ({axis: "x"});
+			routing.elevationScrubber(geojson);
 
 			// Generate elevation graph
-			routing.generateElevationGraph (strategy.id);
-			
+			routing.generateElevationGraph(strategy.id, geojson);
+
 			// Handle left/right keyboard navigation through the route, for this strategy
 			routing.itineraryKeyboardNavigation (strategy.id, geojson, segmentsIndex, lastSegment);
 		},
 
-	
-		// Function to write an elevation graph, used when generating the itinerary listing
-		generateElevationGraph: function (strategyId)
+
+		// Function to initialise the elevation scrubber and to provide handlers for it
+		elevationScrubber: function (geojson) 
 		{
+			$('.elevation-scrubber').draggable({
+				axis: "x",
+				containment: "parent",
+				refreshPositions: true,
+				drag: function (event, ui) {
+					// Which chart are we dragging on, i.e., quietest, balanced
+					var chartStrategyName = $(event.target).siblings('div').children('canvas').attr('id').replace('elevationChart', '');
+					
+					// Access that chart and get the element at X
+					var mouseEvent = event.originalEvent.originalEvent;
+					var activePoints = _myCharts[chartStrategyName].getElementsAtXAxis(mouseEvent);
+					
+					//var activePoints = _myCharts[strategyId].getElementsAtXAxis(event);
+					var chartIndex = activePoints[0]._index;
+					var journeySegment = activePoints[0]._xScale.ticks[chartIndex];
+
+					// Jump to segment
+					routing.zoomToSegment(geojson, journeySegment);
+				}
+			});
+		},
+
+
+		// Function to write an elevation graph, used when generating the itinerary listing
+		generateElevationGraph: function (strategyId, geojson) 
+		{
+			// We want to start on features[3], as the [0]-[2] don't contain elevation data
+			var i = 3; // Start iterator
+			var featuresLength = geojson.features.length;
+			var elevationArray = []; // Initialise an empty array used to store the processed elevation data
+
+			// Loop through all the features, and build a geometry array
+			// The label corresponds to the segment, and the elevation is the value
+			// As such, each label might correspond to multiple elevations, before we move on to the next segment
+			var elevationObject = null;
+			for (i; i < featuresLength; i++) {
+				var elevationElements = geojson.features[i].properties.elevationsMetres;
+				$(elevationElements).each(function (index, elevation) {
+					// #¡# We should skip the repeated link elevations between indexes
+					elevationObject = [i, elevation];
+					elevationArray.push(elevationObject);
+				});
+			}
+
+			// Build the data
+			var elevationDataArray = [];
+			var segmentDataArray = [];
+			var segment = null;
+			var elevation = null;
+			$(elevationArray).each(function (index, elevation) {
+				segment = elevation[0];
+				elevation = elevation[1];
+				segmentDataArray.push(segment);
+				elevationDataArray.push(elevation);
+			});
+
 			// Display the elevation graph
-			var ctx = document.getElementById(strategyId + 'elevationChart').getContext ('2d');
-			var myChart = new Chart(ctx, {
-			  type: 'line',
-			  data: {
-				labels: [1, 5, 3, 5, 3, 2, 5],
-				datasets: [{
-				  label: '',
-				  data: [1, 3, 5, 3, 7, 8, 4],
-				  backgroundColor: "rgba(220,79,85,1)"
-				}]
-			  },
-			options: {
-					responsive:true,
+			var canvas = document.getElementById(strategyId + 'elevationChart');
+			var ctx = canvas.getContext('2d');
+			_myCharts[strategyId] = new Chart(ctx, {
+				type: 'line',
+				data: {
+					labels: segmentDataArray,
+					datasets: [{
+						label: 'Elevation',
+						data: elevationDataArray,
+						backgroundColor: 'rgba(220,79,85,1)'
+					}]
+				},
+				options: {
+					// On click, find the respective journey segment and zoom to that
+					onClick: function (evt) {
+						var activePoints = _myCharts[strategyId].getElementsAtXAxis(evt);
+						var chartIndex = activePoints[0]._index;
+						var journeySegment = activePoints[0]._xScale.ticks[chartIndex];
+
+						// Jump to segment
+						routing.zoomToSegment(geojson, journeySegment);
+					},
+					responsive: true,
 					maintainAspectRatio: false,
 					elements: {
-					    point:{
-					        radius: 0
-					    }
+						point: {
+							radius: 0
+						}
 					},
 					layout: {
 						padding: {
-						left: -10,
-						right: 0,
-						top: 0,
-						bottom: -10
+							left: -10,
+							right: 0,
+							top: 0,
+							bottom: -10
 						}
 					},
 					legend: {
 						display: false,
 					},
 					scales: {
-						 xAxes: [{
+						xAxes: [{
 							ticks: {
 								display: false
 							},
