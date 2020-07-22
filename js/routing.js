@@ -2164,6 +2164,13 @@ var routing = (function ($) {
 		{
 			return _waypoints;
 		},
+
+		
+		// Setter to replace waypoints index
+		setWaypoints: function (waypoints)
+		{
+			_waypoints = waypoints;
+		},
 		
 		
 		// Function to make data entity-safe
