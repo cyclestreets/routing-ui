@@ -695,6 +695,11 @@ var routing = (function ($) {
 		// Function to remove a geocoder input
 		removeWaypointGeocoder: function (waypointElement)
 		{
+			// If we only have two inputs left, don't remove any
+			if ($('.inputDiv').length <= 2) {
+				return false;
+			}
+			
 			// Get the container of this input (img> a.removeWaypoint > div.inputDiv)
 			var divContainer = $(waypointElement).parent().parent();
 
@@ -2165,7 +2170,7 @@ var routing = (function ($) {
 			return _waypoints;
 		},
 
-		
+
 		// Setter to replace waypoints index
 		setWaypoints: function (waypoints)
 		{
