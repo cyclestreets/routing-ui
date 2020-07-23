@@ -527,7 +527,7 @@ var routing = (function ($) {
 
 			$.each(journeyplannerInputs, function(index, input) {
 				// Register a handler for geocoding, attachable to any input
-				routing.geocoder ('.panel.journeyplanner input[name="' + input.name + '"]', function (item, callbackData) {
+				routing.geocoder ('.panel.journeyplanner.search input[name="' + input.name + '"]', function (item, callbackData) {
 				
 					// Add the waypoint marker
 					var waypoint = {lng: item.lon, lat: item.lat, label: input.name};
