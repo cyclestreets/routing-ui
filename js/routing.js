@@ -520,7 +520,7 @@ var routing = (function ($) {
 		routePlanningAlt: function ()
 		{
 
-			var journeyplannerInputs = $('.panel.journeyplanner.search input');
+			var journeyplannerInputs = $('.panel.journeyplanner input');
 			var totalWaypoints = 2; // Default amount of waypoints, i.e. (0) Start and (1) Finish
 
 			$.each(journeyplannerInputs, function(index, input) {
@@ -653,7 +653,7 @@ var routing = (function ($) {
 			$(waypointElement).parent().parent().after(divHtml);
 
 			// Register a handler for geocoding, attachable to any input
-			routing.geocoder ('.panel.journeyplanner input[name="' + inputName + '"]', function (item, callbackData) {
+			routing.geocoder ('.panel.journeyplanner.search input[name="' + inputName + '"]', function (item, callbackData) {
 			
 				// Add the waypoint marker
 				var waypoint = {lng: item.lon, lat: item.lat, label: inputName};
@@ -2011,7 +2011,7 @@ var routing = (function ($) {
 				var isEmptyInput = false
 				
 				// Loop through all the inputs and find if there's an empty one
-				var inputElements = $('.panel.journeyplanner input');
+				var inputElements = $('.panel.journeyplanner.search input');
 				$.each (inputElements, function (index, inputElement) {
 					if (!$(inputElement).val()) {
 						isEmptyInput = true;
@@ -2113,7 +2113,7 @@ var routing = (function ($) {
 				if (addInput) {
 					
 					// Is there an empty input? Add to this, instead
-					var inputElements = $('.panel.journeyplanner input');
+					var inputElements = $('.panel.journeyplanner.search input');
 					var emptyInputExists = false;
 					$.each (inputElements, function (index, inputElement) {
 						if (!$(inputElement).val()) {
