@@ -157,6 +157,8 @@ var routing = (function ($) {
 	var _keyboardFeaturePosition = {};
 	var _currentWaypointIndex = 0; // We start with no waypoints in our index
 	var _elevationCharts = {}; // Store the elevation charts as global, so we can access them through the scrubber
+	var _singleMarkerMode = false; // Set when only one waypoint should be clickable on the map, i.e., when setting home/work location
+	var _singleMarkerLocation = []; // Store the coordinates of a single waypoint, when setting work/home location
 
 
 	return {
@@ -891,6 +893,12 @@ var routing = (function ($) {
 				// Build the waypoint
 				var waypoint = {lng: e.lngLat.lng, lat: e.lngLat.lat, label: null /* i.e., autodetermine label */};
 				
+				// If we are in singleMarkerMode, i.e., setting a home/work location, redirect to the function
+				if (_singleMarkerMode) {
+					var locationName = cyclestreetsui.getSettingLocationName (); // i.e., 'home', 'work'
+					routing.setFrequentLocation (waypoint, locationName);
+				}
+
 				// Add the waypoint marker
 				// This will fill the first empty inputs, then if none are empty, add an input
 				var addInput = true
@@ -902,6 +910,20 @@ var routing = (function ($) {
 					routing.plannable ();
 				}
 			});
+		},
+
+		// Setter for _singleWaypointMode, accessed externally
+		setSingleMarkerMode: function (boolean) 
+		{
+			_singleMarkerMode = boolean;
+			return _singleMarkerMode;
+		},
+
+
+		// Getter for single marker location, used when setting home/work location
+		getSingleMarkerLocation: function ()
+		{
+			return _singleMarkerLocation;
 		},
 		
 		// Function to load a route if it is plannable from the registered waypoints, each containing a lng,lat,label collection
@@ -2130,6 +2152,53 @@ var routing = (function ($) {
 					}
 				} 
 			}
+		},
+
+
+		/* 	Function to mark a single marker, i.e., house or work location
+			While in this mode, only one marker can be displayed on the screen
+			If any Journey Planner markers were being displayed when this mode started, 
+			they will be saved and restored after we have set the location
+		*/
+		setFrequentLocation: function (waypoint, type)
+		{
+			// Overwrite the marker location
+			_singleMarkerLocation = [];
+			_singleMarkerLocation.push (waypoint);
+
+			// #¡# Add custom work/home markers?
+			var image = _settings.images.start
+			
+			// Assemble the image as a DOM element
+			var itinerarymarker = document.createElement('div');
+			itinerarymarker.className = 'itinerarymarker';
+			itinerarymarker.style.backgroundImage = "url('" + image + "')";
+			
+			// Add the marker
+			var marker = new mapboxgl.Marker({element: itinerarymarker, offset: [0, -22], draggable: true})	// See: https://www.mapbox.com/mapbox-gl-js/api/#marker
+				.setLngLat(waypoint)
+				.addTo(_map);
+			
+			// Perform a reverse geocoding of the marker location initially 
+			routing.reverseGeocode (waypoint, 'FrequentLocation'); // This overloads the reversegeocoder, which ties to input name 'waypoint' + waypointNumber
+			
+			// When marker is dragged, perform reverseGeocode and also update the waypoints
+			marker.on ('dragend', function (e) {
+				// Build waypoint
+				var waypoint = {lng: e.target._lngLat.lng, lat: e.target._lngLat.lat, label: null};
+				
+				// Update the location of the single marker
+				routing.setFrequentLocation (waypoint, type)
+				
+				// Reverse geocode to fill input box
+				routing.reverseGeocode (e.target._lngLat, 'FrequentLocation'); // This overloads the reversegeocoder, which ties to input name 'waypoint' + waypointNumber
+			});
+
+			// Overwrite any other markers
+			$.each(_markers, function (indexInArray, undesiredMarkers) { 
+				undesiredMarkers.remove ();
+			});
+			_markers.push (marker);
 		},
 		
 		
