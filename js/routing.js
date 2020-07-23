@@ -156,7 +156,7 @@ var routing = (function ($) {
 	var _selectedStrategy = false;
 	var _keyboardFeaturePosition = {};
 	var _currentWaypointIndex = 0; // We start with no waypoints in our index
-	var _myCharts = {}; // Store the elevation charts as global, so we can access them through the scrubber
+	var _elevationCharts = {}; // Store the elevation charts as global, so we can access them through the scrubber
 
 
 	return {
@@ -1297,9 +1297,8 @@ var routing = (function ($) {
 					
 					// Access that chart and get the element at X
 					var mouseEvent = event.originalEvent.originalEvent;
-					var activePoints = _myCharts[chartStrategyName].getElementsAtXAxis(mouseEvent);
+					var activePoints = _elevationCharts[chartStrategyName].getElementsAtXAxis(mouseEvent);
 					
-					//var activePoints = _myCharts[strategyId].getElementsAtXAxis(event);
 					var chartIndex = activePoints[0]._index;
 					var journeySegment = activePoints[0]._xScale.ticks[chartIndex];
 
@@ -1346,7 +1345,7 @@ var routing = (function ($) {
 			// Display the elevation graph
 			var canvas = document.getElementById(strategyId + 'elevationChart');
 			var ctx = canvas.getContext('2d');
-			_myCharts[strategyId] = new Chart(ctx, {
+			_elevationCharts[strategyId] = new Chart(ctx, {
 				type: 'line',
 				data: {
 					labels: segmentDataArray,
@@ -1359,7 +1358,7 @@ var routing = (function ($) {
 				options: {
 					// On click, find the respective journey segment and zoom to that
 					onClick: function (evt) {
-						var activePoints = _myCharts[strategyId].getElementsAtXAxis(evt);
+						var activePoints = _elevationCharts[strategyId].getElementsAtXAxis(evt);
 						var chartIndex = activePoints[0]._index;
 						var journeySegment = activePoints[0]._xScale.ticks[chartIndex];
 
