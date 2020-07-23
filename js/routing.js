@@ -976,7 +976,7 @@ var routing = (function ($) {
 			$.each (_settings.strategies, function (index, strategy) {
 				rgb = routing.hexToRgb (strategy.lineColour);
 				tabsHtml += '<li><a data-strategy="' + strategy.id + '" href="#' + strategy.id + '" style="background-color: rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',' + '0.3' + ');"><h2>' + routing.htmlspecialchars (strategy.label).replace('route', '') + '</h2></a></li>';
-				contentPanesHtml += '<div id="' + strategy.id + '"><h2>' + routing.htmlspecialchars (strategy.label) + '</h2> details loading &hellip;</div>';
+				contentPanesHtml += '<div id="' + strategy.id + '"><p>Routing loading&hellip;</p></div>';
 			});
 			tabsHtml += '</ul>';
 			contentPanesHtml += '</div>';
@@ -1222,9 +1222,9 @@ var routing = (function ($) {
 			
 			html += '<ul class="journeyStats">';
 			html += '<li><img src="/images/icon-cyclist.svg" alt="Icon of a cyclist" /><p> ' + distanceFormatted + '</p>';
-			html += '<li><img src="/images/icon-clock.svg" alt="Clock icon" /><p> ' + timeFormatted + '</p></li>';
-			html += '<li><img src="/images/icon-flame.svg" alt="Flame icon" /><p> ' + geojson.properties.plans[strategy.id].kiloCaloriesBurned + '</p></li>';
-			html += '<li><img src="/images/icon-leaf.svg" alt="Leaf icon" /><p> ' + geojson.properties.plans[strategy.id].grammesCO2saved + 'g</p></li>';
+			html += '<li><img src="/images/icon-clock.svg" alt="Clock icon" /><p> ' + timeFormatted + 'in</p></li>';
+			html += '<li><img src="/images/icon-flame.svg" alt="Flame icon" /><p> ' + geojson.properties.plans[strategy.id].kiloCaloriesBurned + ' calories</p></li>';
+			html += '<li><img src="/images/icon-leaf.svg" alt="Leaf icon" /><p> ' + geojson.properties.plans[strategy.id].grammesCO2saved + ' g</p></li>';
 			html += '</ul>';
 
 			html += '<div class="elevation-chart-container"><canvas id="' + strategy.id + 'elevationChart"></canvas></div>';
