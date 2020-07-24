@@ -556,7 +556,7 @@ var routing = (function ($) {
 				opacity: 0.5,
 				revert: 250,
 				axis: "y"
-			}).disableSelection();
+			});
 
 			// Disable the waypoints when list item is moved
 			$('#journeyPlannerInputs').on("sort", function(event, ui) {
