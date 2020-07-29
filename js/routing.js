@@ -697,10 +697,7 @@ var routing = (function ($) {
 		// Function to remove a geocoder input
 		removeWaypointGeocoder: function (waypointElement)
 		{
-			// If we only have two inputs left, don't remove any
-			if ($('.inputDiv').length <= 2) {
-				return false;
-			}
+			
 			
 			// Get the container of this input (img> a.removeWaypoint > div.inputDiv)
 			var divContainer = $(waypointElement).parent().parent();
@@ -708,8 +705,13 @@ var routing = (function ($) {
 			// Get the waypoint name from the input
 			var inputElementName = $(waypointElement).parent().siblings('input').first().attr('name');
 
-			// Remove the container
-			$(divContainer).remove();
+			// Only delete the actual input if we have > 2 inputs left
+			if ($('.inputDiv').length > 2) {
+				$(divContainer).remove();
+			} else {
+				// Delete any waypoint text in the input
+				$(waypointElement).parent().siblings('input').first().val ('');
+			}
 
 			// If this geocoder has a contributed to a waypoint, find it
 			var waypointIndex = _waypoints.findIndex(wp => wp.label == inputElementName);
