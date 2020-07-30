@@ -999,7 +999,7 @@ var routing = (function ($) {
 			var rgb;
 			$.each (_settings.strategies, function (index, strategy) {
 				rgb = routing.hexToRgb (strategy.lineColour);
-				tabsHtml += '<li><a data-strategy="' + strategy.id + '" href="#' + strategy.id + '" style="background-color: rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',' + '0.3' + ');"><h2>' + routing.htmlspecialchars (strategy.label).replace('route', '') + '</h2></a></li>';
+				tabsHtml += '<li><a data-strategy="' + strategy.id + '" href="#' + strategy.id + '" style="background-color: rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',' + '0.3' + ');"><label>' + routing.htmlspecialchars (strategy.label).replace('route', '') + '</label></a></li>';
 				contentPanesHtml += '<div id="' + strategy.id + '"><p>Routing loading&hellip;</p></div>';
 			});
 			tabsHtml += '</ul>';
