@@ -2157,7 +2157,7 @@ var routing = (function ($) {
 		},
 
 
-		/* 	Function to mark a single marker, i.e., house or work location
+		/* 	Function to mark a single marker, i.e., house or work, or photomap upload location
 			While in this mode, only one marker can be displayed on the screen
 			If any Journey Planner markers were being displayed when this mode started, 
 			they will be saved and restored after we have set the location
@@ -2201,6 +2201,19 @@ var routing = (function ($) {
 				undesiredMarkers.remove ();
 			});
 			_markers.push (marker);
+		},
+
+
+		// Function to reset the frequent location, used to reset this variable after operation is finihsed
+		resetFrequentLocation: function ()
+		{
+			// Remove the single marker location
+			_singleMarkerLocation = [];
+
+			// Delete any markers
+			$.each(_markers, function (indexInArray, undesiredMarkers) { 
+				undesiredMarkers.remove ();
+			});
 		},
 		
 		
