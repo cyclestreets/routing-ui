@@ -598,6 +598,7 @@ var routing = (function ($) {
 			}
 			
 			// Append this to the journey search card
+			$('.recent-searches').empty ();
 			$('.recent-searches').append (html);
 
 		},
@@ -662,6 +663,7 @@ var routing = (function ($) {
 			}
 			
 			// Append this to the journey search card
+			$('.recent-journeys').empty ();
 			$('.recent-journeys').append (html);
 
 		},
