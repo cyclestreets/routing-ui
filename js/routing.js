@@ -589,10 +589,8 @@ var routing = (function ($) {
 			var html = '';
 			if (_recentSearches.length) { // If there are recent searches
 				$.each (_recentSearches, function (index, searchObject) { 
-					html += '<li class="recentSearch"><a href="#" title="Get directions to here"><img src="/images/btn-get-directions-small.svg" alt="Arrow pointing to the right" /></a>';
+					html += '<li class="recentSearch"><a href="#" title="Add this waypoint to your journey"><img src="/images/icon-add-waypoint.svg" alt="Add this to your journey" /></a>';
 					html += '<p class="destination">' + searchObject.location + '</p>';
-					html += '<p class="distance">7 miles</p>';
-					html += '<p class="address">from ' + 'From?' + '</p>';
 					html += '</li><hr />';
 				});
 			} else {
@@ -832,8 +830,6 @@ var routing = (function ($) {
 		// Function to remove a geocoder input
 		removeWaypointGeocoder: function (waypointElement)
 		{
-			
-			
 			// Get the container of this input (img> a.removeWaypoint > div.inputDiv)
 			var divContainer = $(waypointElement).parent().parent();
 
