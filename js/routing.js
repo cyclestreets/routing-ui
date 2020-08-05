@@ -162,7 +162,8 @@ var routing = (function ($) {
 	var _elevationCharts = {}; // Store the elevation charts as global, so we can access them through the scrubber
 	var _singleMarkerMode = false; // Set when only one waypoint should be clickable on the map, i.e., when setting home/work location
 	var _singleMarkerLocation = []; // Store the coordinates of a single waypoint, when setting work/home location
-
+	var _recentJourneys = []; // Store the latest planned routes
+	var _recentSearches = []; // Store recent searches, used to populate the JP card
 
 	return {
 		
@@ -539,9 +540,132 @@ var routing = (function ($) {
 					// Add the waypoint marker
 					var waypoint = {lng: item.lon, lat: item.lat, label: input.name};
 					routing.addWaypointMarker (waypoint);
+
+					// Add this item to recent searches
+					routing.addToRecentSearches (waypoint);
 					
 				}, {totalWaypoints: totalWaypoints});
 			});
+		},
+
+		// Function to add a waypoint to recent searches
+		addToRecentSearches: function (waypoint) 
+		{
+			// Read the recent searches from a cookie, or initialise a new array if none are saved
+			_recentSearches = ($.cookie ('recentSearches') ? $.parseJSON($.cookie('recentSearches')) : []);
+		
+			// Get location from input geocoder and add it to the waypoint dictionary
+			waypoint['location'] = $('.panel.journeyplanner.search input[name="' + waypoint.label + '"]').val ();
+			
+			// If we don't have a location, don't save this as a recent search, and exit
+			if (typeof waypoint['location'] === "undefined") {
+				return;
+			}
+			
+			// Add this to the _recentSearches array, and update the cookie
+			_recentSearches.push (waypoint);
+			$.cookie('recentSearches', JSON.stringify(_recentSearches));
+			
+			routing.buildRecentSearches ();
+		},
+
+		// Getter for _recentSearches
+		getRecentSearches: function () 
+		{
+			// Read the recent searches from a cookie, or initialise a new array if none are saved
+			_recentSearches = ($.cookie ('recentSearches') ? $.parseJSON($.cookie('recentSearches')) : []);
+
+			return _recentSearches;
+		},
+
+
+		// Function to read the recent searches stored in a cookie, and populate the search panel
+		buildRecentSearches: function () 
+		{
+			// Read the recent searches from a cookie, or initialise a new array if none are saved
+			_recentSearches = ($.cookie ('recentSearches') ? $.parseJSON($.cookie('recentSearches')) : []);
+
+			// Construct HTML for each search
+			var html = '';
+			if (_recentSearches.length) { // If there are recent searches
+				$.each (_recentSearches, function (index, searchObject) { 
+					html += '<li class="recentSearch"><a href="#" title="Get directions to here"><img src="/images/btn-get-directions-small.svg" alt="Arrow pointing to the right" /></a>';
+					html += '<p class="destination">' + searchObject.location + '</p>';
+					html += '<p class="distance">7 miles</p>';
+					html += '<p class="address">from ' + 'From?' + '</p>';
+					html += '</li><hr />';
+				});
+			} else {
+				html += '<li><p class="address">Your recent searches will appear here.</p></li>';
+			}
+			
+			// Append this to the journey search card
+			$('.recent-searches').append (html);
+
+		},
+
+
+		// Function to add a search to recent journeys cookie
+		addToRecentJourneys: function ()
+		{
+			// Read the recent journeys from a cookie, or initialise a new array if none are saved
+			_recentJourneys = ($.cookie ('recentJourneys') ? $.parseJSON($.cookie('recentJourneys')) : []);
+			
+			// Find the first and last input values, which contains the geocoded destination
+			var origin = $('.panel.journeyplanner.search input').first().val();
+			var destination = $('.panel.journeyplanner.search input').last().val();
+			var waypoints = routing.getWaypoints ();
+
+			// Build the journey object
+			var journey = 
+			{
+				'origin': origin,
+				'destination': destination,
+				'waypoints': waypoints
+			}
+
+			// Add this to the _recentJourneys array, and update the cookie
+			_recentJourneys.push (journey);
+			$.cookie('recentJourneys', JSON.stringify(_recentJourneys));
+
+			// Update the UI
+			routing.buildRecentJourneys ();
+		},
+
+		// Getter for _recentJourneys
+		getRecentJourneys: function () 
+		{
+			// Read the recent journeys from a cookie, or initialise a new array if none are saved
+			_recentJourneys = ($.cookie ('recentJourneys') ? $.parseJSON($.cookie('recentJourneys')) : []);
+			
+			return _recentJourneys;
+		},
+
+
+
+		// Function to read the recent journeys stored in a cookie, and populate the search panel
+		buildRecentJourneys: function () 
+		{
+			// Read the recent journeys from a cookie, or initialise a new array if none are saved
+			_recentJourneys = ($.cookie ('recentJourneys') ? $.parseJSON($.cookie('recentJourneys')) : []);
+
+			// Construct HTML for each journey
+			var html = '';
+			if (_recentJourneys.length) { // If there are recent journeys
+				$.each (_recentJourneys, function (index, journeyObject) { 
+					html += '<li class="getRecentJourneyDirections"><a href="#" title="Get directions to here"><img src="/images/btn-get-directions-small.svg" alt="Arrow pointing to the right" /></a>';
+					html += '<p class="destination">' + journeyObject.destination + '</p>';
+					html += '<p class="distance">7 miles</p>';
+					html += '<p class="address">from ' + journeyObject.origin + '</p>';
+					html += '</li><hr />';
+				});
+			} else {
+				html += '<li><p class="address">Your recent journeys will appear here.</p></li>';
+			}
+			
+			// Append this to the journey search card
+			$('.recent-journeys').append (html);
+
 		},
 		
 		// Function run at startup to register add and remove waypoint handler
@@ -2195,6 +2319,16 @@ var routing = (function ($) {
 						var inputName = 'waypoint' + (waypointNumber) ;
 						$('#journeyPlannerInputs').append (routing.getInputHtml (inputName, inputHasDefaultValue));
 						
+						// Register a handler for geocoding, attachable to any input
+						routing.geocoder ('.panel.journeyplanner.search input[name="' + inputName + '"]', function (item, callbackData) {
+									
+							// Add the waypoint marker
+							var waypoint = {lng: item.lon, lat: item.lat, label: inputName};
+							routing.addToRecentSearches (waypoint);
+							routing.addWaypointMarker (waypoint);
+							
+						}, {_currentWaypointIndex: _currentWaypointIndex});
+
 						// Rescan and fix colour
 						routing.sortWaypoints();
 					}
