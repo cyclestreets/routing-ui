@@ -758,13 +758,16 @@ var routing = (function ($) {
 					case 0:
 						$(div).children('a.removeWaypoint').find('img').attr('src', '/images/btn-clear-field-green.svg');
 						$(div).children('a.addWaypoint').show();
+						$(div).children('span.loader').first().css('border-bottom-color', "#7ac064");
 						break;
 					case (totalDivs - 1): 
 						$(div).children('a.removeWaypoint').find('img').attr('src', '/images/btn-clear-field-red.svg');
+						$(div).children('span.loader').first().css('border-bottom-color', "#e54124");
 						break;
 					default: 
 						$(div).children('a.removeWaypoint').find('img').attr('src', '/images/btn-clear-field-amber.svg');
 						$(div).children('a.addWaypoint').show();
+						$(div).children('span.loader').first().css('border-bottom-color', "#f8d147");
 				}
 			});
 			
@@ -811,6 +814,10 @@ var routing = (function ($) {
 			} else {
 				newInputHtml += '<input name="' + inputName +'" type="text" spellcheck="false" class="geocoder" placeholder="Add a waypoint, or click the map" value="" />';
 			}
+			
+			// Add the spinner
+			newInputHtml += '<span class="loader"></span>';
+			
 			// Add a remove waypoint button
 			var removeWaypointButtonHtml = '<a class="removeWaypoint" href="#" ><img src="/images/btn-clear-field-amber.svg" alt="Remove waypoint" /></a>'
 			newInputHtml += removeWaypointButtonHtml
