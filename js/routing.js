@@ -220,7 +220,7 @@ var routing = (function ($) {
 			
 			// Add route planning UI
 			//routing.routePlanning ();
-			// Connect existing inputs to goecoder autocomplete
+			// Connect existing inputs to geocoder autocomplete
 			routing.routePlanningAlt ();
 
 			// Add waypoint handlers
@@ -2300,8 +2300,17 @@ var routing = (function ($) {
 					.setPopup( new mapboxgl.Popup({ offset: 25 }).setHTML(text) )
 					.addTo(_map);
 				
+				marker['waypointNumber'] = waypointNumber;
+
 				// When marker is dragged, perform reverseGeocode and also update the waypoints
 				marker.on ('dragend', function (e) {
+					// If this is the waypoint0, dragging means we are now not at the user location
+					// Turn off (grayscale) the location button to show this
+					if (marker.waypointNumber == 0) {
+						var inputElement = $('.panel.journeyplanner.search input[name=waypoint' + waypointNumber + ']').first();
+						$(inputElement).siblings ('a.locationTracking').addClass ('grayscale');
+					}
+					
 					// Build waypoint
 					var label = 'waypoint' + (waypointNumber);
 					var waypoint = {lng: e.target._lngLat.lng, lat: e.target._lngLat.lat, label: label};
