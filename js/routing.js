@@ -1823,14 +1823,15 @@ var routing = (function ($) {
 			});
 			
 			// Add the marker for each point
+			// #¡# Needs fixing to add the correct colours
 			$.each (geojson.features, function (index, feature) {
 				if (feature.properties.path.match (/^waypoint/)) {
 					
 					// Construct the marker attributes
 					var label;
 					switch (feature.properties.markerTag) {
-						case 'start'       : label = geojson.properties.start;  break;
-						case 'finish'      : label = geojson.properties.finish; break;
+						case 'start'       : label = 'waypoint0';  break;
+						case 'finish'      : label = 'waypoint1'; break;
 						case 'intermediate': label = false;                     break;
 					}
 					var waypoint = {lng: feature.geometry.coordinates[0], lat: feature.geometry.coordinates[1], label: label};
