@@ -1054,6 +1054,24 @@ var routing = (function ($) {
 			});
 		},
 
+
+		// Drop marker at user's geolocation
+		setMarkerAtUserLocation: function ()
+		{
+			// Immediately set the value of the input box
+			// This is so any other markers dropped in quick sucession will know that this box is 
+			// going to be filled, once the AJAX call completes
+			$('.panel.journeyplanner input.locationTracking').first ().val ('Finding your location...');
+			
+			// Retrieve the geolocatuon from layerviewer
+			var geolocation = layerviewer.getGeolocation ();
+			var geolocationLngLat = geolocation._accuracyCircleMarker._lngLat;
+
+			// Build the waypoint to be "dropped" into map
+			var waypoint = {lng: geolocationLngLat.lng, lat: geolocationLngLat.lat, label: 'waypoint0'};
+			routing.addWaypointMarker (waypoint);
+		},
+
 		// Setter for _singleWaypointMode, accessed externally
 		setSingleMarkerMode: function (boolean) 
 		{
