@@ -2299,9 +2299,6 @@ var routing = (function ($) {
 					.setPopup( new mapboxgl.Popup({ offset: 25 }).setHTML(text) )
 					.addTo(_map);
 				
-				// Perform a reverse geocoding of the marker location initially 
-				routing.reverseGeocode (waypoint, waypointNumber);
-				
 				// When marker is dragged, perform reverseGeocode and also update the waypoints
 				marker.on ('dragend', function (e) {
 					// Build waypoint
@@ -2356,6 +2353,9 @@ var routing = (function ($) {
 						routing.sortWaypoints();
 					}
 				} 
+
+				// After any additional input are created, perform the reverse geocode
+				routing.reverseGeocode (waypoint, waypointNumber);
 			}
 		},
 
@@ -2427,24 +2427,35 @@ var routing = (function ($) {
 			var reverseGeocoderApiUrl = routing.settingsPlaceholderSubstitution (_settings.reverseGeocoderApiUrl, ['apiBaseUrl', 'apiKey']);
 			reverseGeocoderApiUrl += '&lonlat=' + coordinates.lng + ',' + coordinates.lat;
 			
+			// Divine the input element, which will be used to control the spinner loader
+			var inputElement = $('.panel.journeyplanner.search input[name=waypoint' + waypointNumber + ']').first();
+
 			// Fetch the result
-			$.ajax ({
+			$.ajax({
 				dataType: 'json',
 				url: reverseGeocoderApiUrl,
+
+				beforeSend: function (jqXHR, settings) {
+					// Display a ui-autocomplete-loading on the element being located
+					$(inputElement).addClass('ui-autocomplete-loading');
+				},
 				success: function (result) {
-					
+
 					// Detect error in result
 					if (result.error) {
-						routing.setGeocoderLocationName (false, waypointNumber);
+						routing.setGeocoderLocationName(false, waypointNumber);
 						return;
 					}
-					
 					// Set the location name
-					routing.setGeocoderLocationName (result.features[0].properties.name, waypointNumber);
+					routing.setGeocoderLocationName(result.features[0].properties.name, waypointNumber);
 				},
 				error: function (jqXHR, textStatus, errorThrown) {
-					routing.setGeocoderLocationName (false, waypointNumber);
-					console.log (errorThrown);
+					routing.setGeocoderLocationName(false, waypointNumber);
+					console.log(errorThrown);
+				},
+				complete: function () {
+					// Remove the spinner
+					$(inputElement).removeClass ('ui-autocomplete-loading');
 				}
 			});
 		},
