@@ -2249,6 +2249,11 @@ var routing = (function ($) {
 			// Search for a waypoint wht LngLat matching our new candidate
 			var waypointIndex = _waypoints.findIndex(wp => wp.label == waypoint.label);
 			
+			// Get the final waypoint number
+			if (waypoint.label) {
+				var waypointNumber = Number(waypoint.label.replace('waypoint',''));
+			}
+
 			// var waypointIndex will be -1 if not matched, of else returns index of match
 			if (waypointIndex > -1) {
 				// Store old waypoint
@@ -2266,11 +2271,6 @@ var routing = (function ($) {
 			} else { // We did not match any, so adding a new waypoint
 				// Register the waypoint
 				_waypoints.push (waypoint);
-				
-				// Get the final waypoint number
-				if (waypoint.label) {
-					var waypointNumber = Number(waypoint.label.replace('waypoint',''));
-				}
 
 				// Determine the image and text to use
 				var image;
@@ -2285,6 +2285,7 @@ var routing = (function ($) {
 					default:
 						image = _settings.images.waypoint;
 				}
+				
 				text = waypoint.label;
 				
 				// Assemble the image as a DOM element
@@ -2333,7 +2334,6 @@ var routing = (function ($) {
 							return false;
 						}
 					});
-					
 
 					if (!emptyInputExists) {
 						var inputName = 'waypoint' + (waypointNumber) ;
@@ -2357,6 +2357,7 @@ var routing = (function ($) {
 			
 			// After any additional input are created, perform the reverse geocode
 			routing.reverseGeocode (waypoint, waypointNumber);
+			
 		},
 
 
