@@ -139,7 +139,10 @@ var routing = (function ($) {
 		planRoutingOnMapClick: true,
 
 		// Whether to show the basic Mapbox toolbox
-		showToolBox: true
+		showToolBox: true,
+
+		// Whether to prompt before clearing route
+		promptBeforeClearingRoute: true
 	};
 	
 	// Internal class properties
@@ -414,12 +417,16 @@ var routing = (function ($) {
 				
 				// If a route is already loaded, prompt to remove it
 				if (!$.isEmptyObject (_routeGeojson)) {
-					if (!confirm ('Clear existing route?')) {
-						return;
+					if (_settings.promptBeforeClearingRoute) {
+						if (!confirm ('Clear existing route?')) {
+							return;
+						}
 					}
-					
+
 					// Remove the route for each strategy
-					routing.removeRoute ();
+					var retainWaypoints = true;
+					var keepMarkers = true;
+					routing.removeRoute (retainWaypoints, keepMarkers);
 				}
 			});
 		},
@@ -671,11 +678,15 @@ var routing = (function ($) {
 		},
 
 		// Helper function to construct a geocoder input HTML + waypoint elements
-		getInputHtml: function (inputName) 
+		getInputHtml: function (inputName, inputHasDefaultValue = false) 
 		{
 			// Append the new input
-			var newInputHtml = '<input name="' + inputName +'" type="text" spellcheck="false" class="geocoder" placeholder="Add a waypoint, or click the map" value="" />';
-			
+			var newInputHtml = '';
+			if (inputHasDefaultValue) {
+				newInputHtml += '<input name="' + inputName +'" type="text" spellcheck="false" value="Finding location..." class="geocoder" placeholder="Add a waypoint, or click the map" value="" />';
+			} else {
+				newInputHtml += '<input name="' + inputName +'" type="text" spellcheck="false" class="geocoder" placeholder="Add a waypoint, or click the map" value="" />';
+			}
 			// Add a remove waypoint button
 			var removeWaypointButtonHtml = '<a class="removeWaypoint" href="#" ><img src="/images/btn-clear-field-amber.svg" alt="Remove waypoint" /></a>'
 			newInputHtml += removeWaypointButtonHtml
@@ -1975,7 +1986,7 @@ var routing = (function ($) {
 		
 		
 		// Function to remove a drawn route currently present
-		removeRoute: function (retainWaypoints)
+		removeRoute: function (retainWaypoints, keepMarkers = false)
 		{
 			// Remove the layer for each strategy
 			$.each (_routeGeojson, function (id, routeGeojson) {
@@ -2003,6 +2014,25 @@ var routing = (function ($) {
 			});
 			_markers = [];
 			
+			// Redraw new markers and map them to the respective inputs
+			if (keepMarkers) {
+				// Reset the JP inputs to default state
+				routing.resetJPGeocoderInputs ();
+
+				// Redraw the markers from the waypoints
+				// Save a copy of the waypoints index, as this will be rebuilt and matched to the new markers
+				var routeWaypoints = _waypoints;
+				_waypoints = [];
+				_currentWaypointIndex = 0;
+				$.each(routeWaypoints, function (indexInArray, waypoint) { 
+					// Rename the label so it matches with the geocoder input name
+					waypoint.label = 'waypoint' + _currentWaypointIndex;
+					var addInput = true;
+					var inputHasDefaultValue = true;
+					routing.addWaypointMarker (waypoint, addInput, inputHasDefaultValue);
+				});
+			} 
+			
 			// Retain waypoints in memory if required
 			if (!retainWaypoints) {
 				_waypoints = [];
@@ -2020,13 +2050,26 @@ var routing = (function ($) {
 			
 			// Update the URL
 			routing.updateUrl (_itineraryId, null);
+		},
 
-			// #¡# Clear and geocoder and input boxes?
+
+		// Function to remove all JP inputs
+		resetJPGeocoderInputs: function ()
+		{
+			var inputElements = $('.panel.journeyplanner.search input');
+			$.each (inputElements, function (index, inputElement) {
+				$(inputElement).parent().remove();
+				
+			});
 		},
 		
 		
 		// Function to add a waypoint marker
-		addWaypointMarker: function (waypoint, addInput = false)
+		// Accepts arguments: addInput: it will forcefully add a new geocoder input
+		// If addInput is false, an input will only be added if there is no empty existing input
+		// inputHasDefaultValue: Creates the input with val="Finding location", to avoid a timing
+		// error when many inputs are added at once and the geocoder doesn't have time to locate each one
+		addWaypointMarker: function (waypoint, addInput = false, inputHasDefaultValue = false)
 		{			
 			// Auto-assign label if required
 			if (waypoint.label == null) {
@@ -2077,7 +2120,9 @@ var routing = (function ($) {
 				_waypoints.push (waypoint);
 				
 				// Get the final waypoint number
-				var waypointNumber = Number(waypoint.label.replace('waypoint',''));
+				if (waypoint.label) {
+					var waypointNumber = Number(waypoint.label.replace('waypoint',''));
+				}
 
 				// Determine the image and text to use
 				var image;
@@ -2134,7 +2179,6 @@ var routing = (function ($) {
 
 				// If add input is enabled, add an input
 				if (addInput) {
-					
 					// Is there an empty input? Add to this, instead
 					var inputElements = $('.panel.journeyplanner.search input');
 					var emptyInputExists = false;
@@ -2145,10 +2189,11 @@ var routing = (function ($) {
 						}
 					});
 					
-					// If no empty input, add a new HTML block
+
 					if (!emptyInputExists) {
 						var inputName = 'waypoint' + (waypointNumber) ;
-						$('#journeyPlannerInputs').append (routing.getInputHtml (inputName));
+						$('#journeyPlannerInputs').append (routing.getInputHtml (inputName, inputHasDefaultValue));
+						
 						// Rescan and fix colour
 						routing.sortWaypoints();
 					}
