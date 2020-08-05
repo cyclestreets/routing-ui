@@ -2353,10 +2353,10 @@ var routing = (function ($) {
 						routing.sortWaypoints();
 					}
 				} 
-
-				// After any additional input are created, perform the reverse geocode
-				routing.reverseGeocode (waypoint, waypointNumber);
 			}
+			
+			// After any additional input are created, perform the reverse geocode
+			routing.reverseGeocode (waypoint, waypointNumber);
 		},
 
 
