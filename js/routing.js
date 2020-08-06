@@ -604,6 +604,8 @@ var routing = (function ($) {
 					html += '<p class="destination">' + searchObject.location + '</p>';
 					html += '</li><hr />';
 				});
+
+				html += '<a class="clearRecentSearches" href="#" title="Clear recent searches">Clear recent searches</a>';
 			} else {
 				html += '<li><p class="address">Your recent searches will appear here.</p></li>';
 			}
@@ -651,6 +653,17 @@ var routing = (function ($) {
 			return _recentJourneys;
 		},
 
+
+		// Clear _recentJourneys
+		clearRecentJourneys: function () 
+		{
+			// Reset _recent journeys array, and write as a cookie
+			_recentJourneys = [];
+			$.cookie('recentJourneys', JSON.stringify(_recentJourneys));
+
+			// Update the UI
+			routing.buildRecentJourneys ();
+		},
 
 
 		// Function to read the recent journeys stored in a cookie, and populate the search panel
