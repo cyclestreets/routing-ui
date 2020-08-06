@@ -2293,16 +2293,22 @@ var routing = (function ($) {
 		// Function to add a waypoint marker
 		// Accepts arguments: addInput: it will forcefully add a new geocoder input
 		// If addInput is false, an input will only be added if there is no empty existing input
-		// inputHasDefaultValue: Creates the input with val="Finding location", to avoid a timing
-		// error when many inputs are added at once and the geocoder doesn't have time to locate each one
+		// inputHasDefaultValue: Creates the input with val="Finding location", to avoid a timing error when many inputs are added at once and the geocoder doesn't have time to locate each one
 		addWaypointMarker: function (waypoint, addInput = false, inputHasDefaultValue = false)
 		{			
-			// Auto-assign label if required
+			// Auto assign label. Any map clicks, or externally added waypoints (e.g. from POI card) will be received as label = null, as in these cases we don't have knowledge of the internal state of the JP card
 			if (waypoint.label == null) {
-				// Is there an empty waypoint? If so, we want to associate this waypoint
-				var isEmptyInput = false
 				
+				// IF this is the first click on the map, we want to quickly add the user's location to the first input
+				// Our click will therefore populate the second input. However, this should only happen when the JP card is close. 
+				// If it is open, clicking on the map should always add to the first empty input
+				if ($('.panel.journeyplanner.search input:empty').length == 2 && !$('.panel.journeyplanner.search').hasClass ('open')) {
+					routing.setMarkerAtUserLocation ();
+				}
+				
+				// Is there an empty waypoint? If so, we want to associate this waypoint
 				// Loop through all the inputs and find if there's an empty one
+				var isEmptyInput = false
 				var inputElements = $('.panel.journeyplanner.search input');
 				$.each (inputElements, function (index, inputElement) {
 					if (!$(inputElement).val()) {
