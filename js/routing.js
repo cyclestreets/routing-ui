@@ -164,6 +164,7 @@ var routing = (function ($) {
 	var _singleMarkerLocation = []; // Store the coordinates of a single waypoint, when setting work/home location
 	var _recentJourneys = []; // Store the latest planned routes
 	var _recentSearches = []; // Store recent searches, used to populate the JP card
+	var _disableMapClicks = false; // Whether to ignore clicks on the map, useful for certain program states
 
 	return {
 		
@@ -578,14 +579,24 @@ var routing = (function ($) {
 			return _recentSearches;
 		},
 
+		// Clear _recentSearches
+		clearRecentSearches: function () 
+		{
+			// Reset _recent searches array, and write as a cookie
+			_recentSearches = [];
+			$.cookie('recentSearches', JSON.stringify(_recentSearches));
+
+			// Update the UI
+			routing.buildRecentSearches ();
+		},
+
 
 		// Function to read the recent searches stored in a cookie, and populate the search panel
 		buildRecentSearches: function () 
 		{
 			// Read the recent searches from a cookie, or initialise a new array if none are saved
 			_recentSearches = ($.cookie ('recentSearches') ? $.parseJSON($.cookie('recentSearches')) : []);
-
-			// Construct HTML for each search
+			
 			var html = '';
 			if (_recentSearches.length) { // If there are recent searches
 				$.each (_recentSearches, function (index, searchObject) { 
@@ -1004,6 +1015,14 @@ var routing = (function ($) {
 			routing.addWaypointMarker (waypoint);
 
 		},
+
+		
+		// Setter function to enable or disable map click behaviour
+		// Accepts a boolean: true will disable map click listening, false will enable it
+		disableMapClickListening: function (disabled) {
+			_disableMapClicks = disabled
+		},
+
 		
 		// Function to add the routing
 		routing: function ()
@@ -1022,12 +1041,11 @@ var routing = (function ($) {
 				return;
 			}
 			
-			// Get map locations
-			// https://www.mapbox.com/mapbox-gl-js/example/mouse-position/
-			var totalWaypoints;
-			
 			// Handler for clicking on the map and adding a waypoint
 			_map.on ('click', function (e) {
+				
+				// Take no action if class variable is set to ignore map clicks
+				if (_disableMapClicks) {return;}
 				
 				// Take no action on the click handler if a route is loaded
 				if (!$.isEmptyObject (_routeGeojson)) {return;}
@@ -1048,9 +1066,7 @@ var routing = (function ($) {
 
 				// Load the route if it is plannable, i.e. once there are two waypoints
 				// Loading routeon map click is a setting an can be disable
-				if (_settings.planRoutingOnMapClick) {
-					routing.plannable ();
-				}
+				if (_settings.planRoutingOnMapClick) {routing.plannable ();}
 			});
 		},
 
