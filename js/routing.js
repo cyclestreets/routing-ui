@@ -1062,6 +1062,9 @@ var routing = (function ($) {
 				
 				// Take no action if class variable is set to ignore map clicks
 				if (_disableMapClicks) {return;}
+
+				// Take no action if we clicked on a marker
+				if ($(e.originalEvent.target).hasClass ('marker')) {return;}
 				
 				// Take no action on the click handler if a route is loaded
 				if (!$.isEmptyObject (_routeGeojson)) {return;}
