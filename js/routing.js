@@ -165,6 +165,7 @@ var routing = (function ($) {
 	var _recentJourneys = []; // Store the latest planned routes
 	var _recentSearches = []; // Store recent searches, used to populate the JP card
 	var _disableMapClicks = false; // Whether to ignore clicks on the map, useful for certain program states
+	var _showPlannedRoute = false; // Don't display planned routes when we are not in itinerary mode, useful if the AJAX call takes a while and user has exited itinerary mode in the meantime
 
 	return {
 		
@@ -430,6 +431,8 @@ var routing = (function ($) {
 					var keepMarkers = true;
 					routing.removeRoute (retainWaypoints, keepMarkers);
 				}
+
+				routing.plannedRouteShouldBeShown (false);
 			});
 		},
 		
@@ -1145,6 +1148,9 @@ var routing = (function ($) {
 		{
 			// End if we have less than 2 waypoints
 			if (_waypoints.length < 2) {return;}
+			
+			// Turn on route display mode
+			routing.plannedRouteShouldBeShown (true);
 			
 			// Convert waypoints to strings
 			var waypointStrings = routing.waypointStrings (_waypoints, 'lng,lat');
@@ -1934,9 +1940,24 @@ var routing = (function ($) {
 		},
 		
 		
+		// Function to enable/disable route planning
+		// If a user plans a route and requests routing, but returns to the planning screen before
+		// the AJAX call has completed, route planning can display in the incorrect mode.
+		// This boolean acts as a flag which blocks the route from being displayed if we are not in itinerary mode
+		plannedRouteShouldBeShown: function (boolean)
+		{
+			_showPlannedRoute = boolean
+		},
+
+		
 		// Function to render a route onto the map
 		showRoute: function (geojson, strategy)
 		{
+			// If we are not in itinerary mode, exit
+			if (!_showPlannedRoute) {
+				return;
+			}
+
 			// Add in colours based on travel mode; see: https://www.mapbox.com/mapbox-gl-js/example/data-driven-lines/
 			$.each (geojson.features, function (index, feature) {
 				geojson.features[index].properties.color = routing.travelModeToColour (feature.properties.travelMode, strategy.lineColour);
