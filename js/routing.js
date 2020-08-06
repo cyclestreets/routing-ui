@@ -1070,6 +1070,7 @@ var routing = (function ($) {
 				if (_singleMarkerMode) {
 					var locationName = cyclestreetsui.getSettingLocationName (); // i.e., 'home', 'work'
 					routing.setFrequentLocation (waypoint, locationName);
+					return;
 				}
 
 				// Add the waypoint marker
@@ -1102,9 +1103,33 @@ var routing = (function ($) {
 		},
 
 		// Setter for _singleWaypointMode, accessed externally
-		setSingleMarkerMode: function (boolean) 
+		setSingleMarkerMode: function (isEnabled) 
 		{
-			_singleMarkerMode = boolean;
+			_singleMarkerMode = isEnabled; 
+			
+			if (isEnabled) {
+				// Disable all drag events on current markers (if any journey is being planned)
+				$.each(_markers, function (indexInArray, marker) {
+					marker.setDraggable(false);
+
+					// Set the marker as grayscale
+					var markerElement = marker.getElement ();
+					$(markerElement).addClass ('grayscale');
+				});
+			} else {
+				$.each(_markers, function (indexInArray, marker) {
+					// Enable all drag events on current markers
+					marker.setDraggable(true);
+					
+					// Delete any markers that are not part of the JP waypoints 
+					if (!marker.hasOwnProperty('waypointNumber')) {marker.remove ();}
+
+					// Remove grayscale effect
+					var markerElement = marker.getElement ();
+					$(markerElement).removeClass ('grayscale');
+				});
+			}
+			
 			return _singleMarkerMode;
 		},
 
@@ -2406,7 +2431,7 @@ var routing = (function ($) {
 		*/
 		setFrequentLocation: function (waypoint, type)
 		{
-			// Overwrite the marker location
+			// Overwrite the single marker location
 			_singleMarkerLocation = [];
 			_singleMarkerLocation.push (waypoint);
 
@@ -2422,7 +2447,7 @@ var routing = (function ($) {
 			var marker = new mapboxgl.Marker({element: itinerarymarker, offset: [0, -22], draggable: true})	// See: https://www.mapbox.com/mapbox-gl-js/api/#marker
 				.setLngLat(waypoint)
 				.addTo(_map);
-			
+
 			// Perform a reverse geocoding of the marker location initially 
 			routing.reverseGeocode (waypoint, 'FrequentLocation'); // This overloads the reversegeocoder, which ties to input name 'waypoint' + waypointNumber
 			
@@ -2438,10 +2463,11 @@ var routing = (function ($) {
 				routing.reverseGeocode (e.target._lngLat, 'FrequentLocation'); // This overloads the reversegeocoder, which ties to input name 'waypoint' + waypointNumber
 			});
 
-			// Overwrite any other markers
-			$.each(_markers, function (indexInArray, undesiredMarkers) { 
-				undesiredMarkers.remove ();
+			// Overwrite any other single location markers (leave and JP markers intact)
+			$.each(_markers, function (indexInArray, marker) { 
+				if (!marker.hasOwnProperty('waypointNumber')) {marker.remove ();}
 			});
+
 			_markers.push (marker);
 		},
 
@@ -2452,9 +2478,9 @@ var routing = (function ($) {
 			// Remove the single marker location
 			_singleMarkerLocation = [];
 
-			// Delete any markers
-			$.each(_markers, function (indexInArray, undesiredMarkers) { 
-				undesiredMarkers.remove ();
+			// Overwrite any other single location markers (leave any JP markers intact)
+			$.each(_markers, function (indexInArray, marker) { 
+				if (!marker.hasOwnProperty('waypointNumber')) {marker.remove ();}
 			});
 		},
 		
