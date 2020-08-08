@@ -686,6 +686,8 @@ var routing = (function ($) {
 					html += '<p class="address">from ' + journeyObject.origin + '</p>';
 					html += '</li><hr />';
 				});
+
+				html += '<a class="clearRecentJourneys" href="#" title="Clear recent journeys">Clear recent journeys</a>';
 			} else {
 				html += '<li><p class="address">Your recent journeys will appear here.</p></li>';
 			}
