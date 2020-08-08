@@ -849,15 +849,15 @@ var routing = (function ($) {
 			newInputHtml += '<span class="loader"></span>';
 			
 			// Add a remove waypoint button
-			var removeWaypointButtonHtml = '<a class="removeWaypoint" href="#" ><img src="/images/btn-clear-field-amber.svg" alt="Remove waypoint" /></a>'
+			var removeWaypointButtonHtml = '<a class="removeWaypoint zoom" href="#" ><img src="/images/btn-clear-field-amber.svg" alt="Remove waypoint" /></a>'
 			newInputHtml += removeWaypointButtonHtml
 
 			// Add a add waypoint button
-			var addWaypointButtonHtml = '<a class="addWaypoint" href="#" title="Add waypoint"><img src="/images/icon-add-waypoint.svg" alt="Add waypoint" /></a>';
+			var addWaypointButtonHtml = '<a class="addWaypoint zoom" href="#" title="Add waypoint"><img src="/images/icon-add-waypoint.svg" alt="Add waypoint" /></a>';
 			newInputHtml += addWaypointButtonHtml;
 
 			// Add a reorder handle	
-			var reorderWaypointHtml = '<a class="reorderWaypoint" href="#" title="Reorder waypoint"><img src="/images/icon-reorder.svg" /></a>';
+			var reorderWaypointHtml = '<a class="reorderWaypoint zoom" href="#" title="Reorder waypoint"><img src="/images/icon-reorder.svg" /></a>';
 			newInputHtml += reorderWaypointHtml;
 			
 			// Wrap this in a inputDiv div
@@ -1098,11 +1098,10 @@ var routing = (function ($) {
 		setMarkerAtUserLocation: function ()
 		{
 			// Immediately set the value of the input box
-			// This is so any other markers dropped in quick sucession will know that this box is 
-			// going to be filled, once the AJAX call completes
+			// This is so any other markers dropped in quick sucession will know that this box is going to be filled, once the AJAX call completes, and will use the succeeding empty inputs
 			$('.panel.journeyplanner input.locationTracking').first ().val ('Finding your location...');
 			
-			// Retrieve the geolocatuon from layerviewer
+			// Retrieve the geolocation from layerviewer
 			var geolocation = layerviewer.getGeolocation ();
 			var geolocationLngLat = geolocation._accuracyCircleMarker._lngLat;
 
