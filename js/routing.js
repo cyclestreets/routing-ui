@@ -523,9 +523,10 @@ var routing = (function ($) {
 		{
 			// If we have fewer than 2 waypoints, grey out the routing button
 			if (_waypoints.length < 2) {
-				$('.panel.journeyplanner.search #getRoutes').addClass ('grayscale', 1000);
+				$('.panel.journeyplanner.search #getRoutes').addClass ('grayscale', 1000).css ('opacity', '0.3');
+				
 			} else {
-				$('.panel.journeyplanner.search #getRoutes').removeClass ('grayscale', 1000);
+				$('.panel.journeyplanner.search #getRoutes').removeClass ('grayscale', 1000).css ('opacity', '1');
 			}
 		},
 		
