@@ -535,7 +535,7 @@ var routing = (function ($) {
 		routePlanningAlt: function ()
 		{
 
-			var journeyplannerInputs = $('.panel.journeyplanner input');
+			var journeyplannerInputs = $('.panel.journeyplanner.search input');
 			var totalWaypoints = 2; // Default amount of waypoints, i.e. (0) Start and (1) Finish
 
 			$.each(journeyplannerInputs, function(index, input) {
