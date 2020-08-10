@@ -167,6 +167,7 @@ var routing = (function ($) {
 	var _disableMapClicks = false; // Whether to ignore clicks on the map, useful for certain program states
 	var _showPlannedRoute = false; // Don't display planned routes when we are not in itinerary mode, useful if the AJAX call takes a while and user has exited itinerary mode in the meantime
 	var _geolocationAvailable = true; // Store geolocation availability, to automatically disable location tracking if user has not selected the right permissions
+	var _distanceUnit = 'kilometers'; // Store the distance unit
 
 	return {
 		
@@ -1796,22 +1797,33 @@ var routing = (function ($) {
 			// Assemble and return the HTML
 			return '<span class="turnsicons turnsicon-' + icon + '"></span>';
 		},
+
+
+		// Setter for distance unit
+		// Accepts 'miles' or 'kilometers'
+		setDistanceUnit: function (unitAsString){_distanceUnit = unitAsString;},
 		
 		
 		// Function to format a distance
 		formatDistance: function (metres)
 		{
-			// Convert Km
 			var result;
-			if (metres >= 1000) {
-				var km = metres / 1000;
-				result = Number (km.toFixed(1)) + 'km';
+			if (_distanceUnit == 'kilometres') {
+				// Convert Km
+				if (metres >= 1000) {
+					var km = metres / 1000;
+					result = Number (km.toFixed(1)) + 'km';
+					return result;
+				}
+				
+				// Round metres
+				result = Number (metres.toFixed ()) + 'm';
+				return result;
+			} else if (_distanceUnit == 'miles') {
+				var miles = metres / 1000 / 1.6;
+				result = Number (miles.toFixed(1)) + ' miles';
 				return result;
 			}
-			
-			// Round metres
-			result = Number (metres.toFixed ()) + 'm';
-			return result;
 		},
 		
 		
@@ -2308,7 +2320,6 @@ var routing = (function ($) {
 			var inputElements = $('.panel.journeyplanner.search input');
 			$.each (inputElements, function (index, inputElement) {
 				$(inputElement).parent().remove();
-				
 			});
 		},
 		
