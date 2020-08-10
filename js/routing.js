@@ -1106,7 +1106,10 @@ var routing = (function ($) {
 		// Drop marker at user's geolocation
 		setMarkerAtUserLocation: function ()
 		{
-			// Immediately set the value of the input box
+			// We can not do this if user geolocation isn't available
+			if (!routing.getGeolocationAvailability ()) {return;}
+			
+			// Immediately set the value of the input box to mark it as occupied
 			// This is so any other markers dropped in quick sucession will know that this box is going to be filled, once the AJAX call completes, and will use the succeeding empty inputs
 			$('.panel.journeyplanner input.locationTracking').first ().val ('Finding your location...');
 			
@@ -1118,6 +1121,7 @@ var routing = (function ($) {
 			var waypoint = {lng: geolocationLngLat.lng, lat: geolocationLngLat.lat, label: 'waypoint0'};
 			routing.addWaypointMarker (waypoint);
 		},
+
 
 		// Setter for _singleWaypointMode, accessed externally
 		setSingleMarkerMode: function (isEnabled) 
@@ -2314,10 +2318,7 @@ var routing = (function ($) {
 				// Our click will therefore populate the second input. However, this should only happen when the JP card is close. 
 				// If it is open, clicking on the map should always add to the first empty input
 				if ($('.panel.journeyplanner.search input:empty').length == 2 && !$('.panel.journeyplanner.search').hasClass ('open')) {
-					// We can only do this if geolocation is enabled
-					if (routing.getGeolocationAvailability ()) {
-						routing.setMarkerAtUserLocation ();
-					}
+					routing.setMarkerAtUserLocation ();
 				}
 				
 				// Is there an empty waypoint? If so, we want to associate this waypoint
