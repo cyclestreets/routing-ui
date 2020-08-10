@@ -572,14 +572,22 @@ var routing = (function ($) {
 			waypoint['location'] = $('.panel.journeyplanner.search input[name="' + waypoint.label + '"]').val ();
 			
 			// If we don't have a location, don't save this as a recent search, and exit
-			if (typeof waypoint['location'] === "undefined") {
-				return;
+			if (typeof waypoint['location'] === "undefined") {return;}
+
+			// Have we already got this location?
+			// If so, we will move this location up the search stack up to first index
+			var savedLocationIndex = _recentSearches.findIndex (obj => obj.location == waypoint.location);
+			if (savedLocationIndex > -1 ) {
+				var element = _recentSearches[savedLocationIndex];
+				_recentSearches.splice(savedLocationIndex, 1);
+				_recentSearches.splice(0, 0, element);
+			} else {
+				// Add this to the beginning of _recentSearches array
+				_recentSearches.unshift (waypoint);
 			}
-			
-			// Add this to the _recentSearches array, and update the cookie
-			_recentSearches.push (waypoint);
+
+			// Add this to the cookie, and rebuild the searches
 			$.cookie('recentSearches', JSON.stringify(_recentSearches));
-			
 			routing.buildRecentSearches ();
 		},
 
