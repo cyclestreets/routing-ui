@@ -166,6 +166,7 @@ var routing = (function ($) {
 	var _recentSearches = []; // Store recent searches, used to populate the JP card
 	var _disableMapClicks = false; // Whether to ignore clicks on the map, useful for certain program states
 	var _showPlannedRoute = false; // Don't display planned routes when we are not in itinerary mode, useful if the AJAX call takes a while and user has exited itinerary mode in the meantime
+	var _geolocationAvailable = true; // Store geolocation availability, to automatically disable location tracking if user has not selected the right permissions
 
 	return {
 		
@@ -247,6 +248,14 @@ var routing = (function ($) {
 		{
 			return _selectedStrategy;
 		},
+
+
+		// Set geolocation availability
+		setGeolocationAvailability: function (boolean) {_geolocationAvailable = boolean;},
+
+
+		// Get geolocation availability
+		getGeolocationAvailability: function () {return _geolocationAvailable;},
 		
 		
 		// Function to create a control in a corner
@@ -2301,11 +2310,14 @@ var routing = (function ($) {
 			// Auto assign label. Any map clicks, or externally added waypoints (e.g. from POI card) will be received as label = null, as in these cases we don't have knowledge of the internal state of the JP card
 			if (waypoint.label == null) {
 				
-				// IF this is the first click on the map, we want to quickly add the user's location to the first input
+				// If this is the first click on the map, we want to quickly add the user's location to the first input
 				// Our click will therefore populate the second input. However, this should only happen when the JP card is close. 
 				// If it is open, clicking on the map should always add to the first empty input
 				if ($('.panel.journeyplanner.search input:empty').length == 2 && !$('.panel.journeyplanner.search').hasClass ('open')) {
-					routing.setMarkerAtUserLocation ();
+					// We can only do this if geolocation is enabled
+					if (routing.getGeolocationAvailability ()) {
+						routing.setMarkerAtUserLocation ();
+					}
 				}
 				
 				// Is there an empty waypoint? If so, we want to associate this waypoint
@@ -2332,7 +2344,7 @@ var routing = (function ($) {
 			}
 
 			// Are we replacing a current waypoint, or registering a new one?
-			// Search for a waypoint wht LngLat matching our new candidate
+			// Search for a waypoint with label matching our new candidate
 			var waypointIndex = _waypoints.findIndex(wp => wp.label == waypoint.label);
 			
 			// Get the final waypoint number
@@ -2348,8 +2360,9 @@ var routing = (function ($) {
 				// Replace the waypoint
 				_waypoints[waypointIndex] = waypoint;
 				
-				// Locate the previous marker (at the old location), and setLngLat to new waypoint coordinates
+				// Locate the previous marker, and setLngLat to new waypoint coordinates
 				var markerIndex = _markers.findIndex(marker => marker._lngLat.lng == oldWaypoint.lng && marker._lngLat.lat == oldWaypoint.lat);
+				
 				if (markerIndex > -1) {
 					_markers[markerIndex].setLngLat ([waypoint.lng, waypoint.lat]);
 				} 
