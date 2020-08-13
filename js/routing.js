@@ -764,7 +764,7 @@ var routing = (function ($) {
 				var inputWaypointName = $(inputDiv).children('input').attr('name');
 
 				// Get the matching waypoint
-				// If this geocoder has a contributed to a waypoint, find it
+				// If this geocoder has contributed to a waypoint, find it
 				var waypointIndex = oldWaypoints.findIndex(wp => wp.label == inputWaypointName);
 				if (waypointIndex > -1) {
 					var waypoint = oldWaypoints[waypointIndex];
@@ -795,27 +795,26 @@ var routing = (function ($) {
 				arrayPosition += 1;
 			});
 			
-			// Update traffic light remove buttons and
-			// rebuild the waypoint add buttons (attach to all inputs except end)
+			// Update traffic light remove buttons and rebuild the waypoint add buttons (attach to all inputs except end)
 			var inputDivs = $('.inputDiv');
 			var totalDivs = inputDivs.length;
 			$('.addWaypoint').hide ();
-			$(inputDivs).each (function(index, div) {
+			$(inputDivs).each (function (index, div) {
 				// Set the appropriate traffic light colour and show add waypoint
 				switch (index) {
 					case 0:
-						$(div).children('a.removeWaypoint').find('img').attr('src', '/images/btn-clear-field-green.svg');
-						$(div).children('a.addWaypoint').show();
-						$(div).children('span.loader').first().css('border-bottom-color', "#7ac064");
+						$(div).children ('a.removeWaypoint').find ('img').attr ('src', '/images/btn-clear-field-green.svg');
+						$(div).children ('a.addWaypoint').hide ();
+						$(div).children ('span.loader').first ().css('border-bottom-color', "#7ac064");
 						break;
 					case (totalDivs - 1): 
-						$(div).children('a.removeWaypoint').find('img').attr('src', '/images/btn-clear-field-red.svg');
-						$(div).children('span.loader').first().css('border-bottom-color', "#e54124");
+						$(div).children ('a.removeWaypoint').find ('img').attr('src', '/images/btn-clear-field-red.svg');
+						$(div).children ('span.loader').first ().css ('border-bottom-color', "#e54124");
 						break;
 					default: 
-						$(div).children('a.removeWaypoint').find('img').attr('src', '/images/btn-clear-field-amber.svg');
-						$(div).children('a.addWaypoint').show();
-						$(div).children('span.loader').first().css('border-bottom-color', "#f8d147");
+						$(div).children  ('a.removeWaypoint').find ('img').attr('src', '/images/btn-clear-field-amber.svg');
+						$(div).children ('a.addWaypoint').show ();
+						$(div).children ('span.loader').first ().css ('border-bottom-color', "#f8d147");
 				}
 			});
 			
@@ -1801,15 +1800,17 @@ var routing = (function ($) {
 
 		// Setter for distance unit
 		// Accepts 'miles' or 'kilometers'
-		setDistanceUnit: function (unitAsString){_distanceUnit = unitAsString;},
+		setDistanceUnit: function (unitAsString){
+			_distanceUnit = unitAsString;
+		},
 		
 		
 		// Function to format a distance
 		formatDistance: function (metres)
 		{
 			var result;
-			if (_distanceUnit == 'kilometres') {
-				// Convert Km
+			if (_distanceUnit == 'kilometers') {
+				// Convert to km
 				if (metres >= 1000) {
 					var km = metres / 1000;
 					result = Number (km.toFixed(1)) + 'km';
