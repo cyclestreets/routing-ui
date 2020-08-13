@@ -160,6 +160,7 @@ var routing = (function ($) {
 	var _keyboardFeaturePosition = {};
 	var _currentWaypointIndex = 0; // We start with no waypoints in our index
 	var _elevationCharts = {}; // Store the elevation charts as global, so we can access them through the scrubber
+	var _elevationChartArray = {}; // Store the elevation data for different routing strategies
 	var _singleMarkerMode = false; // Set when only one waypoint should be clickable on the map, i.e., when setting home/work location
 	var _singleMarkerLocation = []; // Store the coordinates of a single waypoint, when setting work/home location
 	var _recentJourneys = []; // Store the latest planned routes
@@ -1205,7 +1206,6 @@ var routing = (function ($) {
 				}
 				
 				// Load the route
-				//console.log (url);
 				routing.loadRoute (url, strategy);
 			});
 		},
@@ -1555,30 +1555,51 @@ var routing = (function ($) {
 		// Function to initialise the elevation scrubber and to provide handlers for it
 		elevationScrubber: function (geojson) 
 		{
+			// Throttler for elevation scrubber
+			const throttle = (func, limit) => {
+				let lastFunc
+				let lastRan
+				return function () {
+					const context = this
+					const args = arguments
+					if (!lastRan) {
+						func.apply(context, args)
+						lastRan = Date.now()
+					} else {
+						clearTimeout(lastFunc)
+						lastFunc = setTimeout(function () {
+							if ((Date.now() - lastRan) >= limit) {
+								func.apply(context, args)
+								lastRan = Date.now()
+							}
+						}, limit - (Date.now() - lastRan))
+					}
+				}
+			};
+			
+			// Drag event handler
 			$('.elevation-scrubber').draggable({
-				axis: "x",
-				containment: "parent",
-				refreshPositions: true,
-				drag: function (event, ui) {
+				axis: 'x',
+				containment: 'parent',
+				drag: throttle (function (event, ui) {
 					// Which chart are we dragging on, i.e., quietest, balanced
-					var chartStrategyName = $(event.target).siblings('div').children('canvas').attr('id').replace('elevationChart', '');
-					
-					// Access that chart and get the element at X
-					var mouseEvent = event.originalEvent.originalEvent;
-					var activePoints = _elevationCharts[chartStrategyName].getElementsAtXAxis(mouseEvent);
-					
-					var chartIndex = activePoints[0]._index;
-					var journeySegment = activePoints[0]._xScale.ticks[chartIndex];
+					var chartStrategyName = $(event.target).siblings ('div').children ('canvas').attr ('id').replace ('elevationChart', '');
+
+					// Get the approximate index in that chart
+					var xAxisPercentage = (100 * parseFloat ($(this).position().left / parseFloat ($(this).parent().width())) );
+					var journeySegmentIndex = _elevationChartArray[chartStrategyName].segmentDataArray.length * xAxisPercentage / 100;
+					var journeySegmentIndex = journeySegmentIndex.toFixed ();
+					var journeySegment =_elevationChartArray[chartStrategyName].segmentDataArray[journeySegmentIndex];
 
 					// Jump to segment
-					routing.zoomToSegment(geojson, journeySegment);
-				}
+					routing.zoomToSegment(_elevationChartArray[chartStrategyName].geojson, journeySegment);
+				}, 500) // Throttling delay
 			});
 		},
 
 
-		// Function to write an elevation graph, used when generating the itinerary listing
-		generateElevationGraph: function (strategyId, geojson) 
+		// Function to generate an elevation array, used by the elevation graph
+		generateElevationArray: function (strategyId, geojson)
 		{
 			// We want to start on features[3], as the [0]-[2] don't contain elevation data
 			var i = 3; // Start iterator
@@ -1602,7 +1623,6 @@ var routing = (function ($) {
 			var elevationDataArray = [];
 			var segmentDataArray = [];
 			var segment = null;
-			var elevation = null;
 			$(elevationArray).each(function (index, elevation) {
 				segment = elevation[0];
 				elevation = elevation[1];
@@ -1610,16 +1630,29 @@ var routing = (function ($) {
 				elevationDataArray.push(elevation);
 			});
 
+			// Add this data to a global, so it is acessible from other events
+			_elevationChartArray[strategyId] = {'geojson': geojson, 'segmentDataArray': segmentDataArray, 'elevationDataArray': elevationDataArray};
+
+			return _elevationChartArray[strategyId];
+		},
+		
+
+		// Function to write an elevation graph, used when generating the itinerary listing
+		generateElevationGraph: function (strategyId, geojson) 
+		{
+			// Generate the elevation array
+			var graphData = routing.generateElevationArray (strategyId, geojson);
+
 			// Display the elevation graph
 			var canvas = document.getElementById(strategyId + 'elevationChart');
 			var ctx = canvas.getContext('2d');
 			_elevationCharts[strategyId] = new Chart(ctx, {
 				type: 'line',
 				data: {
-					labels: segmentDataArray,
+					labels: graphData.segmentDataArray,
 					datasets: [{
 						label: 'Elevation',
-						data: elevationDataArray,
+						data: graphData.elevationDataArray,
 						backgroundColor: 'rgba(220,79,85,1)'
 					}]
 				},
@@ -1629,7 +1662,7 @@ var routing = (function ($) {
 						var activePoints = _elevationCharts[strategyId].getElementsAtXAxis(evt);
 						var chartIndex = activePoints[0]._index;
 						var journeySegment = activePoints[0]._xScale.ticks[chartIndex];
-
+						
 						// Jump to segment
 						routing.zoomToSegment(geojson, journeySegment);
 					},
