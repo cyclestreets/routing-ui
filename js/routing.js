@@ -1554,47 +1554,53 @@ var routing = (function ($) {
 
 		// Function to initialise the elevation scrubber and to provide handlers for it
 		elevationScrubber: function (geojson) 
-		{
-			// Throttler for elevation scrubber
-			const throttle = (func, limit) => {
-				let lastFunc
-				let lastRan
-				return function () {
-					const context = this
-					const args = arguments
-					if (!lastRan) {
-						func.apply(context, args)
-						lastRan = Date.now()
-					} else {
-						clearTimeout(lastFunc)
-						lastFunc = setTimeout(function () {
-							if ((Date.now() - lastRan) >= limit) {
-								func.apply(context, args)
-								lastRan = Date.now()
-							}
-						}, limit - (Date.now() - lastRan))
-					}
-				}
-			};
-			
+		{		
 			// Drag event handler
 			$('.elevation-scrubber').draggable({
 				axis: 'x',
 				containment: 'parent',
-				drag: throttle (function (event, ui) {
+				drag: routing.throttle (function (event) {
 					// Which chart are we dragging on, i.e., quietest, balanced
 					var chartStrategyName = $(event.target).siblings ('div').children ('canvas').attr ('id').replace ('elevationChart', '');
-
+					
 					// Get the approximate index in that chart
 					var xAxisPercentage = (100 * parseFloat ($(this).position().left / parseFloat ($(this).parent().width())) );
 					var journeySegmentIndex = _elevationChartArray[chartStrategyName].segmentDataArray.length * xAxisPercentage / 100;
 					var journeySegmentIndex = journeySegmentIndex.toFixed ();
-					var journeySegment =_elevationChartArray[chartStrategyName].segmentDataArray[journeySegmentIndex];
+					var journeySegment = _elevationChartArray[chartStrategyName].segmentDataArray[journeySegmentIndex];
+					var elevationData = _elevationChartArray[chartStrategyName].elevationDataArray[journeySegmentIndex];
+
+					// Update the elevation label
+					$('span.elevation').text (elevationData + 'm elevation');
 
 					// Jump to segment
-					routing.zoomToSegment(_elevationChartArray[chartStrategyName].geojson, journeySegment);
-				}, 500) // Throttling delay
+					routing.zoomToSegment (_elevationChartArray[chartStrategyName].geojson, journeySegment);
+				}, 200)  // Throttling delay
 			});
+		},
+
+
+		// Throttler function
+		throttle: function (func, limit) 
+		{
+			let lastFunc
+			let lastRan
+			return function () {
+				const context = this
+				const args = arguments
+				if (!lastRan) {
+					func.apply(context, args)
+					lastRan = Date.now()
+				} else {
+					clearTimeout(lastFunc)
+					lastFunc = setTimeout(function () {
+						if ((Date.now() - lastRan) >= limit) {
+							func.apply(context, args)
+							lastRan = Date.now()
+						}
+					}, limit - (Date.now() - lastRan))
+				}
+			}
 		},
 
 
