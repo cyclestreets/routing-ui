@@ -1917,7 +1917,7 @@ var routing = (function ($) {
 					routing.fitBoundsGeojson (_routeGeojson[strategy.id], strategy.id);
 				},
 				error: function (jqXHR, textStatus, errorThrown) {
-					alert ('Sorry, the route for ' + strategy.label + ' could not be loaded.');
+					vex.dialog.alert ('Sorry, the route for ' + strategy.label + ' could not be loaded.');
 					console.log (errorThrown);
 				}
 			});
