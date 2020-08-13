@@ -2456,16 +2456,17 @@ var routing = (function ($) {
 				// Add the marker
 				var marker = new mapboxgl.Marker({element: itinerarymarker, offset: [0, -22], draggable: true})	// See: https://www.mapbox.com/mapbox-gl-js/api/#marker
 					.setLngLat(waypoint)
-					.setPopup( new mapboxgl.Popup({ offset: 25 }).setHTML(text) )
+					.setPopup( new mapboxgl.Popup({offset: 25}).setHTML(text) )
 					.addTo(_map);
 				
-				marker['waypointNumber'] = waypointNumber;
+				// Unofficially overload the Marker with a waypoint number property, to tie this marker to a waypoint input
+				marker.__waypointNumber = waypointNumber;
 
 				// When marker is dragged, perform reverseGeocode and also update the waypoints
 				marker.on ('dragend', function (e) {
 					// If this is the waypoint0, dragging means we are now not at the user location
 					// Turn off (grayscale) the location button to show this
-					if (marker.waypointNumber == 0) {
+					if (marker.__waypointNumber == 0) {
 						var inputElement = $('.panel.journeyplanner.search input[name=waypoint' + waypointNumber + ']').first();
 						$(inputElement).siblings ('a.locationTracking').addClass ('grayscale');
 					}
