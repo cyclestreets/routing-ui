@@ -1496,7 +1496,7 @@ var routing = (function ($) {
 			html += '</ul>';
 
 			html += '<div class="elevation-chart-container"><canvas id="' + strategy.id + 'elevationChart"></canvas></div>';
-			html += '<span class="elevation"><img src="/images/icon-elevation.svg" alt="Elevation icon" />32m elevation</span>';
+			html += '<span class="elevation">20m elevation</span>';
 			html += '<a href="#" class="elevation-scrubber"><img src="/images/elevation-dragger.svg" alt="Dragger icon" /></a>';
 
 			// Loop through each feature
