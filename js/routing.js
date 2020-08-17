@@ -1542,10 +1542,10 @@ var routing = (function ($) {
 			});
 			
 			// Make elevation scrubber draggable
-			routing.elevationScrubber(geojson);
+			routing.elevationScrubber (geojson);
 
 			// Generate elevation graph
-			routing.generateElevationGraph(strategy.id, geojson);
+			routing.generateElevationGraph (strategy.id, geojson);
 
 			// Handle left/right keyboard navigation through the route, for this strategy
 			routing.itineraryKeyboardNavigation (strategy.id, geojson, segmentsIndex, lastSegment);
@@ -1560,6 +1560,9 @@ var routing = (function ($) {
 				axis: 'x',
 				containment: 'parent',
 				drag: routing.throttle (function (event) {
+					// Show the elevation scrubber 
+					$('span.elevation').show ();
+					
 					// Which chart are we dragging on, i.e., quietest, balanced
 					var chartStrategyName = $(event.target).siblings ('div').children ('canvas').attr ('id').replace ('elevationChart', '');
 					
