@@ -169,6 +169,7 @@ var routing = (function ($) {
 	var _showPlannedRoute = false; // Don't display planned routes when we are not in itinerary mode, useful if the AJAX call takes a while and user has exited itinerary mode in the meantime
 	var _geolocationAvailable = true; // Store geolocation availability, to automatically disable location tracking if user has not selected the right permissions
 	var _distanceUnit = 'kilometers'; // Store the distance unit
+	var _inputDragActive = false; // Used to avoid conflict with swipe-down event on card
 
 	return {
 		
@@ -253,11 +254,21 @@ var routing = (function ($) {
 
 
 		// Set geolocation availability
-		setGeolocationAvailability: function (boolean) {_geolocationAvailable = boolean;},
+		setGeolocationAvailability: function (boolean) {
+			_geolocationAvailable = boolean;
+		},
 
 
 		// Get geolocation availability
-		getGeolocationAvailability: function () {return _geolocationAvailable;},
+		getGeolocationAvailability: function () {
+			return _geolocationAvailable;
+		},
+
+		
+		// Get drag status of inputs
+		getInputDragStatus: function () {
+			return _inputDragActive;
+		},
 		
 		
 		// Function to create a control in a corner
@@ -735,7 +746,13 @@ var routing = (function ($) {
 				helper: 'original',
 				opacity: 0.5,
 				revert: 250,
-				axis: "y"
+				axis: "y",
+				start: function() {
+					_inputDragActive = true;
+				},
+				stop: function( event, ui ) {
+					_inputDragActive = false;
+				},
 			});
 
 			// Disable the waypoints when list item is moved
@@ -805,7 +822,7 @@ var routing = (function ($) {
 				switch (index) {
 					case 0:
 						$(div).children ('a.removeWaypoint').find ('img').attr ('src', '/images/btn-clear-field-green.svg');
-						$(div).children ('a.addWaypoint').hide ();
+						$(div).children ('a.addWaypoint').show ();
 						$(div).children ('span.loader').first ().css('border-bottom-color', "#7ac064");
 						break;
 					case (totalDivs - 1): 
