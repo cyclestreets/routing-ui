@@ -1084,6 +1084,11 @@ var routing = (function ($) {
 			// If the route is already loaded, show it
 			if (!$.isEmptyObject (_routeGeojson)) {
 				
+				// Clear any existing route
+				var retainWaypoints = true;
+				var keepMarkers = true;
+				routing.removeRoute (retainWaypoints, keepMarkers);
+				
 				// Add the route for each strategy, and end
 				$.each (_settings.strategies, function (index, strategy) {
 					routing.showRoute (_routeGeojson[strategy.id], strategy);
