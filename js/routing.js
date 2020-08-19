@@ -1223,7 +1223,7 @@ var routing = (function ($) {
 					parameters.waypoints = waypointStrings.join ('|');
 					parameters.archive = 'full';
 					parameters.itineraryFields = 'id,start,finish,waypointCount';
-					parameters.journeyFields = 'path,plan,lengthMetres,timeSeconds,grammesCO2saved,kiloCaloriesBurned';
+					parameters.journeyFields = 'path,plan,lengthMetres,timeSeconds,grammesCO2saved,kiloCaloriesBurned,elevationProfile';
 					url = _settings.apiBaseUrl + '/v2/journey.plan' + '?' + $.param (parameters, false);
 				}
 				
