@@ -1582,24 +1582,39 @@ var routing = (function ($) {
 				axis: 'x',
 				containment: 'parent',
 				drag: routing.throttle (function (event) {
-					// Show the elevation scrubber 
-					$('span.elevation').show ();
 					
 					// Which chart are we dragging on, i.e., quietest, balanced
 					var chartStrategyName = $(event.target).siblings ('div').children ('canvas').attr ('id').replace ('elevationChart', '');
 					
 					// Get the approximate index in that chart
 					var xAxisPercentage = (100 * parseFloat ($(this).position().left / parseFloat ($(this).parent().width())) );
-					var journeySegmentIndex = _elevationChartArray[chartStrategyName].segmentDataArray.length * xAxisPercentage / 100;
-					var journeySegmentIndex = journeySegmentIndex.toFixed ();
-					var journeySegment = _elevationChartArray[chartStrategyName].segmentDataArray[journeySegmentIndex];
-					var elevationData = _elevationChartArray[chartStrategyName].elevationDataArray[journeySegmentIndex];
+					
+					// Find what percentage of the total journey distance we are at
+					var planIndex = routing.findPlanIndex (_elevationChartArray[chartStrategyName].geojson, chartStrategyName);
+					var totalJourneyDistanceMetres = _elevationChartArray[chartStrategyName].geojson.features[planIndex].properties.lengthMetres;
+					var approximateJourneyDistanceMetres = totalJourneyDistanceMetres * xAxisPercentage / 100;
+					
+					// Loop through the features until we find we a coordinate object with cumulativeMetres > approximateJourneyDistanceMetres
+					var coordinateObject = null;
+					$.each (_elevationChartArray[chartStrategyName].dataArray, function (indexInArray, coordinates) { 
+						if (coordinates.x > approximateJourneyDistanceMetres) {
+							coordinateObject = coordinates;
+							return false; // i.e. break out of the loop
+						}
+					});
 
 					// Update the elevation label
-					$('span.elevation').text (elevationData + 'm elevation');
+					$('span.elevation').show ().text (coordinateObject.y + 'm elevation');
 
 					// Jump to segment
-					routing.zoomToSegment (_elevationChartArray[chartStrategyName].geojson, journeySegment);
+					_map.flyTo ({
+						zoom: _settings.maxZoomToSegment,
+						center: [coordinateObject.coordinates[0], coordinateObject.coordinates[1]],
+						animate: true, 
+						essential: true, 
+						duration: 500,
+					});
+					
 				}, 200)  // Throttling delay
 			});
 		},
@@ -1632,39 +1647,62 @@ var routing = (function ($) {
 		// Function to generate an elevation array, used by the elevation graph
 		generateElevationArray: function (strategyId, geojson)
 		{
-			// We want to start on features[3], as the [0]-[2] don't contain elevation data
-			var i = 3; // Start iterator
+			
+			// Build an alternative data array with [cumulativeMetres, elevationMetres, coordinates, journeySegments]
+			// Although the first three variables are available in the route overview (object 2 in geojson), journeySegments have to be extracted individually
+			var dataArray = [];
+			
+			// Start at the first feature after the plan index
+			var planIndex = routing.findPlanIndex (geojson, strategyId);
+			var featureIndex = planIndex + 1; // Start iterator
 			var featuresLength = geojson.features.length;
-			var elevationArray = []; // Initialise an empty array used to store the processed elevation data
+			
+			// Initialise counters and iterators we will use
+			var overallCoordinateIndex = 0; // Track the total amount of coordinates
+			var featureCoordinateIndex = 0; // Track which coordinate we are in in each feature, reset after iterating through each feature
+			var coordinatesLength = 0; // Track how many coordinates are in each feature, reset after iterating through each feature
+			var lastDesiredCoordinateIndex = 0; // Used to ignore the last coordinate of journey segments
+			var coordinateDataObject = {}; // Used to store data in [cumulativeMetres, elevationMetres, coordinates, journeySegments] format
 
 			// Loop through all the features, and build a geometry array
-			// The label corresponds to the segment, and the elevation is the value
-			// As such, each label might correspond to multiple elevations, before we move on to the next segment
-			var elevationObject = null;
-			for (i; i < featuresLength; i++) {
-				var elevationElements = geojson.features[i].properties.elevationsMetres;
-				$(elevationElements).each(function (index, elevation) {
-					// #¡# We should skip the repeated link elevations between indexes
-					elevationObject = [i, elevation];
-					elevationArray.push(elevationObject);
-				});
+			for (featureIndex; featureIndex < featuresLength; featureIndex++) 
+			{
+				// Reset feature coordinate
+				featureCoordinateIndex = 0;
+				
+				// Calculate how many coordinates are in this feature
+				coordinatesLength = geojson.features[featureIndex].geometry.coordinates.length;
+				
+				// Get all but the last coordinate, except in the last feature, as these are duplicated to connect segments (e.g. [1,2,3], [3,4,5], [5,6,7])
+				if (featureIndex == (featuresLength - 1)) { // i.e. the last feature, who's last coordinate we want
+					lastDesiredCoordinateIndex = coordinatesLength - 1; 
+				} else { // i.e. any other previous feature, who's last coordinate we don't want
+					lastDesiredCoordinateIndex = coordinatesLength - 2;
+				}
+
+				// Loop through the coordinates, and associate each one with a cumulativeMetres, elevationMetres, and journeySegment
+				for (featureCoordinateIndex; featureCoordinateIndex <= lastDesiredCoordinateIndex; featureCoordinateIndex++)
+				{
+					// Build this coordinate's object
+					coordinateDataObject = {
+						'coordinates': geojson.features[featureIndex].geometry.coordinates[featureCoordinateIndex],
+						'x': geojson.features[planIndex].properties.elevationProfile.cumulativeMetres[overallCoordinateIndex],
+						'y': geojson.features[planIndex].properties.elevationProfile.elevationsMetres[overallCoordinateIndex],
+						'journeySegment': featureIndex
+					}
+
+					// Push it to the array
+					dataArray.push(coordinateDataObject);
+
+					// Iterate counters
+					overallCoordinateIndex++;
+				}
 			}
 
-			// Build the data
-			var elevationDataArray = [];
-			var segmentDataArray = [];
-			var segment = null;
-			$(elevationArray).each(function (index, elevation) {
-				segment = elevation[0];
-				elevation = elevation[1];
-				segmentDataArray.push(segment);
-				elevationDataArray.push(elevation);
-			});
-
-			// Add this data to a global, so it is acessible from other events
-			_elevationChartArray[strategyId] = {'geojson': geojson, 'segmentDataArray': segmentDataArray, 'elevationDataArray': elevationDataArray};
-
+			// Store the data as a class variable, and return it
+			_elevationChartArray[strategyId] = {'geojson': geojson, 'dataArray': dataArray};
 			return _elevationChartArray[strategyId];
+
 		},
 		
 
@@ -1674,43 +1712,26 @@ var routing = (function ($) {
 			// Generate the elevation array
 			var graphData = routing.generateElevationArray (strategyId, geojson);
 
+			// Search geojson.features array for an object containing properties: {path: plan/{strategyId}}
+			var planIndex = routing.findPlanIndex (geojson, strategyId);
+
 			// Display the elevation graph
-			var canvas = document.getElementById(strategyId + 'elevationChart');
-			var ctx = canvas.getContext('2d');
+			var canvas = document.getElementById (strategyId + 'elevationChart');
+			var ctx = canvas.getContext ('2d');		
 			_elevationCharts[strategyId] = new Chart(ctx, {
-				type: 'line',
+				type: 'scatter',
 				data: {
-					labels: graphData.segmentDataArray,
 					datasets: [{
 						label: 'Elevation',
-						data: graphData.elevationDataArray,
-						backgroundColor: 'rgba(220,79,85,1)'
+						data: graphData.dataArray,
+						showLine: true,
+						backgroundColor: 'rgba(220,79,85,1)',
+						pointRadius: 0
 					}]
 				},
 				options: {
-					// On click, find the respective journey segment and zoom to that
-					onClick: function (evt) {
-						var activePoints = _elevationCharts[strategyId].getElementsAtXAxis(evt);
-						var chartIndex = activePoints[0]._index;
-						var journeySegment = activePoints[0]._xScale.ticks[chartIndex];
-						
-						// Jump to segment
-						routing.zoomToSegment(geojson, journeySegment);
-					},
-					responsive: true,
-					maintainAspectRatio: false,
-					elements: {
-						point: {
-							radius: 0
-						}
-					},
-					layout: {
-						padding: {
-							left: -10,
-							right: 0,
-							top: 0,
-							bottom: -10
-						}
+					tooltips: {
+						enabled: false,
 					},
 					legend: {
 						display: false,
@@ -1733,12 +1754,38 @@ var routing = (function ($) {
 								display: false
 							},
 							ticks: {
-								display: false
+								display: false,
+								beginAtZero: false,
+								min: geojson.features[planIndex].properties.elevationProfile.min,
+								min: geojson.features[planIndex].properties.elevationProfile.max,
 							}
 						}]
+					},
+					responsive: true,
+					maintainAspectRatio: false,
+					layout: {
+						padding: {
+							left: -10,
+							right: 0,
+							top: 0,
+							bottom: -10
+						}
 					}
 				}
 			});
+			/*
+
+				options: {
+					// On click, find the respective journey segment and zoom to that
+					onClick: function (evt) {
+						var activePoints = _elevationCharts[strategyId].getElementsAtXAxis(evt);
+						var chartIndex = activePoints[0]._index;
+						var journeySegment = activePoints[0]._xScale.ticks[chartIndex];
+						
+						// Jump to segment
+						routing.zoomToSegment(geojson, journeySegment);
+					},
+			*/
 		},
 		
 		
@@ -1988,9 +2035,8 @@ var routing = (function ($) {
 		},
 		
 		
-		// Function to emulate /properties/plans present in the multiple route type but not the single type
-		// #!# Needs to be fixed in the API V2 format
-		emulatePropertiesPlans: function (result, strategyId)
+		// Function to find a plan index
+		findPlanIndex: function (result, strategyId)
 		{
 			// Find the relevant feature
 			var findPath = 'plan/' + strategyId;
@@ -2001,6 +2047,17 @@ var routing = (function ($) {
 					return;	// i.e. break
 				}
 			});
+
+			return planIndex;
+		},
+		
+		
+		// Function to emulate /properties/plans present in the multiple route type but not the single type
+		// #!# Needs to be fixed in the API V2 format
+		emulatePropertiesPlans: function (result, strategyId)
+		{
+			// Find the relevant feature
+			var planIndex = routing.findPlanIndex (result, strategyId);
 			
 			// Assemble the plan summaries
 			var plans = {};
