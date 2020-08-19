@@ -743,6 +743,7 @@ var routing = (function ($) {
 			$('#journeyPlannerInputs').sortable({
 				items: '.inputDiv',
 				forcePlaceholderSize: true,
+				handle: ".reorderWaypoint",
 				helper: 'original',
 				opacity: 0.5,
 				revert: 250,
