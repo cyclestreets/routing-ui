@@ -920,14 +920,16 @@ var routing = (function ($) {
 			}
 
 			// If this geocoder has a contributed to a waypoint, find it
-			var waypointIndex = _waypoints.findIndex(wp => wp.label == inputElementName);
+			var waypointIndex = _waypoints.findIndex (wp => wp.label == inputElementName);
 			var waypoint = _waypoints[waypointIndex];
 			
 			// Remove any markers with the lngLat of the _waypoint
-			var markerIndex = _markers.findIndex(marker => marker._lngLat.lng == waypoint.lng && marker._lngLat.lat == waypoint.lat);
-			if (markerIndex > -1) {
-				_markers[markerIndex].remove();
-			} 
+			if (waypointIndex > -1) {
+				var markerIndex = _markers.findIndex(marker => marker._lngLat.lng == waypoint.lng && marker._lngLat.lat == waypoint.lat);
+				if (markerIndex > -1) {
+					_markers[markerIndex].remove();
+				} 
+			}
 
 			// Remove the waypoint from waypoints array
 			_waypoints.splice(waypointIndex, 1);
