@@ -308,7 +308,7 @@ var routing = (function ($) {
 				select: function (event, ui) {
 					var bbox = ui.item.feature.properties.bbox.split(',');
 					_map.setMaxZoom (17);	// Prevent excessive zoom to give context
-					_map.fitBounds([ [bbox[0], bbox[1]], [bbox[2], bbox[3]] ]);	// Note that Mapbox GL JS uses sw,ne rather than ws,en as in Leaflet.js
+					_map.fitBounds([[bbox[0], bbox[1]], [bbox[2], bbox[3]]], {duration: 1500});	// Note that Mapbox GL JS uses sw,ne rather than ws,en as in Leaflet.js
 					_map.setMaxZoom (_settings.maxZoom);	// Reset
 					if (callbackFunction) {
 						callbackFunction (ui.item, callbackData);
