@@ -313,9 +313,6 @@ var routing = (function ($) {
 					if (callbackFunction) {
 						callbackFunction (ui.item, callbackData);
 					}
-					
-					// Blur the input so keyboard dissapears on mobile
-					$(event.target).blur ();
 
 					event.preventDefault();
 				}
