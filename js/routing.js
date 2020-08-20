@@ -1617,6 +1617,31 @@ var routing = (function ($) {
 						essential: true, 
 						duration: 500,
 					});
+
+					// Add a cycle marker to the map to show where we are currently scrolling
+					var cycleMarkerIndex = _markers.findIndex (marker => marker.__satnavMarker == true);
+					if (cycleMarkerIndex > -1) {
+						// We already have a cyclist marker, update the location
+						_markers[cycleMarkerIndex].setLngLat([coordinateObject.coordinates[0], coordinateObject.coordinates[1]]);
+					} else {
+						// Place a cycle marker at this location
+						var cyclistMarker = document.createElement('div');
+						cyclistMarker.className = 'itinerarymarker cyclistmarker';
+						cyclistMarker.style.backgroundImage = "url('" + '/images/sat-nav-positional-marker.svg' + "')";
+						
+						// Add the marker
+						var marker = new mapboxgl.Marker({element: cyclistMarker, offset: [0, 0], draggable: false})	// See: https://www.mapbox.com/mapbox-gl-js/api/#marker
+							.setLngLat({lng: coordinateObject.coordinates[0], lat: coordinateObject.coordinates[1]})
+							.setPopup( new mapboxgl.Popup({offset: 25}).setHTML('Your position') )
+							.addTo(_map);
+						
+						// Unofficially overload the Marker with a waypoint number property, to tie this marker to a waypoint input
+						marker.__satnavMarker = true;
+	
+						// Register the marker
+						_markers.push (marker);
+					}
+					
 					
 				}, 200),  // Throttling delay
 				
