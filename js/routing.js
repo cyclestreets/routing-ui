@@ -570,6 +570,9 @@ var routing = (function ($) {
 
 					// Add this item to recent searches
 					routing.addToRecentSearches (waypoint);
+
+					// Blur input
+					document.activeElement.blur();
 					
 				}, {totalWaypoints: totalWaypoints});
 			});
