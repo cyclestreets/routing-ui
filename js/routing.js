@@ -1618,8 +1618,37 @@ var routing = (function ($) {
 						duration: 500,
 					});
 					
-				}, 200)  // Throttling delay
+				}, 200),  // Throttling delay
+				
+				// Set the elevation label to a debounce function to dissapear after a timeout
+				stop: routing.debounce (function() {
+					$('span.elevation').fadeToggle (500);
+				}, 2000),
 			});
+		},
+
+
+		// Debounce function
+		debounce: function (func, wait, immediate) {
+			var timeout;
+
+			return function executedFunction() {
+				var context = this;
+				var args = arguments;
+
+				var later = function () {
+					timeout = null;
+					if (!immediate) func.apply(context, args);
+				};
+
+				var callNow = immediate && !timeout;
+
+				clearTimeout(timeout);
+
+				timeout = setTimeout(later, wait);
+
+				if (callNow) func.apply(context, args);
+			};
 		},
 
 
@@ -1632,16 +1661,16 @@ var routing = (function ($) {
 				const context = this;
 				const args = arguments;
 				if (!lastRan) {
-					func.apply(context, args);
-					lastRan = Date.now();
+					func.apply (context, args);
+					lastRan = Date.now ();
 				} else {
 					clearTimeout(lastFunc)
-					lastFunc = setTimeout(function () {
-						if ((Date.now() - lastRan) >= limit) {
-							func.apply(context, args);
-							lastRan = Date.now();
+					lastFunc = setTimeout (function () {
+						if ((Date.now () - lastRan) >= limit) {
+							func.apply (context, args);
+							lastRan = Date.now ();
 						}
-					}, limit - (Date.now() - lastRan))
+					}, limit - (Date.now () - lastRan))
 				}
 			}
 		},
