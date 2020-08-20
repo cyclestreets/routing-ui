@@ -760,13 +760,13 @@ var routing = (function ($) {
 			});
 
 			// Disable the waypoints when list item is moved
-			$('#journeyPlannerInputs').on("sort", function(event, ui) {
-				$('.removeWaypoint').hide();
-				$('.addWaypoint').hide(250);
+			$('#journeyPlannerInputs').on ("sort", function(event, ui) {
+				$('.removeWaypoint').fadeOut ();
+				$('.addWaypoint'). fadeOut (250);
 			} );
 
 			// Update the waypoints when list item is dropped
-			$('#journeyPlannerInputs').on('sortstop', function(event, ui) {
+			$('#journeyPlannerInputs').on ('sortstop', function(event, ui) {
 				routing.sortWaypoints ();
 			} );
 		},
