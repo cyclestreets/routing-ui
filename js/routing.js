@@ -823,7 +823,7 @@ var routing = (function ($) {
 				switch (index) {
 					case 0:
 						$(div).children ('a.removeWaypoint').find ('img').attr ('src', '/images/btn-clear-field-green.svg');
-						$(div).children ('a.addWaypoint').show ();
+						$(div).children ('a.addWaypoint').fadeIn ();
 						$(div).children ('span.loader').first ().css('border-bottom-color', "#7ac064");
 						break;
 					case (totalDivs - 1): 
@@ -832,13 +832,13 @@ var routing = (function ($) {
 						break;
 					default: 
 						$(div).children  ('a.removeWaypoint').find ('img').attr('src', '/images/btn-clear-field-amber.svg');
-						$(div).children ('a.addWaypoint').show ();
+						$(div).children ('a.addWaypoint').fadeIn ();
 						$(div).children ('span.loader').first ().css ('border-bottom-color', "#f8d147");
 				}
 			});
 			
 			// Show the rebuilt waypoint traffic lights
-			$('.removeWaypoint').show(300);
+			$('.removeWaypoint').fadeIn ();
 		},
 
 		// Add a geocoder input at a certain position 
