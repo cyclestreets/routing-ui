@@ -1272,7 +1272,7 @@ var routing = (function ($) {
 			$.each (_settings.strategies, function (index, strategy) {
 				rgb = routing.hexToRgb (strategy.lineColour);
 				tabsHtml += '<li><a data-strategy="' + strategy.id + '" href="#' + strategy.id + '" style="background-color: rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',' + '0.3' + ');"><label>' + routing.htmlspecialchars (strategy.label).replace('route', '') + '</label></a></li>';
-				contentPanesHtml += '<div id="' + strategy.id + '"><p>Routing loading&hellip;</p></div>';
+				contentPanesHtml += '<div id="' + strategy.id + '"><span class="loader" style="border-bottom-color:#e54124;"></span></div>';
 			});
 			tabsHtml += '</ul>';
 			contentPanesHtml += '</div>';
