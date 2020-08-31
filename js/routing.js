@@ -167,7 +167,7 @@ var routing = (function ($) {
 	var _recentSearches = []; // Store recent searches, used to populate the JP card
 	var _disableMapClicks = false; // Whether to ignore clicks on the map, useful for certain program states
 	var _showPlannedRoute = false; // Don't display planned routes when we are not in itinerary mode, useful if the AJAX call takes a while and user has exited itinerary mode in the meantime
-	var _geolocationAvailable = true; // Store geolocation availability, to automatically disable location tracking if user has not selected the right permissions
+	var _geolocationAvailable = false; // Store geolocation availability, to automatically disable location tracking if user has not selected the right permissions
 	var _distanceUnit = 'kilometers'; // Store the distance unit
 	var _inputDragActive = false; // Used to avoid conflict with swipe-down event on card
 
