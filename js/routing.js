@@ -205,7 +205,7 @@ var routing = (function ($) {
 			routing.toolbox ();
 			
 			// Add panning control
-			routing.controlPanning ();
+			//routing.controlPanning ();
 			
 			// Add route clearing
 			routing.routeClearing ();
