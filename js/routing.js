@@ -167,7 +167,6 @@ var routing = (function ($) {
 	var _recentSearches = []; // Store recent searches, used to populate the JP card
 	var _disableMapClicks = false; // Whether to ignore clicks on the map, useful for certain program states
 	var _showPlannedRoute = false; // Don't display planned routes when we are not in itinerary mode, useful if the AJAX call takes a while and user has exited itinerary mode in the meantime
-	var _geolocationAvailable = false; // Store geolocation availability, to automatically disable location tracking if user has not selected the right permissions
 	var _distanceUnit = 'kilometers'; // Store the distance unit
 	var _inputDragActive = false; // Used to avoid conflict with swipe-down event on card
 
@@ -250,18 +249,6 @@ var routing = (function ($) {
 		getSelectedStrategy: function ()
 		{
 			return _selectedStrategy;
-		},
-
-
-		// Set geolocation availability
-		setGeolocationAvailability: function (boolean) {
-			_geolocationAvailable = boolean;
-		},
-
-
-		// Get geolocation availability
-		getGeolocationAvailability: function () {
-			return _geolocationAvailable;
 		},
 
 		
@@ -1144,7 +1131,7 @@ var routing = (function ($) {
 		setMarkerAtUserLocation: function ()
 		{
 			// We can not do this if user geolocation isn't available
-			if (!routing.getGeolocationAvailability ()) {return;}
+			if (!layerviewer.getGeolocationAvailability ()) {return;}
 			
 			// Immediately set the value of the input box to mark it as occupied
 			// This is so any other markers dropped in quick sucession will know that this box is going to be filled, once the AJAX call completes, and will use the succeeding empty inputs
