@@ -1141,7 +1141,7 @@ var routing = (function ($) {
 			var geolocation = layerviewer.getGeolocation ();
 			var geolocationLngLat = geolocation._accuracyCircleMarker._lngLat;
 
-			 // Build the waypoint to be "dropped" into map
+			// Build the waypoint to be "dropped" into map
 			var waypoint = {lng: geolocationLngLat.lng, lat: geolocationLngLat.lat, label: 'waypoint0'};
 			routing.addWaypointMarker (waypoint);
 
@@ -1189,6 +1189,12 @@ var routing = (function ($) {
 		},
 
 
+		// Getter for single marker mode
+		getSingleMarkerMode: function ()
+		{
+			return _singleMarkerMode;
+		},
+		
 		// Getter for single marker location, used when setting home/work location
 		getSingleMarkerLocation: function ()
 		{
