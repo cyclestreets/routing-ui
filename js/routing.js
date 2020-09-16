@@ -81,6 +81,7 @@ var routing = (function ($) {
 		
 		// Routing strategies, in order of appearance in the UI, and the default
 		defaultStrategy: 'balanced',
+		multiplexedStrategies: true,
 		strategies: [
 			{
 				id: 'fastest',
@@ -594,6 +595,7 @@ var routing = (function ($) {
 			routing.buildRecentSearches ();
 		},
 
+
 		// Getter for _recentSearches
 		getRecentSearches: function () 
 		{
@@ -602,6 +604,7 @@ var routing = (function ($) {
 
 			return _recentSearches;
 		},
+
 
 		// Clear _recentSearches
 		clearRecentSearches: function () 
@@ -667,6 +670,7 @@ var routing = (function ($) {
 			// Update the UI
 			routing.buildRecentJourneys ();
 		},
+
 
 		// Getter for _recentJourneys
 		getRecentJourneys: function () 
@@ -1195,14 +1199,12 @@ var routing = (function ($) {
 			return _singleMarkerMode;
 		},
 		
-
 		// Getter for single marker location, used when setting home/work location
 		getSingleMarkerLocation: function ()
 		{
 			return _singleMarkerLocation;
 		},
 		
-
 		// Function to load a route if it is plannable from the registered waypoints, each containing a lng,lat,label collection
 		plannable: function ()
 		{
@@ -1217,14 +1219,44 @@ var routing = (function ($) {
 			
 			// Add results tabs
 			routing.resultsTabs ();
-			
-			// Load the route for each strategy
-			var parameters = {};
+
+			// Construct the URL and load
 			var url;
-			$.each (_settings.strategies, function (index, strategy) {	
-				url = routing.constructUrlFromStrategy (strategy.routeRequest, strategy.baseUrl, strategy.parameters, waypointStrings);
-				routing.loadRoute (url, strategy, routing.processRoute);
-			});
+			if (_settings.multiplexedStrategies) 
+			{
+				// Assemble the composite url for all plans
+				var plans = []
+				$.each(_settings.strategies, function (indexInArray, strategy) { 
+					// Combine plans (N.B. combining other parameters is not supported as this time)
+					plans.push (strategy.parameters.plans);
+				});
+				plans = plans.join (',');
+				url = routing.constructUrlFromStrategy (false, _settings.strategies[0].baseUrl, {plans: plans}, waypointStrings);
+
+				// In multiplex mode, strategy string will only be used when displaying AJAX error messages
+				var strategyIgnore = 'multiplexed strategy';
+
+				routing.loadRoute (url, strategyIgnore, function (strategyIgnore, multiplexedResult) {
+					// De-multiplex route 
+					var routes = routing.demultiplexRoute (multiplexedResult);
+					var route;
+
+					// Process each route individually
+					$.each (routes, function (index, routeInfo) { 						
+						// Emulate /properties/plans present in the multipart route 
+						// #!# Vestigial structure left over from the single-route v1 API class structure
+						route = routing.emulatePropertiesPlans (routeInfo.routeGeoJson, routeInfo.id);
+						routing.processRoute (routeInfo.strategyObject, route);
+					});
+				});
+
+			} else {
+				// Load routes from URL collection
+				$.each (_settings.strategies, function (index, strategy) {	
+					url = routing.constructUrlFromStrategy (strategy.routeRequest, strategy.baseUrl, strategy.parameters, waypointStrings);
+					routing.loadRoute (url, strategy, routing.processRoute);
+				});
+			}
 		},
 
 
@@ -1250,24 +1282,65 @@ var routing = (function ($) {
 
 			return url;
 		},
-		
-		
-		// Function to convert waypoints to strings
-		waypointStrings: function (waypoints, order)
-		{
-			var waypointStrings = [];
-			var waypointString;
-			$.each (waypoints, function (index, waypoint) {
-				if (order == 'lng,lat') {
-					waypointString = parseFloat (waypoint.lng).toFixed(6) + ',' + parseFloat (waypoint.lat).toFixed(6);
-				} else {
-					waypointString = parseFloat (waypoint.lat).toFixed(6) + ',' + parseFloat (waypoint.lng).toFixed(6);
-				}
-				waypointStrings.push (waypointString);
-			});
-			return waypointStrings;
-		},
 
+
+		// Function to demultiplex a CycleStreets API v2 route
+		demultiplexRoute: function (multiplexedResult) 
+		{
+			// Split the multiplexedResult.features into 3 parts, keeping the properties the same for each one
+			
+			// Find the planIndex to start off each route
+			var strategies = []
+			$.each(_settings.strategies, function (indexInArray, strategy) { 
+				strategies.push ({
+						id: strategy.parameters.plans,
+						planIndex: routing.findPlanIndex (multiplexedResult, strategy.parameters.plans),
+					}
+				);
+			});
+
+			// Copy the relevant parts to a new array
+			var waypointFeatures;
+			var journeyPlanFeatures;
+			var indexEndOfFeature;
+			var combinedFeatures;
+			var routeGeoJson;
+			$.each(strategies, function (indexInArray, strategyInfo) { 
+				// Get the waypoint features (same for each strategy)
+				waypointFeatures = multiplexedResult.features.slice(0, strategies[0].planIndex); // i.e., the start of the first plan index
+				
+				// Get the index where this feature ends, by scrying the start of the following strategy features, or if this is the last strategy, slicing to the end of the array
+				indexEndOfFeature = (indexInArray == (strategies.length - 1) ? multiplexedResult.features.length : strategies[indexInArray + 1].planIndex);
+
+				// Slice features to the results that we want
+				journeyPlanFeatures = multiplexedResult.features.slice(strategyInfo.planIndex, indexEndOfFeature);
+
+				// Add the two arrays together
+				combinedFeatures = waypointFeatures.concat(journeyPlanFeatures); 
+				
+				// Append this to the strategies array
+				routeGeoJson = {
+					type: multiplexedResult.type, // i.e., same for all strategies
+					properties: multiplexedResult.properties, // i.e., same for all strategies
+					features: combinedFeatures // different for each strategy
+				}
+				strategies[indexInArray].routeGeoJson = routeGeoJson;
+
+				// Append the relevant _settings strategy object, as this is used by processRoute and showRoute functions
+				// #!# This is a vestigial remnant of the v1 single route class structure and should be refactored.
+				// Find the strategy that matches the current route
+				$.each (_settings.strategies, function (indexInArray, strategy) {
+					if (strategy.id == strategyInfo.id) {
+						strategies[indexInArray].strategyObject = strategy;
+						return;
+					}
+				});
+
+			});
+
+			return strategies;
+		},
+		
 
 		// Function to process a route, i.e., adding GeoJSON, showing the route, and updatin gthe itinerary number in the URL
 		processRoute: function (strategy, result)
@@ -1283,6 +1356,23 @@ var routing = (function ($) {
 			
 			// Fit bounds
 			routing.fitBoundsGeojson (_routeGeojson[strategy.id], strategy.id);
+		},
+
+		
+		// Function to convert waypoints to strings
+		waypointStrings: function (waypoints, order)
+		{
+			var waypointStrings = [];
+			var waypointString;
+			$.each (waypoints, function (index, waypoint) {
+				if (order == 'lng,lat') {
+					waypointString = parseFloat (waypoint.lng).toFixed(6) + ',' + parseFloat (waypoint.lat).toFixed(6);
+				} else {
+					waypointString = parseFloat (waypoint.lat).toFixed(6) + ',' + parseFloat (waypoint.lng).toFixed(6);
+				}
+				waypointStrings.push (waypointString);
+			});
+			return waypointStrings;
 		},
 		
 		
@@ -2100,7 +2190,7 @@ var routing = (function ($) {
 					}
 					
 					// For a single CycleStreets route, emulate /properties/plans present in the multiple route type
-					if (!result.properties.plans) {
+					if (!_settings.multiplexedStrategies && !result.properties.plans) {
 						result = routing.emulatePropertiesPlans (result, strategy.id);
 					}
 					
@@ -2138,7 +2228,6 @@ var routing = (function ($) {
 		{
 			// Find the relevant feature
 			var planIndex = routing.findPlanIndex (result, strategyId);
-			
 			// Assemble the plan summaries
 			var plans = {};
 			plans[strategyId] = {		// Cannot be assigned directly in the array below; see https://stackoverflow.com/questions/11508463/javascript-set-object-key-by-variable
