@@ -1219,26 +1219,34 @@ var routing = (function ($) {
 			// Load the route for each strategy
 			var parameters = {};
 			var url;
-			$.each (_settings.strategies, function (index, strategy) {
-				
-				// If another routing engine is defined, define the request URL
-				if (strategy.routeRequest) {
-					url = strategy.routeRequest (waypointStrings, strategy.baseUrl, strategy.parameters);
-					
-				// Otherwise use the standard CycleStreets implementation
-				} else {
-					parameters = $.extend (true, {}, strategy.parameters);	// i.e. clone
-					parameters.key = _settings.apiKey;
-					parameters.waypoints = waypointStrings.join ('|');
-					parameters.archive = 'full';
-					parameters.itineraryFields = 'id,start,finish,waypointCount';
-					parameters.journeyFields = 'path,plan,lengthMetres,timeSeconds,grammesCO2saved,kiloCaloriesBurned,elevationProfile';
-					url = _settings.apiBaseUrl + '/v2/journey.plan' + '?' + $.param (parameters, false);
-				}
-				
-				// Load the route
-				routing.loadRoute (url, strategy);
+			$.each (_settings.strategies, function (index, strategy) {	
+				url = routing.constructUrlFromStrategy (strategy.routeRequest, strategy.baseUrl, strategy.parameters, waypointStrings);
+				routing.loadRoute (url, strategy, routing.processRoute);
 			});
+		},
+
+
+		// Construct URL from strategy
+		constructUrlFromStrategy: function (routeRequest, baseUrl, parameters, waypointStrings)
+		{
+			var url;
+			
+			// If another routing engine is defined, define the request URL
+			if (routeRequest) {
+				url = routeRequest (waypointStrings, baseUrl, parameters);
+				
+			// Otherwise use the standard CycleStreets implementation
+			} else {
+				var parameters = $.extend (true, {}, parameters);	// i.e. clone
+				parameters.key = _settings.apiKey;
+				parameters.waypoints = waypointStrings.join ('|');
+				parameters.archive = 'full';
+				parameters.itineraryFields = 'id,start,finish,waypointCount';
+				parameters.journeyFields = 'path,plan,lengthMetres,timeSeconds,grammesCO2saved,kiloCaloriesBurned,elevationProfile';
+				url = _settings.apiBaseUrl + '/v2/journey.plan' + '?' + $.param (parameters, false);	
+			}
+
+			return url;
 		},
 		
 		
