@@ -2149,19 +2149,10 @@ var routing = (function ($) {
 		loadRouteFromId: function (itineraryId)
 		{
 			// Load the route for each strategy
-			var parameters = {};
 			var url;
 			$.each (_settings.strategies, function (index, strategy) {
-				
-				// Construct the route request
-				parameters = $.extend (true, {}, strategy.parameters);	// i.e. clone
-				parameters.key = _settings.apiKey;
-				parameters.id = itineraryId;
-				parameters.itineraryFields = 'id,start,finish,waypointCount';
-				url = _settings.apiBaseUrl + '/v2/journey.retrieve' + '?' + $.param (parameters, false);
-				
-				// Load the route
-				routing.loadRoute (url, strategy);
+				url = routing.constructUrlFromStrategy (strategy.routeRequest, strategy.baseUrl, strategy.parameters, waypointStrings);
+				routing.loadRoute (url, strategy, routing.processRoute);
 			});
 			
 			// Add results tabs
