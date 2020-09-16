@@ -1195,12 +1195,14 @@ var routing = (function ($) {
 			return _singleMarkerMode;
 		},
 		
+
 		// Getter for single marker location, used when setting home/work location
 		getSingleMarkerLocation: function ()
 		{
 			return _singleMarkerLocation;
 		},
 		
+
 		// Function to load a route if it is plannable from the registered waypoints, each containing a lng,lat,label collection
 		plannable: function ()
 		{
@@ -1264,6 +1266,23 @@ var routing = (function ($) {
 				waypointStrings.push (waypointString);
 			});
 			return waypointStrings;
+		},
+
+
+		// Function to process a route, i.e., adding GeoJSON, showing the route, and updatin gthe itinerary number in the URL
+		processRoute: function (strategy, result)
+		{
+			// Register the GeoJSON to enable the state to persist between map layer changes and to set that the route is loaded
+			_routeGeojson[strategy.id] = result;
+			
+			routing.showRoute (_routeGeojson[strategy.id], strategy);
+			
+			// Set the itinerary number permalink in the URL
+			var itineraryId = _routeGeojson[strategy.id].properties.id;
+			routing.updateUrl (itineraryId, _waypoints);
+			
+			// Fit bounds
+			routing.fitBoundsGeojson (_routeGeojson[strategy.id], strategy.id);
 		},
 		
 		
@@ -2061,8 +2080,8 @@ var routing = (function ($) {
 		
 		
 		// Function to load a route over AJAX
-		loadRoute: function (url, strategy)
-		{
+		loadRoute: function (url, strategy, callbackFunction)
+		{	
 			// Load over AJAX; see: https://stackoverflow.com/a/48655332/180733
 			$.ajax({
 				dataType: 'json',
@@ -2085,18 +2104,8 @@ var routing = (function ($) {
 						result = routing.emulatePropertiesPlans (result, strategy.id);
 					}
 					
-					// Register the GeoJSON to enable the state to persist between map layer changes and to set that the route is loaded
-					_routeGeojson[strategy.id] = result;
-					
-					// Show the route
-					routing.showRoute (_routeGeojson[strategy.id], strategy);
-					
-					// Set the itinerary number permalink in the URL
-					var itineraryId = _routeGeojson[strategy.id].properties.id;
-					routing.updateUrl (itineraryId, _waypoints);
-					
-					// Fit bounds
-					routing.fitBoundsGeojson (_routeGeojson[strategy.id], strategy.id);
+					// Run the callback to process the route
+					callbackFunction (strategy, result);
 				},
 				error: function (jqXHR, textStatus, errorThrown) {
 					vex.dialog.alert ('Sorry, the route for ' + strategy.label + ' could not be loaded.');
