@@ -170,6 +170,7 @@ var routing = (function ($) {
 	var _showPlannedRoute = false; // Don't display planned routes when we are not in itinerary mode, useful if the AJAX call takes a while and user has exited itinerary mode in the meantime
 	var _distanceUnit = 'kilometers'; // Store the distance unit
 	var _inputDragActive = false; // Used to avoid conflict with swipe-down event on card
+	var _loadingRouteFromId = false; // Used to publicly discern the routing mode
 
 	return {
 		
@@ -1226,7 +1227,7 @@ var routing = (function ($) {
 			{
 				// Assemble the composite url for all plans
 				var plans = []
-				$.each(_settings.strategies, function (indexInArray, strategy) { 
+				$.each (_settings.strategies, function (indexInArray, strategy) { 
 					// Combine plans (N.B. combining other parameters is not supported as this time)
 					plans.push (strategy.parameters.plans);
 				});
@@ -1234,7 +1235,7 @@ var routing = (function ($) {
 				url = routing.constructUrlFromStrategy (false, _settings.strategies[0].baseUrl, {plans: plans}, waypointStrings);
 
 				// In multiplex mode, strategy string will only be used when displaying AJAX error messages
-				var strategyIgnore = 'multiplexed strategy';
+				var strategyIgnore = 'your journey';
 
 				routing.loadRoute (url, strategyIgnore, function (strategyIgnore, multiplexedResult) {
 					// De-multiplex route 
@@ -2148,15 +2149,36 @@ var routing = (function ($) {
 		// Function to load a route from a specified itinerary ID
 		loadRouteFromId: function (itineraryId)
 		{
+			// Turn on route display mode
+			routing.plannedRouteShouldBeShown (true);
+			
 			// Load the route for each strategy
+			var parameters = {};
 			var url;
 			$.each (_settings.strategies, function (index, strategy) {
-				url = routing.constructUrlFromStrategy (strategy.routeRequest, strategy.baseUrl, strategy.parameters, waypointStrings);
+				
+				// Construct the route request
+				parameters = $.extend (true, {}, strategy.parameters);	// i.e. clone
+				parameters.key = _settings.apiKey;
+				parameters.id = itineraryId;
+				parameters.itineraryFields = 'id,start,finish,waypointCount';
+				parameters.journeyFields = 'path,plan,lengthMetres,timeSeconds,grammesCO2saved,kiloCaloriesBurned,elevationProfile';
+				url = _settings.apiBaseUrl + '/v2/journey.retrieve' + '?' + $.param (parameters, false);
+	
+				// Load the route
+				_loadingRouteFromId = true;
 				routing.loadRoute (url, strategy, routing.processRoute);
 			});
 			
 			// Add results tabs
 			routing.resultsTabs ();
+		},
+
+
+		// External getter for loading route from ID status
+		getLoadingRouteFromId: function ()
+		{
+			return _loadingRouteFromId;
 		},
 		
 		
@@ -2181,7 +2203,7 @@ var routing = (function ($) {
 					}
 					
 					// For a single CycleStreets route, emulate /properties/plans present in the multiple route type
-					if (!_settings.multiplexedStrategies && !result.properties.plans) {
+					if ((!_settings.multiplexedStrategies && !result.properties.plans) || _loadingRouteFromId) {
 						result = routing.emulatePropertiesPlans (result, strategy.id);
 					}
 					
