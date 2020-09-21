@@ -132,6 +132,9 @@ var routing = (function ($) {
 		travelModeColours: {
 			'dismounted': 'gray'
 		},
+
+		// Padding for fit bounds
+		fitBoundsPadding: {top: 20, bottom: 20, left: 310, right: 380},
 		
 		// Whether to show all route line results or just the currently-selected
 		showAllRoutes: true,
@@ -2275,10 +2278,7 @@ var routing = (function ($) {
 			}, new mapboxgl.LngLatBounds (coordinates[0], coordinates[0]));
 			
 			// Fit bounds
-			_map.setMaxZoom (17);	// Prevent excessive zoom to give context
-			// #!# padding values currently assume a large desktop screen
-			_map.fitBounds (bounds, {padding: {top: 20, bottom: 20, left: 310, right: 380}});
-			_map.setMaxZoom (_settings.maxZoom);	// Reset
+			_map.fitBounds (bounds, {padding: _settings.fitBoundsPadding, maxZoom: 17});
 		},
 		
 		
