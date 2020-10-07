@@ -214,7 +214,7 @@ var routing = (function ($) {
 			//routing.controlPanning ();
 			
 			// Add route clearing
-			routing.routeClearing ();
+			routing.enableRouteClearing ();
 			
 			// Create an index of strategies to tab index
 			routing.loadRouteIndexes ();
@@ -428,27 +428,34 @@ var routing = (function ($) {
 		
 		
 		// Add a clear route handler
-		routeClearing: function ()
+		enableRouteClearing: function ()
 		{
 			// Create a delegated click function to clear the route
-			$('body').on('click', '#clearroute', function (e) {
-				
-				// If a route is already loaded, prompt to remove it
-				if (!$.isEmptyObject (_routeGeojson)) {
-					if (_settings.promptBeforeClearingRoute) {
-						if (!confirm ('Clear existing route?')) {
-							return;
-						}
-					}
+			$('body').on('click', '#clearroute', function () {
+				routing.clearRoute ();
+			});
+		},
 
-					// Remove the route for each strategy
-					var retainWaypoints = true;
-					var keepMarkers = true;
-					routing.removeRoute (retainWaypoints, keepMarkers);
+
+		// Function to clear the route, markers, and waypoints
+		clearRoute: function ()
+		{
+			// If a route is already loaded, prompt to remove it
+			if (!$.isEmptyObject (_routeGeojson)) {
+				if (_settings.promptBeforeClearingRoute) {
+					if (!confirm ('Clear existing route?')) {
+						return;
+					}
 				}
 
-				routing.plannedRouteShouldBeShown (false);
-			});
+				// Remove the route for each strategy
+				var retainWaypoints = true;
+				var keepMarkers = true;
+				routing.removeRoute (retainWaypoints, keepMarkers);
+			}
+
+			// Turn off route display, in case there are any slow/late incoming AJAX responses
+			routing.plannedRouteShouldBeShown (false);
 		},
 		
 		
