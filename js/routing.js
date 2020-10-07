@@ -146,7 +146,13 @@ var routing = (function ($) {
 		showToolBox: true,
 
 		// Whether to prompt before clearing route
-		promptBeforeClearingRoute: true
+		promptBeforeClearingRoute: true,
+
+		// Load Tabs class toggle, used when loading a parameterised URL. This CSS class will be added to the enabled parent li elements (i.e., 'checked', or 'selected')
+		loadTabsClassToggle: 'enabled',
+
+		// Element on which to display a routing "enabled" icon, while route is shown
+		routingEnabledElement: null
 	};
 	
 	// Internal class properties
@@ -438,7 +444,7 @@ var routing = (function ($) {
 
 
 		// Function to clear the route, markers, and waypoints
-		clearRoute: function ()
+		clearRoute: function (retainWaypoints = true, keepMarkers = true)
 		{
 			// If a route is already loaded, prompt to remove it
 			if (!$.isEmptyObject (_routeGeojson)) {
@@ -449,9 +455,12 @@ var routing = (function ($) {
 				}
 
 				// Remove the route for each strategy
-				var retainWaypoints = true;
-				var keepMarkers = true;
 				routing.removeRoute (retainWaypoints, keepMarkers);
+			}
+
+			// Remove any "enabled" selector
+			if (_settings.routingEnabledElement !== null) {
+				$(_settings.routingEnabledElement).removeClass (_settings.loadTabsClassToggle);
 			}
 
 			// Turn off route display, in case there are any slow/late incoming AJAX responses
