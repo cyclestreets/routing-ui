@@ -1072,7 +1072,16 @@ var routing = (function ($) {
 			$(document).on ('style-changed', function (event) {
 				routing.routing ();
 			});
+
+			// Listen for clicks in the style changer
+			// !FIXME this is very hacky. 
+			$('.panel.map-style ul li').on ('click', function () {
+				setTimeout(() => {
+					location.reload ();
+				}, 1000);
+			});
 		},
+		
 		
 		// Add a pin to the map center, used only at start when clicking to open the map card to initialise JP
 		addMapCenter: function ()
@@ -2303,7 +2312,7 @@ var routing = (function ($) {
 			}, new mapboxgl.LngLatBounds (coordinates[0], coordinates[0]));
 			
 			// Fit bounds
-			_map.fitBounds (bounds, {padding: _settings.fitBoundsPadding, maxZoom: 17});
+			_map.fitBounds (bounds, {padding: _settings.fitBoundsPadding, maxZoom: 17, duration: 1500});
 		},
 		
 		
