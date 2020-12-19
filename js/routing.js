@@ -1070,18 +1070,20 @@ var routing = (function ($) {
 			
 			// Load routing when style ready or when style changed - the whole application logic is wrapped in this, as the entire state must be recreated if the style is changed
 			$(document).on ('style-changed', function (event) {
-				routing.routing ();
+				//routing.routing ();
 			});
 
 			// Listen for clicks in the style changer
 			// !FIXME this is very hacky. 
 			$('.panel.map-style ul li').on ('click', function () {
-				setTimeout(() => {
-					location.reload ();
-				}, 1000);
+				if (_showPlannedRoute) {
+					setTimeout(() => {
+						location.reload ();
+					}, 100);
+				}
 			});
 		},
-		
+
 		
 		// Add a pin to the map center, used only at start when clicking to open the map card to initialise JP
 		addMapCenter: function ()
@@ -1110,7 +1112,6 @@ var routing = (function ($) {
 		{
 			// If the route is already loaded, show it
 			if (!$.isEmptyObject (_routeGeojson)) {
-				
 				// Clear any existing route
 				var retainWaypoints = true;
 				var keepMarkers = true;
