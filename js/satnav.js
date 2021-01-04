@@ -1,4 +1,4 @@
-// CycleStreets HTML5 satnav in a browser
+// Journey planner demo
 
 /*jslint browser: true, white: true, single: true, for: true */
 /*global $, jQuery, alert, console, window, DeviceOrientationEvent, mapboxgl, autocomplete, FULLTILT, routing */
@@ -10,7 +10,7 @@
 // #!# No-sleep: https://github.com/richtr/NoSleep.js
 
 
-var satnav = (function ($) {
+var journeyplanner = (function ($) {
 	
 	'use strict';
 	
@@ -103,37 +103,37 @@ var satnav = (function ($) {
 			});
 			
 			// Determine if the interface is a mobile interface
-			_isMobileDevice = satnav.isMobileDevice ();
+			_isMobileDevice = journeyplanner.isMobileDevice ();
 			
 			// Load pull-up Card UI for mobile
-			satnav.mobileCardUi ();
+			journeyplanner.mobileCardUi ();
 			
 			// Load styles
-			satnav.getStyles ();
+			journeyplanner.getStyles ();
 			
 			// Create the map
-			satnav.createMap ();
+			journeyplanner.createMap ();
 			
 			// Enable tilt and direction
-			satnav.enableTilt ();
+			journeyplanner.enableTilt ();
 			
 			// Add buildings
-			satnav.addBuildings ();
+			journeyplanner.addBuildings ();
 			
 			// Geolocate the user initially
-			satnav.geolocateInitial ();
+			journeyplanner.geolocateInitial ();
 			
 			// Add a geolocation control
-			satnav.geolocation ();
+			journeyplanner.geolocation ();
 			
 			// Add layer switching
-			satnav.layerSwitcher ();
+			journeyplanner.layerSwitcher ();
 			
 			// Add move-to control
-			satnav.addMoveToControl ();
+			journeyplanner.addMoveToControl ();
 			
 			// Add routing
-			satnav.routing ();
+			journeyplanner.routing ();
 		},
 		
 		
@@ -232,12 +232,12 @@ var satnav = (function ($) {
 					DeviceOrientationEvent.requestPermission()
 						.then ( (permissionState) => {
 							if (permissionState === 'granted') {
-								satnav.implementTilt ();
+								journeyplanner.implementTilt ();
 							}
 						})
 						.catch (console.error);
 				} else {
-					satnav.implementTilt ();
+					journeyplanner.implementTilt ();
 				}
 			});
 		},
@@ -300,7 +300,7 @@ var satnav = (function ($) {
 				var layers = _map.getStyle().layers;
 				
 				// Ensure the layer has buildings, or end
-				if (!satnav.styleHasLayer (layers, 'building')) {return;}
+				if (!journeyplanner.styleHasLayer (layers, 'building')) {return;}
 				
 				// Insert the layer beneath any symbol layer.
 				var labelLayerId;
@@ -469,7 +469,7 @@ var satnav = (function ($) {
 			var layerSwitcherHtml = '<ul>';
 			var name;
 			$.each (_styles, function (styleId, style) {
-				name = (_settings.tileUrls[styleId].label ? _settings.tileUrls[styleId].label : satnav.ucfirst (styleId));
+				name = (_settings.tileUrls[styleId].label ? _settings.tileUrls[styleId].label : journeyplanner.ucfirst (styleId));
 				layerSwitcherHtml += '<li><input id="' + styleId + '" type="radio" name="layerswitcher" value="' + styleId + '"' + (styleId == _settings.defaultStyle ? ' checked="checked"' : '') + '><label for="' + styleId + '"> ' + name + '</label></li>';
 			});
 			layerSwitcherHtml += '</ul>';
@@ -484,7 +484,7 @@ var satnav = (function ($) {
 				_map.setStyle (style);
 				
 				// Fire an event; see: https://javascript.info/dispatch-events
-				satnav.styleChanged ();
+				journeyplanner.styleChanged ();
 			}
 			var i;
 			for (i = 0; i < inputs.length; i++) {
@@ -500,7 +500,7 @@ var satnav = (function ($) {
 			// Delay for 200 minutes in a loop until the style is loaded; see: https://stackoverflow.com/a/47313389/180733
 			if (!_map.isStyleLoaded()) {
 				setTimeout (function () {
-					satnav.styleChanged ();	// Done inside a function to avoid "Maximum Call Stack Size Exceeded"
+					journeyplanner.styleChanged ();	// Done inside a function to avoid "Maximum Call Stack Size Exceeded"
 				}, 250);
 				return;
 			}
@@ -550,7 +550,7 @@ var satnav = (function ($) {
 		// Move-to control
 		addMoveToControl: function ()
 		{
-			satnav.geocoder ('#geocoder input', false);
+			journeyplanner.geocoder ('#geocoder input', false);
 		},
 		
 		
@@ -558,7 +558,7 @@ var satnav = (function ($) {
 		geocoder: function (addTo, callbackFunction)
 		{
 			// Geocoder URL; re-use of settings values is supported, represented as placeholders {%cyclestreetsApiBaseUrl}, {%cyclestreetsApiKey}, {%autocompleteBbox}
-			var geocoderApiUrl = satnav.settingsPlaceholderSubstitution (_settings.geocoderApiUrl, ['cyclestreetsApiBaseUrl', 'cyclestreetsApiKey', 'autocompleteBbox']);
+			var geocoderApiUrl = journeyplanner.settingsPlaceholderSubstitution (_settings.geocoderApiUrl, ['cyclestreetsApiBaseUrl', 'cyclestreetsApiKey', 'autocompleteBbox']);
 			
 			// Attach the autocomplete library behaviour to the location control
 			autocomplete.addTo (addTo, {
