@@ -565,30 +565,31 @@ var routing = (function ($) {
 		// Function run at launch to hook inputs up to geocoder
 		routePlanningAlt: function ()
 		{
-
 			var journeyplannerInputs = $('.panel.journeyplanner.search input');
 			var totalWaypoints = 2; // Default amount of waypoints, i.e. (0) Start and (1) Finish
-
-			$.each(journeyplannerInputs, function(index, input) {
+			
+			$.each (journeyplannerInputs, function (index, input) {
+				
 				// Register a handler for geocoding, attachable to any input
 				routing.geocoder ('.panel.journeyplanner.search input[name="' + input.name + '"]', function (item, callbackData) {
-				
+					
 					// Add the waypoint marker
 					var waypoint = {lng: item.lon, lat: item.lat, label: input.name};
 					routing.addWaypointMarker (waypoint);
-
+					
 					// Add this item to recent searches
 					routing.addToRecentSearches (waypoint);
-
+					
 					// Blur input
 					document.activeElement.blur();
 					
 				}, {totalWaypoints: totalWaypoints});
 			});
 		},
-
+		
+		
 		// Function to add a waypoint to recent searches
-		addToRecentSearches: function (waypoint) 
+		addToRecentSearches: function (waypoint)
 		{
 			// Read the recent searches from a cookie, or initialise a new array if none are saved
 			_recentSearches = ($.cookie ('recentSearches') ? $.parseJSON($.cookie('recentSearches')) : []);
@@ -640,7 +641,7 @@ var routing = (function ($) {
 
 
 		// Function to read the recent searches stored in a cookie, and populate the search panel
-		buildRecentSearches: function () 
+		buildRecentSearches: function ()
 		{
 			// Read the recent searches from a cookie, or initialise a new array if none are saved
 			_recentSearches = ($.cookie ('recentSearches') ? $.parseJSON($.cookie('recentSearches')) : []);

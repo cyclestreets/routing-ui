@@ -582,7 +582,7 @@ var satnav = (function ($) {
 		{
 			// Substitute each placeholder
 			var placeholder;
-			$.each(supportedPlaceholders, function (index, field) {
+			$.each (supportedPlaceholders, function (index, field) {
 				placeholder = '{%' + field + '}';
 				string = string.replace(placeholder, _settings[field]);
 			});
