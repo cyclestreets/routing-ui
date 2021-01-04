@@ -19,8 +19,8 @@ var journeyplanner = (function ($) {
 	var _settings = {
 		
 		// CycleStreets API
-		cyclestreetsApiBaseUrl: 'https://api.cyclestreets.net',
-		cyclestreetsApiKey: 'YOUR_CYCLESTREETS_API_KEY',
+		apiBaseUrl: 'https://api.cyclestreets.net',
+		apiKey: 'YOUR_CYCLESTREETS_API_KEY',
 		
 		// Mapbox API key
 		mapboxApiKey: 'YOUR_MAPBOX_API_KEY',
@@ -35,8 +35,8 @@ var journeyplanner = (function ($) {
 		// Max zoom
 		maxZoom: 20,
 		
-		// Geocoder API URL; re-use of settings values represented as placeholders {%cyclestreetsApiBaseUrl}, {%cyclestreetsApiKey}, {%autocompleteBbox}, are supported
-		geocoderApiUrl: '{%cyclestreetsApiBaseUrl}/v2/geocoder?key={%cyclestreetsApiKey}&bounded=1&bbox={%autocompleteBbox}',
+		// Geocoder API URL; re-use of settings values represented as placeholders {%apiBaseUrl}, {%apiKey}, {%autocompleteBbox}, are supported
+		geocoderApiUrl: '{%apiBaseUrl}/v2/geocoder?key={%apiKey}&bounded=1&bbox={%autocompleteBbox}',
 		
 		// BBOX for autocomplete results biasing
 		autocompleteBbox: '-6.6577,49.9370,1.7797,57.6924',
@@ -557,8 +557,8 @@ var journeyplanner = (function ($) {
 		// Function to add a geocoder control
 		geocoder: function (addTo, callbackFunction)
 		{
-			// Geocoder URL; re-use of settings values is supported, represented as placeholders {%cyclestreetsApiBaseUrl}, {%cyclestreetsApiKey}, {%autocompleteBbox}
-			var geocoderApiUrl = journeyplanner.settingsPlaceholderSubstitution (_settings.geocoderApiUrl, ['cyclestreetsApiBaseUrl', 'cyclestreetsApiKey', 'autocompleteBbox']);
+			// Geocoder URL; re-use of settings values is supported, represented as placeholders {%apiBaseUrl}, {%apiKey}, {%autocompleteBbox}
+			var geocoderApiUrl = journeyplanner.settingsPlaceholderSubstitution (_settings.geocoderApiUrl, ['apiBaseUrl', 'apiKey', 'autocompleteBbox']);
 			
 			// Attach the autocomplete library behaviour to the location control
 			autocomplete.addTo (addTo, {
