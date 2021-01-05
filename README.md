@@ -10,7 +10,7 @@ Load `/js/routing.js` into your UI, and provide a Mapbox GL JS map instance.
 
 ## Copyright
 
-Copyright CycleStreets Ltd, 2020-21.
+Copyright CycleStreets Ltd, 2018-21.
 
 
 ## License
