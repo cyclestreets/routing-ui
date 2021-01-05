@@ -62,6 +62,9 @@ var routing = (function ($) {
 		maxZoom: 17,
 		maxZoomToSegment: 17,
 		
+		// Below this zoom level a mouse click zooms-in the map
+		minimumZoomForStreetSelection: 13,
+		
 		// Geocoder API URL; re-use of settings values represented as placeholders {%apiBaseUrl}, {%apiKey}, {%autocompleteBbox}, are supported
 		geocoderApiUrl:        '{%apiBaseUrl}/v2/geocoder?key={%apiKey}&bounded=1&bbox={%autocompleteBbox}',
 		reverseGeocoderApiUrl: '{%apiBaseUrl}/v2/nearestpoint?key={%apiKey}',
@@ -1140,6 +1143,15 @@ var routing = (function ($) {
 				
 				// Take no action on the click handler if a route is loaded
 				if (!$.isEmptyObject (_routeGeojson)) {return;}
+				
+				// Ensure sufficiently zoomed in
+				var currentZoom = _map.getZoom ();
+				currentZoom = Math.round(currentZoom * 10) / 10;	// Round to 1dp; flyTo can end up with rounding errors, e.g. 13 goes to 12.9999931 or 13.0000042
+				if (currentZoom < _settings.minimumZoomForStreetSelection) {
+					var newZoom = Math.min((currentZoom + 3), _settings.minimumZoomForStreetSelection);
+					_map.flyTo ({center: [e.lngLat.lng, e.lngLat.lat], zoom: newZoom});
+					return;
+				}
 				
 				// Build the waypoint
 				var waypoint = {lng: e.lngLat.lng, lat: e.lngLat.lat, label: null /* i.e., autodetermine label */};
