@@ -58,6 +58,10 @@ var routing = (function ($) {
 		apiBaseUrl: 'https://api.cyclestreets.net',
 		apiKey: 'YOUR_CYCLESTREETS_API_KEY',
 		
+		// Target UI <div> paths, defined by the client code, which the library will populate
+		plannerDivPath: '.panel.journeyplanner.search',
+		mapStyleDivPath: '.panel.map-style',
+		
 		// Max zoom
 		maxZoom: 17,
 		maxZoomToSegment: 17,
@@ -557,10 +561,10 @@ var routing = (function ($) {
 		{
 			// If we have fewer than 2 waypoints, grey out the routing button
 			if (_waypoints.length < 2) {
-				$('.panel.journeyplanner.search #getRoutes').addClass ('grayscale', 1000).css ('opacity', '0.3');
+				$(_settings.plannerDivPath + ' #getRoutes').addClass ('grayscale', 1000).css ('opacity', '0.3');
 				
 			} else {
-				$('.panel.journeyplanner.search #getRoutes').removeClass ('grayscale', 1000).css ('opacity', '1');
+				$(_settings.plannerDivPath + ' #getRoutes').removeClass ('grayscale', 1000).css ('opacity', '1');
 			}
 		},
 		
@@ -568,13 +572,13 @@ var routing = (function ($) {
 		// Function run at launch to hook inputs up to geocoder
 		routePlanningAlt: function ()
 		{
-			var journeyplannerInputs = $('.panel.journeyplanner.search input');
+			var journeyplannerInputs = $(_settings.plannerDivPath + ' input');
 			var totalWaypoints = 2; // Default amount of waypoints, i.e. (0) Start and (1) Finish
 			
 			$.each (journeyplannerInputs, function (index, input) {
 				
 				// Register a handler for geocoding, attachable to any input
-				routing.geocoder ('.panel.journeyplanner.search input[name="' + input.name + '"]', function (item, callbackData) {
+				routing.geocoder (_settings.plannerDivPath + ' input[name="' + input.name + '"]', function (item, callbackData) {
 					
 					// Add the waypoint marker
 					var waypoint = {lng: item.lon, lat: item.lat, label: input.name};
@@ -598,7 +602,7 @@ var routing = (function ($) {
 			_recentSearches = ($.cookie ('recentSearches') ? $.parseJSON($.cookie('recentSearches')) : []);
 		
 			// Get location from input geocoder and add it to the waypoint dictionary
-			waypoint['location'] = $('.panel.journeyplanner.search input[name="' + waypoint.label + '"]').val ();
+			waypoint['location'] = $(_settings.plannerDivPath + ' input[name="' + waypoint.label + '"]').val ();
 			
 			// If we don't have a location, don't save this as a recent search, and exit
 			if (typeof waypoint['location'] === "undefined") {return;}
@@ -676,8 +680,8 @@ var routing = (function ($) {
 			_recentJourneys = ($.cookie ('recentJourneys') ? $.parseJSON($.cookie('recentJourneys')) : []);
 			
 			// Find the first and last input values, which contains the geocoded destination
-			var origin = $('.panel.journeyplanner.search input').first().val();
-			var destination = $('.panel.journeyplanner.search input').last().val();
+			var origin = $(_settings.plannerDivPath + ' input').first().val();
+			var destination = $(_settings.plannerDivPath + ' input').last().val();
 			var waypoints = routing.getWaypoints ();
 
 			// Build the journey object
@@ -749,12 +753,12 @@ var routing = (function ($) {
 		
 		// Function run at startup to register add and remove waypoint handler
 		registerWaypointHandlers: function ()
-		{			
-			$('.panel.journeyplanner.search').on('click', 'a.removeWaypoint', function(e) {
+		{
+			$(_settings.plannerDivPath).on('click', 'a.removeWaypoint', function(e) {
 				routing.removeWaypointGeocoder(e.target);
 			});
 
-			$('.panel.journeyplanner.search').on('click', 'a.addWaypoint', function(e) {
+			$(_settings.plannerDivPath).on('click', 'a.addWaypoint', function(e) {
 				routing.addWaypointGeocoder(e.target);
 			});
 
@@ -874,7 +878,7 @@ var routing = (function ($) {
 			$(waypointElement).parent().parent().after(divHtml);
 
 			// Register a handler for geocoding, attachable to any input
-			routing.geocoder ('.panel.journeyplanner.search input[name="' + inputName + '"]', function (item, callbackData) {
+			routing.geocoder (_settings.plannerDivPath + ' input[name="' + inputName + '"]', function (item, callbackData) {
 			
 				// Add the waypoint marker
 				var waypoint = {lng: item.lon, lat: item.lat, label: inputName};
@@ -1059,7 +1063,7 @@ var routing = (function ($) {
 			
 			// Set the value if the input box is present
 			var waypointName = 'waypoint' + (waypointNumber);
-			var element = '.panel.journeyplanner.search input[name="' + waypointName + '"]';
+			var element = _settings.plannerDivPath + ' input[name="' + waypointName + '"]';
 			if ($(element).length) {
 				$(element).val (name);
 			}
@@ -1079,7 +1083,7 @@ var routing = (function ($) {
 
 			// Listen for clicks in the style changer
 			// !FIXME this is very hacky. 
-			$('.panel.map-style ul li').on ('click', function () {
+			$(_settings.mapStyleDivPath + ' ul li').on ('click', function () {
 				if (_showPlannedRoute) {
 					setTimeout(() => {
 						location.reload ();
@@ -1183,7 +1187,7 @@ var routing = (function ($) {
 			
 			// Immediately set the value of the input box to mark it as occupied
 			// This is so any other markers dropped in quick sucession will know that this box is going to be filled, once the AJAX call completes, and will use the succeeding empty inputs
-			$('.panel.journeyplanner.search input.locationTracking').first ().val ('Finding your location…');
+			$(_settings.plannerDivPath + ' input.locationTracking').first ().val ('Finding your location…');
 			
 			// Retrieve the geolocation from layerviewer
 			var geolocation = layerviewer.getGeolocation ();
@@ -2669,7 +2673,7 @@ var routing = (function ($) {
 		// Function to remove all JP inputs
 		resetJPGeocoderInputs: function ()
 		{
-			var inputElements = $('.panel.journeyplanner.search input');
+			var inputElements = $(_settings.plannerDivPath + ' input');
 			$.each (inputElements, function (index, inputElement) {
 				$(inputElement).parent().remove();
 			});
@@ -2688,7 +2692,7 @@ var routing = (function ($) {
 				// If this is the first click on the map, we want to quickly add the user's location to the first input
 				// Our click will therefore populate the second input. However, this should only happen when the JP card is close. 
 				// If it is open, clicking on the map should always add to the first empty input
-				if ($('.panel.journeyplanner.search input:empty').length == 2 && !$('.panel.journeyplanner.search').hasClass ('open')) {
+				if ($(_settings.plannerDivPath + ' input:empty').length == 2 && !$(_settings.plannerDivPath).hasClass ('open')) {
 					if (layerviewer.getGeolocationAvailability ()) {
 						routing.setMarkerAtUserLocation ();
 					}
@@ -2697,7 +2701,7 @@ var routing = (function ($) {
 				// Is there an empty waypoint? If so, we want to associate this waypoint
 				// Loop through all the inputs and find if there's an empty one
 				var isEmptyInput = false
-				var inputElements = $('.panel.journeyplanner.search input');
+				var inputElements = $(_settings.plannerDivPath + ' input');
 				$.each (inputElements, function (index, inputElement) {
 					if (!$(inputElement).val()) {
 						isEmptyInput = true;
@@ -2781,7 +2785,7 @@ var routing = (function ($) {
 					// If this is the waypoint0, dragging means we are now not at the user location
 					// Turn off (grayscale) the location button to show this
 					if (marker.__waypointNumber == 0) {
-						var inputElement = $('.panel.journeyplanner.search input[name=waypoint' + waypointNumber + ']').first();
+						var inputElement = $(_settings.plannerDivPath + ' input[name=waypoint' + waypointNumber + ']').first();
 						$(inputElement).siblings ('a.locationTracking').addClass ('grayscale');
 					}
 					
@@ -2809,7 +2813,7 @@ var routing = (function ($) {
 				// If add input is enabled, add an input
 				if (addInput) {
 					// Is there an empty input? Add to this, instead
-					var inputElements = $('.panel.journeyplanner.search input');
+					var inputElements = $(_settings.plannerDivPath + ' input');
 					var emptyInputExists = false;
 					$.each (inputElements, function (index, inputElement) {
 						if (!$(inputElement).val()) {
@@ -2823,7 +2827,7 @@ var routing = (function ($) {
 						$('#journeyPlannerInputs').append (routing.getInputHtml (inputName, inputHasDefaultValue));
 						
 						// Register a handler for geocoding, attachable to any input
-						routing.geocoder ('.panel.journeyplanner.search input[name="' + inputName + '"]', function (item, callbackData) {
+						routing.geocoder (_settings.plannerDivPath + ' input[name="' + inputName + '"]', function (item, callbackData) {
 									
 							// Add the waypoint marker
 							var waypoint = {lng: item.lon, lat: item.lat, label: inputName};
@@ -2913,7 +2917,7 @@ var routing = (function ($) {
 			reverseGeocoderApiUrl += '&lonlat=' + coordinates.lng + ',' + coordinates.lat;
 			
 			// Divine the input element, which will be used to control the spinner loader
-			var inputElement = $('.panel.journeyplanner.search input[name=waypoint' + waypointNumber + ']').first();
+			var inputElement = $(_settings.plannerDivPath + ' input[name=waypoint' + waypointNumber + ']').first();
 
 			// Fetch the result
 			$.ajax({
