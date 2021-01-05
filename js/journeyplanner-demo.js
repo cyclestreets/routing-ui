@@ -595,8 +595,15 @@ var journeyplanner = (function ($) {
 		// Routing
 		routing: function ()
 		{
+			// Attach the route planning UI either to the Card UI (for mobile) or to the bottom-right of the map (for desktop)
+			if (_isMobileDevice) {
+				$('#cardcontent').append ('<div id="routeplanning"></div>');
+			} else {
+				var control = journeyplanner.createControl ('routeplanning', 'bottom-right');
+			}
+			
 			// Delegate to separate class
-			routing.initialise (_settings, _map, _isMobileDevice, _panningEnabled);
+			routing.initialise (_settings, _map, _isMobileDevice, _panningEnabled, true);
 		}
 	};
 	

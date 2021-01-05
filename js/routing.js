@@ -59,8 +59,8 @@ var routing = (function ($) {
 		apiKey: 'YOUR_CYCLESTREETS_API_KEY',
 		
 		// Target UI <div> paths, defined by the client code, which the library will populate
-		plannerDivPath: '.panel.journeyplanner.search',
-		mapStyleDivPath: '.panel.map-style',
+		plannerDivPath: '#routeplanning',
+		mapStyleDivPath: '#layerswitcher',
 		
 		// Max zoom
 		maxZoom: 17,
@@ -145,10 +145,10 @@ var routing = (function ($) {
 		
 		// Whether to show all route line results or just the currently-selected
 		showAllRoutes: true,
-
+		
 		// Whether to plan routes the moment the map is clicked rather than wait until a routing button is pressed
 		planRoutingOnMapClick: true,
-
+		
 		// Whether to show the basic Mapbox toolbox
 		showToolBox: true,
 
@@ -192,7 +192,7 @@ var routing = (function ($) {
 	return {
 		
 		// Main entry point
-		initialise: function (config, map, isMobileDevice, panningEnabled)
+		initialise: function (config, map, isMobileDevice, panningEnabled, createPlanningControls)
 		{
 			// Merge the configuration into the settings
 			$.each (_settings, function (setting, value) {
@@ -242,10 +242,13 @@ var routing = (function ($) {
 				_settings.lineThickness.selectedOutline = (_settings.lineThickness.selected + 4);
 			}
 			
-			// Add route planning UI
-			//routing.routePlanning ();
+			// If required, create route planning UI controls
+			if (createPlanningControls) {
+				routing.createRoutePlanningControls ();
+			}
+			
 			// Connect existing inputs to geocoder autocomplete
-			routing.routePlanningAlt ();
+			routing.connectGeocoders ();
 
 			// Add waypoint handlers
 			routing.registerWaypointHandlers ();
@@ -570,7 +573,7 @@ var routing = (function ($) {
 		
 		
 		// Function run at launch to hook inputs up to geocoder
-		routePlanningAlt: function ()
+		connectGeocoders: function ()
 		{
 			var journeyplannerInputs = $(_settings.plannerDivPath + ' input');
 			var totalWaypoints = 2; // Default amount of waypoints, i.e. (0) Start and (1) Finish
@@ -763,14 +766,14 @@ var routing = (function ($) {
 			});
 
 			// Make journey planner inputs sortable via drag and drop
-			$('#journeyPlannerInputs').sortable({
+			$('#journeyPlannerInputs').sortable ({
 				items: '.inputDiv',
 				forcePlaceholderSize: true,
-				handle: ".reorderWaypoint",
+				handle: '.reorderWaypoint',
 				helper: 'original',
 				opacity: 0.5,
 				revert: 250,
-				axis: "y",
+				axis: 'y',
 				start: function() {
 					_inputDragActive = true;
 				},
@@ -780,7 +783,7 @@ var routing = (function ($) {
 			});
 
 			// Disable the waypoints when list item is moved
-			$('#journeyPlannerInputs').on ("sort", function(event, ui) {
+			$('#journeyPlannerInputs').on ('sort', function(event, ui) {
 				$('.removeWaypoint').fadeOut ();
 				$('.addWaypoint'). fadeOut (250);
 			} );
@@ -790,7 +793,8 @@ var routing = (function ($) {
 				routing.sortWaypoints ();
 			} );
 		},
-
+		
+		
 		sortWaypoints: function ()
 		{
 			// Save a copy of the old waypoints, and start a fresh _waypoints
@@ -965,13 +969,12 @@ var routing = (function ($) {
 
 			// Resize map element
 			cyclestreetsui.fitMap ();
-
 		},
 		
-		// Function to add a route planning UI
-		routePlanning: function (createHtml)
+		
+		// Function to create a route planning UI
+		createRoutePlanningControls: function (createHtml)
 		{
-			
 			// Attach the route planning UI either to the Card UI (for mobile) or to the bottom-right of the map (for desktop)
 			if (_isMobileDevice) {
 				$('#cardcontent').append ('<div id="routeplanning"></div>');
@@ -982,7 +985,7 @@ var routing = (function ($) {
 			// Add title
 			var html = '<h2>Route planner</h2>';
 			$('#routeplanning').append (html);
-		
+			
 			// Add or assign input widgets
 			var totalWaypoints = 2;
 			var waypointName;
@@ -999,29 +1002,17 @@ var routing = (function ($) {
 					default: label = 'Waypoint';
 				}
 				
-				// Create the input widget and attach a geocoder to it
+				// Create the input widget
 				waypointName = 'waypoint' + waypointNumber;
 				input = '<p><input name="' + waypointName + '" type="search" placeholder="' + label + '" class="geocoder" /></p>';
 				$('#routeplanning').append (input);
-				
-				//var routeplanningInput = '#routeplanning input[name="' + waypointName + '"]';
-	
 			}
 			
-			// Register a handler for geocoding, attachable to any input
-			routing.geocoder ('#routeplanning input[name="waypoint0"]', function (item, callbackData) {
-				
-				// Fire a click on the map
-				// #!# Note that use of map.fire is now deprecated: https://gis.stackexchange.com/a/210289/58752
-				point = _map.project ([item.lon, item.lat]);	// https://github.com/mapbox/mapbox-gl-js/issues/5060
-				_map.fire ('click', { lngLat: {lng: item.lon, lat: item.lat} }, point);
-				
-				// Move focus to next geocoder input box if present
-				//routing.focusFirstAvailableGeocoder (totalWaypoints);
-				
-			}, {totalWaypoints: totalWaypoints});
-
-
+			// Add Submit button
+			// #!# Should be a proper submit button
+			var submitButton = '<p><a id="getRoutes" href="#" title="Plan route">Plan route</a></p>';
+			$('#routeplanning').append (submitButton);
+			
 			// Put focus on the first available geocoder
 			if (!_isMobileDevice) {
 				routing.focusFirstAvailableGeocoder (totalWaypoints);
@@ -1173,12 +1164,12 @@ var routing = (function ($) {
 				routing.addWaypointMarker (waypoint, addInput);
 
 				// Load the route if it is plannable, i.e. once there are two waypoints
-				// Loading routeon map click is a setting an can be disable
+				// Loading route on map click is a setting an can be disabled
 				if (_settings.planRoutingOnMapClick) {routing.plannable ();}
 			});
 		},
-
-
+		
+		
 		// Drop marker at user's geolocation
 		setMarkerAtUserLocation: function ()
 		{
@@ -1247,11 +1238,13 @@ var routing = (function ($) {
 			return _singleMarkerMode;
 		},
 		
+		
 		// Getter for single marker location, used when setting home/work location
 		getSingleMarkerLocation: function ()
 		{
 			return _singleMarkerLocation;
 		},
+		
 		
 		// Function to load a route if it is plannable from the registered waypoints, each containing a lng,lat,label collection
 		plannable: function ()
@@ -1267,7 +1260,7 @@ var routing = (function ($) {
 			
 			// Add results tabs
 			routing.resultsTabs ();
-
+			
 			// Construct the URL and load
 			var url;
 			if (_settings.multiplexedStrategies) 
