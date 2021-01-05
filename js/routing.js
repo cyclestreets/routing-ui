@@ -1056,10 +1056,10 @@ var routing = (function ($) {
 			if (name === false) {
 				name = '(Could not find location name)';
 			}
-
+			
 			// Set the value if the input box is present
 			var waypointName = 'waypoint' + (waypointNumber);
-			var element = '.panel.journeyplanner input[name="' + waypointName + '"]';
+			var element = '.panel.journeyplanner.search input[name="' + waypointName + '"]';
 			if ($(element).length) {
 				$(element).val (name);
 			}
@@ -1183,7 +1183,7 @@ var routing = (function ($) {
 			
 			// Immediately set the value of the input box to mark it as occupied
 			// This is so any other markers dropped in quick sucession will know that this box is going to be filled, once the AJAX call completes, and will use the succeeding empty inputs
-			$('.panel.journeyplanner input.locationTracking').first ().val ('Finding your location…');
+			$('.panel.journeyplanner.search input.locationTracking').first ().val ('Finding your location…');
 			
 			// Retrieve the geolocation from layerviewer
 			var geolocation = layerviewer.getGeolocation ();
