@@ -2439,9 +2439,9 @@ var routing = (function ($) {
 					// Construct the marker attributes
 					var label;
 					switch (feature.properties.markerTag) {
-						case 'start'       : label = 'waypoint0';  break;
+						case 'start'       : label = 'waypoint0'; break;
 						case 'finish'      : label = 'waypoint1'; break;
-						case 'intermediate': label = false;                     break;
+						case 'intermediate': label = false; break;
 					}
 					var waypoint = {lng: feature.geometry.coordinates[0], lat: feature.geometry.coordinates[1], label: label};
 					
@@ -2678,8 +2678,8 @@ var routing = (function ($) {
 		// If addInput is false, an input will only be added if there is no empty existing input
 		// inputHasDefaultValue: Creates the input with val="Finding location", to avoid a timing error when many inputs are added at once and the geocoder doesn't have time to locate each one
 		addWaypointMarker: function (waypoint, addInput = false, inputHasDefaultValue = false)
-		{			
-			// Auto assign label. Any map clicks, or externally added waypoints (e.g. from POI card) will be received as label = null, as in these cases we don't have knowledge of the internal state of the JP card
+		{
+			// Auto assign label if required; any map clicks, or externally added waypoints (e.g. from POI panel) will be received as label = null, as in these cases we don't have knowledge of the internal state of the JP panel
 			if (waypoint.label == null) {
 				
 				// If this is the first click on the map, we want to quickly add the user's location to the first input
@@ -2707,7 +2707,7 @@ var routing = (function ($) {
 				
 				// There was no empty input, so we need to increment the latest input
 				if (!isEmptyInput) {
-					waypoint.label = 'waypoint' + (_currentWaypointIndex+1);
+					waypoint.label = 'waypoint' + (_currentWaypointIndex + 1);
 
 					// If addInput wasn't enabled, enable it now, so we have a input for the new marker
 					addInput = true;
@@ -2722,8 +2722,8 @@ var routing = (function ($) {
 			if (waypoint.label) {
 				var waypointNumber = Number(waypoint.label.replace('waypoint',''));
 			}
-
-			// var waypointIndex will be -1 if not matched, of else returns index of match
+			
+			// var waypointIndex will be -1 if not matched, or else returns index of match
 			if (waypointIndex > -1) {
 				// Store old waypoint
 				var oldWaypoint = _waypoints[waypointIndex];
@@ -2821,7 +2821,7 @@ var routing = (function ($) {
 						
 						// Register a handler for geocoding, attachable to any input
 						routing.geocoder (_settings.plannerDivPath + ' input[name="' + inputName + '"]', function (item, callbackData) {
-									
+							
 							// Add the waypoint marker
 							var waypoint = {lng: item.lon, lat: item.lat, label: inputName};
 							routing.addToRecentSearches (waypoint);
