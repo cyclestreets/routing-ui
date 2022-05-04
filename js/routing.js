@@ -214,7 +214,7 @@ var routing = (function ($) {
 			_panningEnabled = panningEnabled;
 			
 			// Parse the URL
-			routing.parseUrl ();
+			routingModel.parseUrl ();
 			
 			// Set the initial default strategy, checking for a cookie from a previous page load
 			var strategyCookie = routing.getCookie ('selectedstrategy');
@@ -309,7 +309,7 @@ var routing = (function ($) {
 		geocoder: function (addTo, callbackFunction, callbackData)
 		{
 			// Geocoder URL; re-use of settings values is supported, represented as placeholders {%apiBaseUrl}, {%apiKey}, {%autocompleteBbox}
-			var geocoderApiUrl = routing.settingsPlaceholderSubstitution (_settings.geocoderApiUrl, ['apiBaseUrl', 'apiKey', 'autocompleteBbox']);
+			var geocoderApiUrl = routingModel.settingsPlaceholderSubstitution (_settings.geocoderApiUrl, ['apiBaseUrl', 'apiKey', 'autocompleteBbox']);
 			
 			// Attach the autocomplete library behaviour to the location control
 			autocomplete.addTo (addTo, {
@@ -326,58 +326,6 @@ var routing = (function ($) {
 					event.preventDefault();
 				}
 			});
-		},
-		
-		
-		// Helper function to implement settings placeholder substitution in a string
-		settingsPlaceholderSubstitution: function (string, supportedPlaceholders)
-		{
-			// Substitute each placeholder
-			var placeholder;
-			$.each (supportedPlaceholders, function (index, field) {
-				placeholder = '{%' + field + '}';
-				string = string.replace (placeholder, _settings[field]);
-			});
-			
-			// Return the modified string
-			return string;
-		},
-		
-		
-		// Function to parse the URL
-		parseUrl: function ()
-		{
-			// Start a list of parameters
-			var urlParameters = {};
-			
-			// Extract journey URL
-			urlParameters.itineraryId = false;
-			var matchesItinerary = window.location.pathname.match (/^\/journey\/([0-9]+)\/$/);
-			if (matchesItinerary) {
-				urlParameters.itineraryId = matchesItinerary[1];
-			}
-			
-			// Extract journey URL
-			urlParameters.waypoints = [];
-			var matchesWaypoints = window.location.pathname.match (/^\/journey\/([-.0-9]+,[-.,\/0-9]+)\/$/);
-			if (matchesWaypoints) {
-				var waypointPairs = matchesWaypoints[1].split ('/');
-				var waypoints = [];
-				var waypointLatLon;
-				$.each (waypointPairs, function (index, waypointPair) {
-					var matches = waypointPair.match (/^([-.0-9]+),([-.0-9]+)$/);
-					if (matches) {
-						waypointLatLon = waypointPair.split (',');
-						waypoints.push ({lng: waypointLatLon[1], lat: waypointLatLon[0], label: null});
-					}
-				});
-				if (waypoints.length >=2) {
-					urlParameters.waypoints = waypoints;
-				}
-			}
-			
-			// Set the parameters
-			_urlParameters = urlParameters;
 		},
 		
 		
@@ -2656,7 +2604,7 @@ var routing = (function ($) {
 			$('#routeplanning #results').remove ();
 			
 			// Reparse the URL
-			routing.parseUrl ();
+			routingModel.parseUrl ();
 			
 			// Update the URL
 			routing.updateUrl (_itineraryId, null);
@@ -2906,7 +2854,7 @@ var routing = (function ($) {
 		reverseGeocode: function (coordinates, waypointNumber)
 		{
 			// Assemble API URL; see: https://www.cyclestreets.net/api/v2/nearestpoint/
-			var reverseGeocoderApiUrl = routing.settingsPlaceholderSubstitution (_settings.reverseGeocoderApiUrl, ['apiBaseUrl', 'apiKey']);
+			var reverseGeocoderApiUrl = routingModel.settingsPlaceholderSubstitution (_settings.reverseGeocoderApiUrl, ['apiBaseUrl', 'apiKey']);
 			reverseGeocoderApiUrl += '&lonlat=' + coordinates.lng + ',' + coordinates.lat;
 			
 			// Divine the input element, which will be used to control the spinner loader
