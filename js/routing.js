@@ -200,6 +200,9 @@ var routing = (function ($) {
 					_settings[setting] = config[setting];
 				}
 			});
+
+			// Initialise model
+			routingModel.initialise (config);
 			
 			// Prevent viewport zooming, which is problematic for iOS Safari; see: https://stackoverflow.com/questions/37808180/
 			document.addEventListener ('touchmove', function (event) {
@@ -214,7 +217,7 @@ var routing = (function ($) {
 			_panningEnabled = panningEnabled;
 			
 			// Parse the URL
-			routingModel.parseUrl ();
+			_urlParameters = routingModel.parseUrl ();
 			
 			// Set the initial default strategy, checking for a cookie from a previous page load
 			var strategyCookie = routing.getCookie ('selectedstrategy');
@@ -2604,7 +2607,7 @@ var routing = (function ($) {
 			$('#routeplanning #results').remove ();
 			
 			// Reparse the URL
-			routingModel.parseUrl ();
+			_urlParameters = routingModel.parseUrl ();
 			
 			// Update the URL
 			routing.updateUrl (_itineraryId, null);
