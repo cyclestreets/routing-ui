@@ -1676,6 +1676,10 @@ var routing = (function ($) {
 			var timeFormatted = routing.formatDuration (geojson.properties.plans[strategy.id].time);
 			var distanceFormatted = routing.formatDistance (geojson.properties.plans[strategy.id].length);
 			
+			// Construct GPX link
+			var journeyId = geojson.properties.id;
+			var gpxLink = 'https://www.cyclestreets.net/journey/' + journeyId + '/cyclestreets' + journeyId + strategy.id + '.gpx';
+			
 			html += '<p class="location">' + geojson.properties.start + ' to ' + geojson.properties.finish + '</p>';
 			
 			html += '<ul class="journeyStats">';
@@ -1683,6 +1687,7 @@ var routing = (function ($) {
 			html += '<li><img src="/images/icon-clock.svg" alt="Clock icon" /><p> ' + timeFormatted + 'in</p></li>';
 			html += '<li><img src="/images/icon-flame.svg" alt="Flame icon" /><p> ' + geojson.properties.plans[strategy.id].kiloCaloriesBurned + ' calories</p></li>';
 			html += '<li><img src="/images/icon-leaf.svg" alt="Leaf icon" /><p> ' + geojson.properties.plans[strategy.id].grammesCO2saved + ' g</p></li>';
+			html += '<li><img src="/images/icon-jp-red.svg" alt="" /><p><a href="' + gpxLink + '">GPX</a></p></li>';
 			html += '</ul>';
 
 			html += '<div class="elevation-chart-container"><canvas id="' + strategy.id + 'elevationChart"></canvas></div>';
