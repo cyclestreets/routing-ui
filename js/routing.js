@@ -1739,7 +1739,7 @@ var routing = (function ($) {
 			// Make elevation scrubber draggable
 			routing.elevationScrubber (geojson);
 
-			// Generate elevation graph
+			// Generate elevation graph, if enabled
 			routing.generateElevationGraph (strategy.id, geojson);
 
 			// Handle left/right keyboard navigation through the route, for this strategy
@@ -1936,6 +1936,10 @@ var routing = (function ($) {
 		// Function to write an elevation graph, used when generating the itinerary listing
 		generateElevationGraph: function (strategyId, geojson) 
 		{
+			// Obtain the element to load the chart into, or end
+			var canvas = document.getElementById (strategyId + 'elevationChart');
+			if (!canvas) {return;}
+			
 			// Generate the elevation array
 			var graphData = routing.generateElevationArray (strategyId, geojson);
 
@@ -1943,7 +1947,6 @@ var routing = (function ($) {
 			var planIndex = routing.findPlanIndex (geojson, strategyId);
 
 			// Display the elevation graph
-			var canvas = document.getElementById (strategyId + 'elevationChart');
 			var ctx = canvas.getContext ('2d');		
 			_elevationCharts[strategyId] = new Chart(ctx, {
 				type: 'scatter',
