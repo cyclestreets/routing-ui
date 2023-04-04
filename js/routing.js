@@ -62,6 +62,9 @@ var routing = (function ($) {
 		plannerDivPath: '#routeplanning',
 		mapStyleDivPath: '#layerswitcher',
 		
+		// Whether to create planning controls, using plannerDivPath
+		createPlanningControls: false,
+		
 		// Max zoom
 		maxZoom: 17,
 		maxZoomToSegment: 17,
@@ -192,7 +195,7 @@ var routing = (function ($) {
 	return {
 		
 		// Main entry point
-		initialise: function (config, map, isMobileDevice, panningEnabled, createPlanningControls)
+		initialise: function (config, map, isMobileDevice, panningEnabled)
 		{
 			// Merge the configuration into the settings
 			$.each (_settings, function (setting, value) {
@@ -243,7 +246,7 @@ var routing = (function ($) {
 			}
 			
 			// If required, create route planning UI controls
-			if (createPlanningControls) {
+			if (_settings.createPlanningControls) {
 				routing.createRoutePlanningControls ();
 			}
 			
