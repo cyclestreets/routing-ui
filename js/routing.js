@@ -80,11 +80,21 @@ var routing = (function ($) {
 		// BBOX for autocomplete results biasing
 		autocompleteBbox: '-6.6577,49.9370,1.7797,57.6924',
 		
-		// Images; size set in CSS with .itinerarymarker
+		// Images
+		// #!# Need a better way to handle these paths with baseUrl, and being able to set individually
 		images: {
+			
+			// Waypoints; size set in CSS with .itinerarymarker
 			start: '/images/itinerarymarkers/start.png',
 			waypoint: '/images/itinerarymarkers/waypoint.png',
-			finish: '/images/itinerarymarkers/finish.png'
+			finish: '/images/itinerarymarkers/finish.png',
+			
+			// Results container icons
+			distance: '/images/resultscontainer/icon-cyclist.svg',
+			time: '/images/resultscontainer/icon-clock.svg',
+			calories: '/images/resultscontainer/icon-flame.svg',
+			co2: '/images/resultscontainer/icon-leaf.svg',
+			gpx: '/images/resultscontainer/icon-jp-red.svg'
 		},
 		
 		// Initial route
@@ -1706,11 +1716,11 @@ var routing = (function ($) {
 			html += '<p class="location">' + geojson.properties.start + ' to ' + geojson.properties.finish + '</p>';
 			
 			html += '<ul class="journeyStats">';
-			html += '<li><img src="/images/icon-cyclist.svg" alt="Icon of a cyclist" /><p> ' + distanceFormatted + '</p>';
-			html += '<li><img src="/images/icon-clock.svg" alt="Clock icon" /><p> ' + timeFormatted + 'in</p></li>';
-			html += '<li><img src="/images/icon-flame.svg" alt="Flame icon" /><p> ' + geojson.properties.plans[strategy.id].kiloCaloriesBurned + ' calories</p></li>';
-			html += '<li><img src="/images/icon-leaf.svg" alt="Leaf icon" /><p> ' + geojson.properties.plans[strategy.id].grammesCO2saved + ' g</p></li>';
-			html += '<li><img src="/images/icon-jp-red.svg" alt="" width="12" height="12" /><p><a href="' + gpxLink + '">GPX</a></p></li>';
+			html += '<li><img src="' + _settings.images.distance + '" alt="Distance" /><p> ' + distanceFormatted + '</p>';
+			html += '<li><img src="' + _settings.images.time     + '" alt="Time" /><p> ' + timeFormatted + 'in</p></li>';
+			html += '<li><img src="' + _settings.images.calories + '" alt="Calories" /><p> ' + geojson.properties.plans[strategy.id].kiloCaloriesBurned + ' calories</p></li>';
+			html += '<li><img src="' + _settings.images.co2      + '" alt="CO2 saving" /><p> ' + geojson.properties.plans[strategy.id].grammesCO2saved + ' g</p></li>';
+			html += '<li><img src="' + _settings.images.gpx      + '" alt="GPX link" width="12" height="12" /><p><a href="' + gpxLink + '">GPX</a></p></li>';
 			html += '</ul>';
 			
 			html += '<div class="elevation-chart-container"><canvas id="' + strategy.id + 'elevationChart"></canvas></div>';
