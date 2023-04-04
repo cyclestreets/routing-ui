@@ -1718,8 +1718,12 @@ var routing = (function ($) {
 			html += '<ul class="journeyStats">';
 			html += '<li><img src="' + _settings.images.distance + '" alt="Distance" /><p> ' + distanceFormatted + '</p>';
 			html += '<li><img src="' + _settings.images.time     + '" alt="Time" /><p> ' + timeFormatted + 'in</p></li>';
-			html += '<li><img src="' + _settings.images.calories + '" alt="Calories" /><p> ' + geojson.properties.plans[strategy.id].kiloCaloriesBurned + ' calories</p></li>';
-			html += '<li><img src="' + _settings.images.co2      + '" alt="CO2 saving" /><p> ' + geojson.properties.plans[strategy.id].grammesCO2saved + ' g</p></li>';
+			if (geojson.properties.plans[strategy.id].kiloCaloriesBurned !== null) {
+				html += '<li><img src="' + _settings.images.calories + '" alt="Calories" /><p> ' + geojson.properties.plans[strategy.id].kiloCaloriesBurned + ' calories</p></li>';
+			}
+			if (geojson.properties.plans[strategy.id].grammesCO2saved !== null) {
+				html += '<li><img src="' + _settings.images.co2      + '" alt="CO2 saving" /><p> ' + geojson.properties.plans[strategy.id].grammesCO2saved + ' g</p></li>';
+			}
 			html += '<li><img src="' + _settings.images.gpx      + '" alt="GPX link" width="12" height="12" /><p><a href="' + gpxLink + '">GPX</a></p></li>';
 			html += '</ul>';
 			
