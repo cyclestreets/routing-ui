@@ -110,6 +110,7 @@ var routing = (function ($) {
 				parameters: {plans: 'fastest'},
 				lineColour: '#cc0000',
 				lineColourOutline: 'red',
+				gpx: true,
 				attribution: 'Routing by <a href="https://www.cyclestreets.net/">CycleStreets</a>'
 			},
 			{
@@ -118,6 +119,7 @@ var routing = (function ($) {
 				parameters: {plans: 'balanced'},
 				lineColour: '#ffc200',
 				lineColourOutline: 'orange',
+				gpx: true,
 				attribution: 'Routing by <a href="https://www.cyclestreets.net/">CycleStreets</a>'
 			},
 			{
@@ -126,6 +128,7 @@ var routing = (function ($) {
 				parameters: {plans: 'quietest'},
 				lineColour: '#00cc00',
 				lineColourOutline: 'green',
+				gpx: true,
 				attribution: 'Routing by <a href="https://www.cyclestreets.net/">CycleStreets</a>'
 			}
 			/* Other routing engine example:
@@ -1709,10 +1712,6 @@ var routing = (function ($) {
 			var timeFormatted = routing.formatDuration (geojson.properties.plans[strategy.id].time);
 			var distanceFormatted = routing.formatDistance (geojson.properties.plans[strategy.id].length);
 			
-			// Construct GPX link
-			var journeyId = geojson.properties.id;
-			var gpxLink = 'https://www.cyclestreets.net/journey/' + journeyId + '/cyclestreets' + journeyId + strategy.id + '.gpx';
-			
 			html += '<p class="location">' + geojson.properties.start + ' to ' + geojson.properties.finish + '</p>';
 			
 			html += '<ul class="journeyStats">';
@@ -1724,7 +1723,12 @@ var routing = (function ($) {
 			if (geojson.properties.plans[strategy.id].grammesCO2saved !== null) {
 				html += '<li><img src="' + _settings.images.co2      + '" alt="CO2 saving" /><p> ' + geojson.properties.plans[strategy.id].grammesCO2saved + ' g</p></li>';
 			}
-			html += '<li><img src="' + _settings.images.gpx      + '" alt="GPX link" width="12" height="12" /><p><a href="' + gpxLink + '">GPX</a></p></li>';
+			if (_settings.strategies[ _routeIndexes[strategy.id] ].gpx) {
+				// #!# Currently hard-coded to specific service
+				var journeyId = geojson.properties.id;
+				var gpxLink = 'https://www.cyclestreets.net/journey/' + journeyId + '/cyclestreets' + journeyId + strategy.id + '.gpx';
+				html += '<li><img src="' + _settings.images.gpx      + '" alt="GPX link" width="12" height="12" /><p><a href="' + gpxLink + '">GPX</a></p></li>';
+			}
 			html += '</ul>';
 			
 			html += '<div class="elevation-chart-container"><canvas id="' + strategy.id + 'elevationChart"></canvas></div>';
