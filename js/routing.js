@@ -1731,6 +1731,8 @@ var routing = (function ($) {
 			}
 			html += '</ul>';
 			
+			// Add elevation chart if required
+			// #!# Need to change to be not generated if no data, but data is compiled after this point
 			html += '<div class="elevation-chart-container"><canvas id="' + strategy.id + 'elevationChart"></canvas></div>';
 			html += '<span class="elevation"></span>';
 			html += '<a href="#" class="elevation-scrubber"><img src="/images/elevation-dragger.svg" alt="Dragger icon" /></a>';
@@ -1792,7 +1794,7 @@ var routing = (function ($) {
 		elevationScrubber: function (geojson)
 		{
 			// Drag event handler
-			$('.elevation-scrubber').draggable({
+			$('.elevation-scrubber').draggable ({
 				axis: 'x',
 				containment: 'parent',
 				drag: routing.throttle (function (event) {
@@ -1943,9 +1945,9 @@ var routing = (function ($) {
 				coordinatesLength = geojson.features[featureIndex].geometry.coordinates.length;
 				
 				// Get all but the last coordinate, except in the last feature, as these are duplicated to connect segments (e.g. [1,2,3], [3,4,5], [5,6,7])
-				if (featureIndex == (featuresLength - 1)) { // i.e. the last feature, who's last coordinate we want
+				if (featureIndex == (featuresLength - 1)) { // i.e. the last feature, whose last coordinate we want
 					lastDesiredCoordinateIndex = coordinatesLength - 1;
-				} else { // i.e. any other previous feature, who's last coordinate we don't want
+				} else { // i.e. any other previous feature, whose last coordinate we don't want
 					lastDesiredCoordinateIndex = coordinatesLength - 2;
 				}
 				
