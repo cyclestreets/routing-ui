@@ -62,7 +62,7 @@ var routing = (function ($) {
 		plannerDivPath: '#routeplanning',
 		mapStyleDivPath: '#layerswitcher',
 		
-		// Whether to create planning controls, using plannerDivPath
+		// Whether to create planning controls, using plannerDivPath (if a simple div, e.g. '#routeplanning')
 		createPlanningControls: false,
 		
 		// Max zoom
@@ -177,6 +177,7 @@ var routing = (function ($) {
 	var _routeIndexes = {};
 	var _popups = {};
 	var _selectedStrategy = false;
+	var _plannerDivId = null;
 	var _keyboardFeaturePosition = {};
 	var _currentWaypointIndex = 0; // We start with no waypoints in our index
 	var _elevationCharts = {}; // Store the elevation charts as global, so we can access them through the scrubber
@@ -977,16 +978,25 @@ var routing = (function ($) {
 		// Function to create a route planning UI
 		createRoutePlanningControls: function (createHtml)
 		{
+			// Ensure the plannerDivPath is a simple div ID; at present other structures are not supported
+			var matches = _settings.plannerDivPath.match (/^#([A-Za-z][-_A-Za-z0-9]*)$/);
+			if (!matches) {
+				console.log ('ERROR: createRoutePlanningControls has been enabled, but the specified plannerDivPath (' + _settings.plannerDivPath + ') is not a simple ID, which is currently all that is supported.');
+			}
+			
+			// Extract the div name
+			_plannerDivId = matches[1];
+			
 			// Attach the route planning UI either to the Card UI (for mobile) or to the bottom-right of the map (for desktop)
 			if (_isMobileDevice) {
-				$('#cardcontent').append ('<div id="routeplanning"></div>');
+				$('#cardcontent').append ('<div id="' + _plannerDivId + '"></div>');
 			} else {
-				var control = routing.createControl ('routeplanning', 'bottom-right');
+				var control = routing.createControl (_plannerDivId, 'bottom-right');
 			}
 			
 			// Add title
 			var html = '<h2>Route planner</h2>';
-			$('#routeplanning').append (html);
+			$('#' + _plannerDivId).append (html);
 			
 			// Add or assign input widgets
 			var totalWaypoints = 2;
@@ -1007,13 +1017,13 @@ var routing = (function ($) {
 				// Create the input widget
 				waypointName = 'waypoint' + waypointNumber;
 				input = '<p><input name="' + waypointName + '" type="search" placeholder="' + label + '" class="geocoder" /></p>';
-				$('#routeplanning').append (input);
+				$('#' + _plannerDivId).append (input);
 			}
 			
 			// Add Submit button
 			// #!# Should be a proper submit button
 			var submitButton = '<p><a id="getRoutes" href="#" title="Plan route">Plan route</a></p>';
-			$('#routeplanning').append (submitButton);
+			$('#' + _plannerDivId).append (submitButton);
 			
 			// Put focus on the first available geocoder
 			if (!_isMobileDevice) {
@@ -1033,7 +1043,7 @@ var routing = (function ($) {
 				
 				// Check if this geocoder input exists
 				waypointName = 'waypoint' + waypointNumber;
-				element = '#routeplanning input[name="' + waypointName + '"]';
+				element = '#' + _plannerDivId + ' input[name="' + waypointName + '"]';
 				if ($(element).length) {
 					
 					// If empty, set its focus, and end
@@ -2668,8 +2678,10 @@ var routing = (function ($) {
 			_itineraryId = false;
 			
 			// Remove the result tabs if present
-			$('#routeplanning #results').tabs ('destroy');	// http://api.jqueryui.com/tabs/
-			$('#routeplanning #results').remove ();
+			if (_plannerDivId) {
+				$('#' + _plannerDivId + ' #results').tabs ('destroy');	// http://api.jqueryui.com/tabs/
+				$('#' + _plannerDivId + ' #results').remove ();
+			}
 			
 			// Reparse the URL
 			routing.parseUrl ();
