@@ -61,8 +61,9 @@ var routing = (function ($) {
 		// Target UI <div> paths, defined by the client code, which the library will populate
 		plannerDivPath: '#routeplanning',
 		mapStyleDivPath: '#layerswitcher',
+		resultsContainerDivPath: '#resultstabspanel',
 		
-		// Whether to create planning controls, using plannerDivPath (if a simple div, e.g. '#routeplanning')
+		// Whether to create planning controls, using plannerDivPath and resultsContainerDivPath (if simple divs, e.g. '#routeplanning')
 		createPlanningControls: false,
 		
 		// Max zoom
@@ -983,9 +984,14 @@ var routing = (function ($) {
 			if (!matches) {
 				console.log ('ERROR: createRoutePlanningControls has been enabled, but the specified plannerDivPath (' + _settings.plannerDivPath + ') is not a simple ID, which is currently all that is supported.');
 			}
-			
-			// Extract the div name
 			_plannerDivId = matches[1];
+			
+			// Ditto resultsContainerDivPath
+			matches = _settings.resultsContainerDivPath.match (/^#([A-Za-z][-_A-Za-z0-9]*)$/);
+			if (!matches) {
+				console.log ('ERROR: createRoutePlanningControls has been enabled, but the specified resultsContainerDivPath (' + _settings.resultsContainerDivPath + ') is not a simple ID, which is currently all that is supported.');
+			}
+			var resultsContainerDivId = matches[1];
 			
 			// Attach the route planning UI either to the Card UI (for mobile) or to the bottom-right of the map (for desktop)
 			if (_isMobileDevice) {
@@ -1029,6 +1035,9 @@ var routing = (function ($) {
 			if (!_isMobileDevice) {
 				routing.focusFirstAvailableGeocoder (totalWaypoints);
 			}
+			
+			// Add results div
+			$('#' + _plannerDivId).append ('<div id="' + resultsContainerDivId + '"></div>');
 		},
 		
 		
@@ -1460,8 +1469,8 @@ var routing = (function ($) {
 			// Surround with a div for styling
 			html = '<div id="results">' + html + '</div>';
 			
-			// Append the panel to the route planning UI
-			$('#resultsTabs').append (html);
+			// Append the panel to the route planning UI; this will contain #results (created above, plus switching behaviour added to below)
+			$(_settings.resultsContainerDivPath).append (html);
 			
 			// Add jQuery UI tabs behaviour
 			$('#results').tabs ();
