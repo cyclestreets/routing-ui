@@ -1,7 +1,7 @@
 // Route planning / satnav user interface
 
 /*jslint browser: true, white: true, single: true, for: true, long: true, unordered: true */
-/*global $, jQuery, alert, console, window, confirm, prompt, mapboxgl, autocomplete, satnav */
+/*global $, jQuery, alert, console, window, confirm, prompt, mapboxgl, Chart, autocomplete, satnav */
 
 
 /*

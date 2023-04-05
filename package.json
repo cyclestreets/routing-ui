@@ -8,6 +8,7 @@
   "license": "GPL-3.0-only",
   "dependencies": {
     "@hughsk/fulltilt": "^0.7.1",
+    "chart.js": "2.9.4",
     "jquery": "^3.6.4",
     "jquery-ui-dist": "^1.13.2",
     "jquery-ui-touch-punch": "^0.2.3",
