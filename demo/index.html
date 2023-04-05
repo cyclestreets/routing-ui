@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8" />
+	<title>Routing</title>
+	<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+	
+	<!-- Dependencies -->
+	<script src="../js/lib/mapbox-gl/dist/mapbox-gl.js"></script>
+	<link href="../js/lib/mapbox-gl/dist/mapbox-gl.css" rel="stylesheet" />
+	<script src="../js/lib/jquery/dist/jquery.min.js"></script>
+	<script src="../js/lib/@hughsk/fulltilt/dist/fulltilt.min.js"></script>
+	<script src="../js/lib/jquery-ui-dist/jquery-ui.min.js"></script>
+	<script src="../js/lib/jquery-ui-touch-punch/jquery.ui.touch-punch.min.js"></script>
+	<link href="../js/lib/jquery-ui-dist/jquery-ui.min.css" rel="stylesheet" type="text/css">
+	<script src="../js/geocoder.js"></script>
+	
+	<!-- Routing -->
+	<script src="../src/routing-ui.js"></script>
+	<link href="../src/routing-ui.css" rel="stylesheet" type="text/css" />
+	
+	<!-- UI -->
+	<script src=".config.js"></script>
+	<script src="journeyplanner-demo.js"></script>
+	<link href="fonts.css" rel="stylesheet" type="text/css" />
+	<link href="satnav.css" rel="stylesheet" type="text/css" />
+	<script>
+		config.images = {
+			start: '../images/itinerarymarkers/start.png',
+			waypoint: '../images/itinerarymarkers/waypoint.png',
+			finish: '../images/itinerarymarkers/finish.png',
+		}
+
+		$(function() {
+			journeyplanner.initialise (config);
+		});
+	</script>
+	
+</head>
+<body>
+	
+	<div id="geocoder">
+		<input type="text" name="location" autocomplete="off" placeholder="Search locations and move map" tabindex="1" spellcheck="false" />
+	</div>
+	
+	<div id="map"></div>
+	
+	<div id="card">
+		<div id="cardhandle"></div>
+		<div id="cardcontent"></div>
+	</div>
+	
+</body>
+</html>
+
