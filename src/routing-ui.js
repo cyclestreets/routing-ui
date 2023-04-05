@@ -709,11 +709,11 @@ var routing = (function ($) {
 				'origin': origin,
 				'destination': destination,
 				'waypoints': waypoints
-			}
+			};
 			
 			// Add this to the _recentJourneys array, and update the cookie
 			_recentJourneys.push (journey);
-			$.cookie('recentJourneys', JSON.stringify(_recentJourneys));
+			$.cookie('recentJourneys', JSON.stringify (_recentJourneys));
 			
 			// Update the UI
 			routing.buildRecentJourneys ();
