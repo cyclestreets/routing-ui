@@ -176,7 +176,10 @@ var routing = (function ($) {
 		loadTabsClassToggle: 'enabled',
 		
 		// Element on which to display a routing "enabled" icon, while route is shown
-		routingEnabledElement: null
+		routingEnabledElement: null,
+		
+		// Travellable hours per day in result listing; e.g. could change to 8-hour days
+		travellableHoursPerDay: 24
 	};
 	
 	// Internal class properties
@@ -2225,14 +2228,15 @@ var routing = (function ($) {
 		formatDuration: function (seconds)
 		{
 			// Calculate values; see: https://stackoverflow.com/a/16057667/180733
-			var days = Math.floor (seconds / 86400);
-			var hours = Math.floor (((seconds / 86400) % 1) * 24);
+			var travellableSecondsPerDay = (60 * 60 * _settings.travellableHoursPerDay);
+			var days = Math.floor (seconds / travellableSecondsPerDay);
+			var hours = Math.floor (((seconds / travellableSecondsPerDay) % 1) * _settings.travellableHoursPerDay);
 			var minutes = Math.floor (((seconds / 3600) % 1) * 60);
 			seconds = Math.round (((seconds / 60) % 1) * 60);
 			
 			// Assemble the components
 			var components = [];
-			if (days) {components.push (days + ' ' + (days == 1 ? 'day' : 'days'));}
+			if (days) {components.push (days + ' ' + (_settings.travellableHoursPerDay == 24 ? '' : _settings.travellableHoursPerDay + '-hour ') + (days == 1 ? 'day' : 'days'));}
 			if (hours) {components.push (hours + 'h');}
 			if (minutes) {components.push (minutes + 'm');}
 			if (!components.length) {
