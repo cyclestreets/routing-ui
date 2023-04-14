@@ -1773,13 +1773,16 @@ var routing = (function ($) {
 			var segment = 0;
 			var cumulativeSeconds = 0;
 			var dayNumber = 1;
+			var daysJumplist = [];
+			var tableHtml = '';
+			var tableStart = '<table class="itinerary lines strategy-' + strategy.id + '">';
 			if (_settings.travellableHoursPerDay != 24) {
 				if ((geojson.properties.plans[strategy.id].time / (60*60)) > _settings.travellableHoursPerDay) {
-					html += '<p class="daynumber" id="day' + dayNumber + '">Day ' + dayNumber + ':</p>';
+					tableHtml += '<p id="' + strategy.id + '-day' + dayNumber + '" class="daynumber">Day ' + dayNumber + ':</p>';
+					daysJumplist.push ('<a href="#' + strategy.id + '-day' + dayNumber + '">' + dayNumber + '</a>');
 				}
 			}
-			var tableStart = '<table class="itinerary lines strategy-' + strategy.id + '">';
-			html += tableStart;
+			tableHtml += tableStart;
 			$.each (geojson.features, function (index, feature) {
 				
 				// Skip non-streets
@@ -1790,14 +1793,14 @@ var routing = (function ($) {
 				segmentsIndex[segment] = index;
 				
 				// Add this row
-				html += '<tr data-segment="' + segment + '">';
-				html += '<td class="travelmode">' + routing.travelModeIcon (feature.properties.travelMode, strategy.id) + '</td>';
-				html += '<td>' + routing.turnsIcon (feature.properties.startBearing) + '</td>';
-				html += '<td><strong>' + routing.htmlspecialchars (feature.properties.name) + '</strong></td>';
-				html += '<td>' + feature.properties.ridingSurface + '</td>';
-				html += '<td>' + routing.formatDistance (feature.properties.lengthMetres) + '</td>';
-				html += '<td>' + routing.formatDuration (feature.properties.timeSeconds) + '</td>';
-				html += '</tr>';
+				tableHtml += '<tr data-segment="' + segment + '">';
+				tableHtml += '<td class="travelmode">' + routing.travelModeIcon (feature.properties.travelMode, strategy.id) + '</td>';
+				tableHtml += '<td>' + routing.turnsIcon (feature.properties.startBearing) + '</td>';
+				tableHtml += '<td><strong>' + routing.htmlspecialchars (feature.properties.name) + '</strong></td>';
+				tableHtml += '<td>' + feature.properties.ridingSurface + '</td>';
+				tableHtml += '<td>' + routing.formatDistance (feature.properties.lengthMetres) + '</td>';
+				tableHtml += '<td>' + routing.formatDuration (feature.properties.timeSeconds) + '</td>';
+				tableHtml += '</tr>';
 				
 				// Increment the seconds counter
 				cumulativeSeconds += feature.properties.timeSeconds;
@@ -1805,15 +1808,24 @@ var routing = (function ($) {
 				// Break the table if setting travelleable hours per day
 				if (_settings.travellableHoursPerDay != 24) {
 					if ((cumulativeSeconds / (60*60)) > _settings.travellableHoursPerDay) {
-						html += '</table>';
+						tableHtml += '</table>';
 						dayNumber++;
 						cumulativeSeconds = 0;	// Reset to new day's seconds
-						html += '<p class="daynumber" id="day' + dayNumber + '">Day ' + dayNumber + ':</p>';
-						html += tableStart;
+						tableHtml += '<p id="' + strategy.id + '-day' + dayNumber + '" class="daynumber">Day ' + dayNumber + ':</p>';
+						daysJumplist.push ('<a href="#' + strategy.id + '-day' + dayNumber + '">' + dayNumber + '</a>');
+						tableHtml += tableStart;
 					}
 				}
 			});
-			html += '</table>';
+			tableHtml += '</table>';
+			
+			// Add the day jumplist if required
+			if (daysJumplist.length) {
+				html += '<p id="jumptoday">Jump to day: ' + daysJumplist.join (' ') + '</p>';
+			}
+			
+			// Add the table HTML
+			html += tableHtml;
 			
 			// Save the last segment number
 			var lastSegment = segment;
