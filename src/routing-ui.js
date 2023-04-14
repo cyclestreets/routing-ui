@@ -2417,7 +2417,7 @@ var routing = (function ($) {
 					properties: {
 						path: 'plan/' + strategy + '/street/' + (index + 1),
 						number: (index + 1),
-						name: step.name || step.ref || '',
+						name: step.name || step.ref || '[Unknown name]',
 						lengthMetres: step.distance,
 						timeSeconds: step.duration,
 						ridingSurface: '',				// Not available in OSRM
