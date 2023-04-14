@@ -34,7 +34,10 @@
 #routeplanning #itineraries {background-color: white;}
 #routeplanning #results.ui-tabs #itineraries {height: 500px; overflow-y: auto;}
 #routeplanning #results.ui-tabs .ui-tabs-panel {padding: 15px 10px;}
+#routeplanning ul.journeyStats {margin-bottom: 15px;}
+#routeplanning table.itinerary {margin: 10px 0;}
 #routeplanning table.itinerary tr {cursor: zoom-in;}
+#routeplanning p.daynumber {padding: 0; margin: 0;}
 #routeplanning .travelmode {font-size: 1.3em;}
 #routeplanning h3 {color: #603;}
 #routeplanning h3.right {float: right;}

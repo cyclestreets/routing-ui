@@ -1768,10 +1768,18 @@ var routing = (function ($) {
 			html += '<span class="elevation"></span>';
 			html += '<a href="#" class="elevation-scrubber"><img src="/images/elevation-dragger.svg" alt="Dragger icon" /></a>';
 			
-			// Loop through each feature
+			// Loop through each feature to create the table; if setting non-default travelleable hours per day, split by day
 			var segmentsIndex = {};
 			var segment = 0;
-			html += '<table class="itinerary lines strategy-' + strategy.id + '">';
+			var cumulativeSeconds = 0;
+			var dayNumber = 1;
+			if (_settings.travellableHoursPerDay != 24) {
+				if ((geojson.properties.plans[strategy.id].time / (60*60)) > _settings.travellableHoursPerDay) {
+					html += '<p class="daynumber" id="day' + dayNumber + '">Day ' + dayNumber + ':</p>';
+				}
+			}
+			var tableStart = '<table class="itinerary lines strategy-' + strategy.id + '">';
+			html += tableStart;
 			$.each (geojson.features, function (index, feature) {
 				
 				// Skip non-streets
@@ -1790,6 +1798,20 @@ var routing = (function ($) {
 				html += '<td>' + routing.formatDistance (feature.properties.lengthMetres) + '</td>';
 				html += '<td>' + routing.formatDuration (feature.properties.timeSeconds) + '</td>';
 				html += '</tr>';
+				
+				// Increment the seconds counter
+				cumulativeSeconds += feature.properties.timeSeconds;
+				
+				// Break the table if setting travelleable hours per day
+				if (_settings.travellableHoursPerDay != 24) {
+					if ((cumulativeSeconds / (60*60)) > _settings.travellableHoursPerDay) {
+						html += '</table>';
+						dayNumber++;
+						cumulativeSeconds = 0;	// Reset to new day's seconds
+						html += '<p class="daynumber" id="day' + dayNumber + '">Day ' + dayNumber + ':</p>';
+						html += tableStart;
+					}
+				}
 			});
 			html += '</table>';
 			
