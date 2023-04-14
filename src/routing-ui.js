@@ -1519,6 +1519,11 @@ var routing = (function ($) {
 			// Add jQuery UI tabs behaviour
 			$('#results').tabs ();
 			
+			// Ensure scroll to top of panel on tab change
+			$('#results').on ('tabsactivate', function (event, ui) {
+				ui.newPanel[0].scrollIntoView ();
+			});
+			
 			// Select the default tab
 			$('#results').tabs ('option', 'active', _routeIndexes[_selectedStrategy]);
 			
