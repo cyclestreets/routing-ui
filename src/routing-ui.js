@@ -1743,7 +1743,7 @@ var routing = (function ($) {
 			var timeFormatted = routing.formatDuration (geojson.properties.plans[strategy.id].time);
 			var distanceFormatted = routing.formatDistance (geojson.properties.plans[strategy.id].length);
 			
-			html += '<p class="location">' + geojson.properties.start + ' to ' + geojson.properties.finish + '</p>';
+			html += '<p class="location">' + (geojson.properties.start || '[Unknown name]') + ' to ' + (geojson.properties.finish || '[Unknown name]') + '</p>';
 			
 			html += '<ul class="journeyStats">';
 			html += '<li><img src="' + _settings.images.distance + '" alt="Distance" /><p> ' + distanceFormatted + '</p>';
