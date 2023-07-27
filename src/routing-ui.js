@@ -1321,10 +1321,7 @@ var routing = (function ($) {
 				var constructUrlFromStrategyFunction = 'constructUrlFromStrategy_' + _settings.strategies[0].implementation;
 				url = routing[constructUrlFromStrategyFunction] (_settings.strategies[0].baseUrl, {plans: plans}, waypointStrings);
 				
-				// In multiplex mode, strategy label string is only part, and used only when displaying AJAX error messages
-				var strategyIgnore = {'label': 'your journey'};
-				
-				routing.loadRoute (url, strategyIgnore, function (strategyIgnore, multiplexedResult) {
+				routing.loadRoute (url, _settings.strategies[0], function (strategy_ignored, multiplexedResult) {
 					// De-multiplex route
 					var routes = routing.demultiplexRoute (multiplexedResult);
 					var route;
