@@ -1318,7 +1318,8 @@ var routing = (function ($) {
 					plans.push (strategy.parameters.plans);
 				});
 				plans = plans.join (',');
-				url = routing.constructUrlFromStrategy (false, _settings.strategies[0].baseUrl, {plans: plans}, waypointStrings);
+				var constructUrlFromStrategyFunction = 'constructUrlFromStrategy_' + _settings.strategies[0].implementation;
+				url = routing[constructUrlFromStrategyFunction] (_settings.strategies[0].baseUrl, {plans: plans}, waypointStrings);
 				
 				// In multiplex mode, strategy string will only be used when displaying AJAX error messages
 				var strategyIgnore = 'your journey';
