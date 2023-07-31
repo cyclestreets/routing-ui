@@ -2557,7 +2557,7 @@ var routing = (function ($) {
 			}, new mapboxgl.LngLatBounds (coordinates[0], coordinates[0]));
 			
 			// Fit bounds
-			_map.fitBounds (bounds, {padding: _settings.fitBoundsPadding, maxZoom: 17, duration: 1500});
+			_map.fitBounds (bounds.toArray (), {padding: _settings.fitBoundsPadding, maxZoom: 17, duration: 1500});
 		},
 		
 		
