@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+	<title>Routing UI</title>
+	<link href="routing-ui.css" rel="stylesheet" />
+	<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+</head>
+<body>
+	
+	<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+	
+	<link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
+	<script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+	
+	<script src="/.config.js"></script>
+	<script src="routing-ui.js"></script>
+	<script>
+		$(function() {
+			mapboxgl.accessToken = config.mapboxApiKey;
+			map = new mapboxgl.Map ({
+				container: 'map',
+				style: 'mapbox://styles/mapbox/streets-v11',
+				center: [0.14172, 52.20372],
+				zoom: 14,
+				hash: true
+			});
+			routing.initialise (config, map);
+		});
+	</script>
+	
+	<div id="map"></div>
+	
+</body>
+</html>
+
