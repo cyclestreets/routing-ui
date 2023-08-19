@@ -27,15 +27,32 @@ var routing = (function ($) {
 			// Create handles
 			_map = map;
 			
-			// Routing
-			routing.routing ();
+			// Create and manage geocoders
+			routing.geocoders ();
+			
+			// Create and manage waypoint markers
+			routing.markers ();
+			
+			// Create and manage route retrieval and display
+			routing.router ();
 		},
 		
 		
-		// Main routing function
-		routing: function ()
+		// Function to create and manage geocoders
+		geocoders: function ()
 		{
-			// Main logic
+		},
+		
+		
+		// Function to create and manage waypoint markers
+		markers: function ()
+		{
+		},
+		
+		
+		// Function to create and manage route retrieval and display
+		router: function ()
+		{
 		},
 		
 		
