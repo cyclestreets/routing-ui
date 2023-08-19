@@ -5,11 +5,17 @@ var routing = (function ($) {
 	
 	// Settings defaults
 	const _settings = {
-		
+		apiBaseUrl: 'https://api.cyclestreets.net',
+		apiKey: null
 	};
 	
 	// Properties
 	let _map;
+	let _markers = [];
+	
+	// Waypoints state; this is a list of objects containing uuid, locationString, lon, lat
+	const _waypoints = [];
+	
 	
 	
 	return {
@@ -47,6 +53,126 @@ var routing = (function ($) {
 		// Function to create and manage waypoint markers
 		markers: function ()
 		{
+			// Draw any initial markers
+			routing.drawMarkers ();
+			
+			// When waypoints updated, redraw
+			document.addEventListener ('@waypoints/update', function () {
+				routing.drawMarkers ();
+			});
+			
+			// Handle waypoint addition, setting a click on the map to add to the end of the list
+			_map.on ('click', function (event) {
+				routing.setWaypoint (event.lngLat);
+			});
+		},
+		
+		
+		// Function to set a waypoint location
+		setWaypoint: function (lngLat, updateIndex)
+		{
+			// Set clicked location initially, subject to later resolution by nearest point below
+			const waypoint = {
+				uuid: routing.uuidv4 (),
+				locationString: 'Waypoint',
+				lon: lngLat.lng.toFixed (5),
+				lat: lngLat.lat.toFixed (5)
+			};
+			
+			// Add the waypoint, either addition or replace
+			if (updateIndex == null) {	// NB Could be zero, i.e. first waypoint
+				_waypoints.push (waypoint);
+			} else {
+				_waypoints[updateIndex] = waypoint;
+			}
+			
+			// Dispatch event that waypoints updated
+			document.dispatchEvent (new Event ('@waypoints/update', {bubbles: true}));
+			
+			// Resolve waypoint to nearest point, asyncronously
+			routing.resolveNearestpoint (waypoint);
+		},
+		
+		
+		// Function to resolve nearest point for a waypoint, asyncronously
+		resolveNearestpoint: function (waypoint)
+		{
+			// Look up the name and nearest point for this location from the geocoder, asyncronously, and attach it to the waypoints registry
+			const apiUrl = _settings.apiBaseUrl + '/v2/nearestpoint?key=' + _settings.apiKey + '&lonlat=' + waypoint.lon + ',' + waypoint.lat;
+			fetch (apiUrl)
+				.then (function (response) { return response.json (); })
+				.then (function (json) {
+					
+					// Find the feature to update
+					const waypointIndex = _waypoints.findIndex (function (thisWaypoint) { return (thisWaypoint.uuid == waypoint.uuid) });
+					
+					// Update the feature
+					const feature = json.features[0];
+					_waypoints[waypointIndex].locationString = feature.properties.name;
+					_waypoints[waypointIndex].lon = feature.geometry.coordinates[0];
+					_waypoints[waypointIndex].lat = feature.geometry.coordinates[1];
+					
+					// Dispatch event that waypoints updated
+					document.dispatchEvent (new Event ('@waypoints/update', {bubbles: true}));
+				});
+		},
+		
+		
+		// Function to draw markers
+		drawMarkers: function ()
+		{
+			// Remove any existing markers
+			_markers.forEach (function (marker) {
+				marker.remove ();
+			});
+			_markers = [];
+			
+			// Draw each waypoint
+			_waypoints.forEach (function (waypoint, index) {
+				
+				// Create the marker
+				_markers[index] = new mapboxgl.Marker ({draggable: true, color: routing.markerColour (index, _waypoints.length)})
+					.setLngLat ([waypoint.lon, waypoint.lat])
+					.setPopup (new mapboxgl.Popup ({closeOnClick: true}).setHTML (routing.htmlspecialchars (waypoint.locationString)))
+					.addTo (_map);
+				
+				// Stop propagation of marker click, by handling popups manually; see: https://github.com/mapbox/mapbox-gl-js/issues/1209#issuecomment-995554174
+				_markers[index].getElement ().addEventListener ('click', function (event) {
+					routing.closeAllPopups ();
+					_markers[index].togglePopup ();
+					event.stopPropagation ();
+				}, false);
+				
+				// Handle waypoint drag
+				_markers[index].on ('dragend', function () {
+					routing.setWaypoint (_markers[index].getLngLat (), index);
+				});
+			});
+		},
+		
+		
+		// Set marker colour
+		markerColour: function (index, totalWaypoints)
+		{
+			// Set colour
+			switch (index) {
+				case 0:
+					return 'green';
+				case (totalWaypoints - 1):
+					return 'red';
+				default:
+					return 'orange';
+			}
+		},
+		
+		
+		// Function to remove all existing popups; see: https://stackoverflow.com/a/63006609/180733
+		closeAllPopups: function ()
+		{
+			const popups = document.getElementsByClassName ('mapboxgl-popup');
+			for (let popup of popups) {
+				popup.remove ();
+			};
 		},
 		
 		
@@ -61,7 +187,21 @@ var routing = (function ($) {
 		{
 			if (typeof string !== 'string') {return string;}
 			return string.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+		},
+		
+		
+		// UUID generation; see: https://stackoverflow.com/a/2117523/180733
+		uuidv4: function ()
+		{
+			if (typeof crypto.randomUUID === 'function') {
+				return crypto.randomUUID ();
+			}
+			
+			return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace (/[018]/g, c =>
+				(c ^ crypto.getRandomValues (new Uint8Array (1))[0] & 15 >> c / 4).toString (16)
+			);
 		}
+
 	};
 	
 } (jQuery));

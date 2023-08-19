@@ -1,2 +1,14 @@
 html, body {width: 100%; height: 100%; margin: 0; padding: 0;}
 #map {width: 100%; height: 100%;}
+
+/* Markers */
+#map .mapboxgl-marker {cursor: pointer;}
+
+/* Popups (adjustments to emulate Leaflet.js) */
+@keyframes fadein {from {opacity: 0;} to {opacity: 1;}}
+#map .mapboxgl-popup {animation: fadein 0.2s;}
+#map .mapboxgl-popup-content {max-width: 300px; min-width: 50px; border-radius: 12px; padding: 13px 19px; box-shadow: 0 3px 14px rgba(0,0,0,0.4); min-width: 300px;}
+#map .mapboxgl-popup-close-button {font-size: 16px; font-family: Tahoma, Verdana, sans-serif; color: #c3c3c3; font-weight: bold;}
+#map .mapboxgl-popup-close-button:hover {color: #999; background-color: white; border-top-right-radius: 12px;}
+body .mapboxgl-map {line-height: 1.4;}
+
