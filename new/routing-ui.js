@@ -9,6 +9,7 @@ var routing = (function ($) {
 		apiKey: null,
 		plannerDivPath: '#routeplanning',
 		resultsContainerDivPath: '#resultstabspanel',
+		initialRoute: [],	// E.g. [[0.123902, 52.202968], [-0.127669, 51.507318]], as array of lon,lat pairs
 	};
 	
 	// Properties
@@ -32,17 +33,22 @@ var routing = (function ($) {
 				}
 			});
 			
+			// Set initial route, if supplied
+			_settings.initialRoute.forEach (function (initialPoint) {
+				routing.setWaypoint ({lng: initialPoint[0], lat: initialPoint[1]});
+			});
+			
 			// Create handles
 			_map = map;
+			
+			// Create and manage route retrieval and display
+			routing.router ();
 			
 			// Create and manage geocoders
 			routing.geocoders ();
 			
 			// Create and manage waypoint markers
 			routing.markers ();
-			
-			// Create and manage route retrieval and display
-			routing.router ();
 		},
 		
 		
@@ -55,13 +61,15 @@ var routing = (function ($) {
 		// Function to create and manage waypoint markers
 		markers: function ()
 		{
-			// Draw any initial markers
-			routing.drawMarkers ();
-			
 			// When waypoints updated, redraw
 			document.addEventListener ('@waypoints/update', function () {
 				routing.drawMarkers ();
 			});
+			
+			// Draw any initial markers
+			if (_waypoints.length) {
+				document.dispatchEvent (new Event ('@waypoints/update', {bubbles: true}));
+			}
 			
 			// Handle waypoint addition, setting a click on the map to add to the end of the list
 			_map.on ('click', function (event) {
