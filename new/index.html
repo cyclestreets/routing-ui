@@ -24,11 +24,18 @@
 				zoom: 14,
 				hash: true
 			});
+			map.setPadding ({left: 250});
 			routing.initialise (config, map);
 		});
 	</script>
 	
-	<div id="map"></div>
+	<div id="mapcontainer">
+		<div id="routeplanning">
+			<h1>Journey planner</h1>
+			<div id="resultstabspanel"></div>
+		</div>
+		<div id="map"></div>
+	</div>
 	
 </body>
 </html>

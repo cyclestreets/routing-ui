@@ -6,7 +6,9 @@ var routing = (function ($) {
 	// Settings defaults
 	const _settings = {
 		apiBaseUrl: 'https://api.cyclestreets.net',
-		apiKey: null
+		apiKey: null,
+		plannerDivPath: '#routeplanning',
+		resultsContainerDivPath: '#resultstabspanel',
 	};
 	
 	// Properties
@@ -179,6 +181,9 @@ var routing = (function ($) {
 		// Function to create and manage route retrieval and display
 		router: function ()
 		{
+			document.addEventListener ('@waypoints/update', function () {
+				document.querySelector (_settings.resultsContainerDivPath).innerText = JSON.stringify (_waypoints).replaceAll ('},{"uuid"', "},\n\n" + '{"uuid"').replaceAll (',"', ',' + "\n" + '"');
+			});
 		},
 		
 		
