@@ -114,7 +114,7 @@ var routing = (function ($) {
 				.then (function (json) {
 					
 					// Find the feature to update
-					const waypointIndex = _waypoints.findIndex (function (thisWaypoint) { return (thisWaypoint.uuid == waypoint.uuid) });
+					const waypointIndex = routing.findWaypointByUuid (waypoint.uuid);
 					
 					// Update the feature
 					const feature = json.features[0];
@@ -125,6 +125,16 @@ var routing = (function ($) {
 					// Dispatch event that waypoints updated
 					document.dispatchEvent (new Event ('@waypoints/update', {bubbles: true}));
 				});
+		},
+		
+		
+		// Function to get the index of a waypoint by UUID
+		findWaypointByUuid (uuid)
+		{
+			// Compare by UUID, and return the index
+			return _waypoints.findIndex (function (thisWaypoint) {
+				return (thisWaypoint.uuid == uuid)
+			});
 		},
 		
 		
