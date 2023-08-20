@@ -75,6 +75,13 @@ var routing = (function ($) {
 			_map.on ('click', function (event) {
 				routing.setWaypoint (event.lngLat);
 			});
+			
+			// Handle waypoint removal
+			document.querySelector ('#map').addEventListener ('click', function (event) {	// Late binding, as waypoints/popups may not yet exist
+				if (event.target.className == 'removewaypoint') {
+					routing.removeWaypoint (event.target.dataset.uuid);
+				}
+			})
 		},
 		
 		
@@ -138,6 +145,20 @@ var routing = (function ($) {
 		},
 		
 		
+		// Function to remove a waypoint location
+		removeWaypoint: function (uuid)
+		{
+			// Find the index
+			const waypointIndex = routing.findWaypointByUuid (uuid);
+			
+			// Remove this entry and reindex
+			_waypoints.splice (waypointIndex, 1);
+			
+			// Dispatch event that waypoints updated
+			document.dispatchEvent (new Event ('@waypoints/update', {bubbles: true}));
+		},
+		
+		
 		// Function to draw markers
 		drawMarkers: function ()
 		{
@@ -153,7 +174,7 @@ var routing = (function ($) {
 				// Create the marker
 				_markers[index] = new mapboxgl.Marker ({draggable: true, color: routing.markerColour (index, _waypoints.length)})
 					.setLngLat ([waypoint.lon, waypoint.lat])
-					.setPopup (new mapboxgl.Popup ({closeOnClick: true}).setHTML (routing.htmlspecialchars (waypoint.locationString)))
+					.setPopup (new mapboxgl.Popup ({closeOnClick: true}).setHTML ('<p>' + routing.htmlspecialchars (waypoint.locationString) + "</p>\n" + '<p><a href="#" class="removewaypoint" data-uuid="' + waypoint.uuid + '">Remove?</a></p>'))
 					.addTo (_map);
 				
 				// Stop propagation of marker click, by handling popups manually; see: https://github.com/mapbox/mapbox-gl-js/issues/1209#issuecomment-995554174
