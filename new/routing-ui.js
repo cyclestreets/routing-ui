@@ -1,3 +1,8 @@
+// Route planning / satnav user interface
+
+/*jslint browser: true, white: true, single: true, for: true, long: true, unordered: true */
+/*global alert, console, window, confirm, prompt, mapboxgl */
+
 var routing = (function ($) {
 	
 	'use strict';
