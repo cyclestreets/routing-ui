@@ -16,6 +16,8 @@
 	<script src="routing-ui.js"></script>
 	<script>
 		$(function() {
+			
+			// Create map
 			mapboxgl.accessToken = config.mapboxApiKey;
 			map = new mapboxgl.Map ({
 				container: 'map',
@@ -24,7 +26,9 @@
 				zoom: 14,
 				hash: true
 			});
-			map.setPadding ({left: 250});
+			
+			// Add routing
+			map.setPadding ({left: 300});
 			config.initialRoute = [ [0.14193, 52.20459], [0.14781, 52.20054] ];
 			routing.initialise (config, map);
 		});
