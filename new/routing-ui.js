@@ -194,6 +194,11 @@ var routing = (function ($) {
 					routing.setWaypoint (_markers[index].getLngLat (), index);
 				});
 			});
+			
+			// Pan map to contain all waypoints, if any
+			if (_waypoints.length) {
+				_map.fitBounds (routing.waypointsBounds (), {duration: 1500, maxZoom: _settings.maxZoom, padding: 50});
+			}
 		},
 		
 		
@@ -228,6 +233,21 @@ var routing = (function ($) {
 			document.addEventListener ('@waypoints/update', function () {
 				document.querySelector (_settings.resultsContainerDivPath).innerText = JSON.stringify (_waypoints).replaceAll ('},{"uuid"', "},\n\n" + '{"uuid"').replaceAll (',"', ',' + "\n" + '"');
 			});
+		},
+		
+		
+		// Function to determine the bounds for all waypoints
+		// See: https://docs.mapbox.com/mapbox-gl-js/example/zoomto-linestring/
+		waypointsBounds: function ()
+		{
+			// Create a LngLatBounds object with both corners at the first coordinate, then extend to include each coordinate; coordinates use the lng/lat fields
+			const bounds = new mapboxgl.LngLatBounds (_waypoints[0], _waypoints[0]);
+			for (const waypoint of _waypoints) {
+				bounds.extend (waypoint);
+			}
+			
+			// Return the result
+			return bounds;
 		},
 		
 		
