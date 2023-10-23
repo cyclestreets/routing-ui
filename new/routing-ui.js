@@ -84,7 +84,8 @@ var routing = (function ($) {
 			// Handle waypoint removal
 			document.querySelector ('#map').addEventListener ('click', function (event) {	// Late binding, as waypoints/popups may not yet exist
 				if (event.target.className == 'removewaypoint') {
-					routing.removeWaypoint (event.target.dataset.uuid);
+					const waypointIndex = routing.findWaypointByUuid (event.target.dataset.uuid);
+					routing.removeWaypoint (waypointIndex);
 				}
 			})
 		},
@@ -151,11 +152,8 @@ var routing = (function ($) {
 		
 		
 		// Function to remove a waypoint location
-		removeWaypoint: function (uuid)
+		removeWaypoint: function (waypointIndex)
 		{
-			// Find the index
-			const waypointIndex = routing.findWaypointByUuid (uuid);
-			
 			// Remove this entry and reindex
 			_waypoints.splice (waypointIndex, 1);
 			
