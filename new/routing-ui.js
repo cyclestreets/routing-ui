@@ -385,7 +385,7 @@ const routing = (function () {
 				if (waypoint == null) {return;}	// I.e. continue
 				
 				// Create the marker
-				_markers[index] = new mapboxgl.Marker ({draggable: true, color: routing.markerColour (index, _waypoints.length, waypoint.resolved)})
+				_markers[index] = new mapboxgl.Marker ({draggable: true, color: routing.waypointColour (index, waypoint.resolved)})
 					.setLngLat ([waypoint.lon, waypoint.lat])
 					.setPopup (new mapboxgl.Popup ({closeOnClick: true}).setHTML ('<p>' + routing.htmlspecialchars (waypoint.locationString) + "</p>\n" + '<p><a href="#" class="removewaypoint" data-uuid="' + waypoint.uuid + '">Remove?</a></p>'))
 					.addTo (_map);
@@ -418,7 +418,7 @@ const routing = (function () {
 		
 		
 		// Set marker colour
-		markerColour: function (index, totalWaypoints, resolved)
+		waypointColour: function (index, resolved)
 		{
 			// If not yet resolved by nearestpoint, return gray
 			if (!resolved) {
@@ -429,7 +429,7 @@ const routing = (function () {
 			switch (index) {
 				case 0:
 					return 'green';
-				case (totalWaypoints - 1):
+				case (_waypoints.length - 1):
 					return 'red';
 				default:
 					return 'orange';
