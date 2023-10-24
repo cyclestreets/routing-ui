@@ -29,7 +29,9 @@
 			
 			// Add routing
 			map.setPadding ({left: 300});
-			config.initialRoute = [ [0.14193, 52.20459], [0.14781, 52.20054] ];
+			//config.initialRoute = [ [0.14193, 52.20459], [0.14781, 52.20054] ];			// A-B example
+			//config.initialRoute = [ null, [0.14781, 52.20054], null, [0.14781, 52.20054] ];	// No start, waypoint, empty waypoint, finish
+			config.initialRoute = [ null, [0.14781, 52.20054] ];					// Finish point
 			routing.initialise (config, map);
 		});
 	</script>

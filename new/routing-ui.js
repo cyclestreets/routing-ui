@@ -42,9 +42,13 @@ var routing = (function ($) {
 				}
 			});
 			
-			// Set initial route, if supplied
-			_settings.initialRoute.forEach (function (initialPoint) {
-				routing.setWaypoint ({lng: initialPoint[0], lat: initialPoint[1]});
+			// Set initial route, if supplied; a null point will create the slot but with no value, which is useful for a preset destination
+			_settings.initialRoute.forEach (function (initialPoint, waypointIndex) {
+				if (initialPoint == null) {
+					routing.emptyWaypoint (waypointIndex);
+				} else {
+					routing.setWaypoint ({lng: initialPoint[0], lat: initialPoint[1]}, waypointIndex);
+				}
 			});
 			
 			// Create handles
@@ -80,7 +84,7 @@ var routing = (function ($) {
 				document.dispatchEvent (new Event ('@waypoints/update', {bubbles: true}));
 			}
 			
-			// Handle waypoint addition, setting a click on the map to add to the end of the list, ensuring sufficient zoom to set a marker accurately
+			// Handle waypoint addition, setting a click on the map to add to the end of the list (or first empty entry), ensuring sufficient zoom to set a marker accurately
 			_map.on ('click', function (event) {
 				const currentZoom = _map.getZoom ();
 				if (currentZoom < _settings.minSetMarkerZoom) {
@@ -104,9 +108,17 @@ var routing = (function ($) {
 		// Function to set a waypoint location
 		setWaypoint: function (location, updateIndex)
 		{
+			// If adding, first check if there are any empty waypoint slots, and if so, allocate the first such slot
+			if (updateIndex == null) {
+				const firstEmpty = _waypoints.findIndex (function (waypoint) { return (waypoint == null); });
+				if (firstEmpty >= 0) {
+					updateIndex = firstEmpty;
+				}
+			}
+			
 			// Set clicked location initially, subject to later resolution by nearest point below
 			const waypoint = {
-				uuid: (updateIndex == null ? routing.uuidv4 () : _waypoints[updateIndex].uuid),
+				uuid: (updateIndex == null || _waypoints[updateIndex] == null ? routing.uuidv4 () : _waypoints[updateIndex].uuid),
 				locationString: (location.hasOwnProperty ('locationString') ? location.locationString : 'Waypoint'),
 				lon: location.lng.toFixed (5),
 				lat: location.lat.toFixed (5),
@@ -166,7 +178,7 @@ var routing = (function ($) {
 		{
 			// Compare by UUID, and return the index
 			return _waypoints.findIndex (function (thisWaypoint) {
-				return (thisWaypoint.uuid == uuid)
+				return (thisWaypoint != null && thisWaypoint.uuid == uuid)
 			});
 		},
 		
@@ -196,6 +208,17 @@ var routing = (function ($) {
 		},
 		
 		
+		// Function to clear a waypoint (or set it as explicitly empty), leaving it unfilled
+		emptyWaypoint: function (waypointIndex)
+		{
+			// Clear the entry but retain indexing for all other waypoints
+			_waypoints[waypointIndex] = null;
+			
+			// Dispatch event that waypoints updated
+			document.dispatchEvent (new Event ('@waypoints/update', {bubbles: true}));
+		},
+		
+		
 		// Function to draw markers
 		drawMarkers: function ()
 		{
@@ -207,6 +230,9 @@ var routing = (function ($) {
 			
 			// Draw each waypoint
 			_waypoints.forEach (function (waypoint, index) {
+				
+				// Skip drawing if an empty waypoint
+				if (waypoint == null) {return;}	// I.e. continue
 				
 				// Create the marker
 				_markers[index] = new mapboxgl.Marker ({draggable: true, color: routing.markerColour (index, _waypoints.length, waypoint.resolved)})
@@ -228,9 +254,16 @@ var routing = (function ($) {
 			});
 			
 			// Pan map to contain all waypoints, if any
-			if (_waypoints.length) {
+			if (routing.nonEmptyWaypoints ()) {
 				_map.fitBounds (routing.waypointsBounds (), {duration: 1500, maxZoom: _settings.maxZoom, padding: 50});
 			}
+		},
+		
+		
+		// Function to count non-empty waypoints
+		nonEmptyWaypoints: function ()
+		{
+			return _waypoints.filter ( function (waypoint) {return (waypoint != null);} ).length;
 		},
 		
 		
