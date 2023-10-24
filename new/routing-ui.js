@@ -138,12 +138,11 @@ var routing = (function ($) {
 					
 					// Update the feature
 					const feature = json.features[0];
-					_waypoints[waypointIndex].locationString = feature.properties.name;
-					_waypoints[waypointIndex].lon = feature.geometry.coordinates[0];
-					_waypoints[waypointIndex].lat = feature.geometry.coordinates[1];
-					
-					// Dispatch event that waypoints updated
-					document.dispatchEvent (new Event ('@waypoints/update', {bubbles: true}));
+					routing.updateWaypoint ({
+						lng: feature.geometry.coordinates[0],
+						lat: feature.geometry.coordinates[1],
+						locationString: feature.properties.name
+					}, waypointIndex);
 				});
 		},
 		
@@ -155,6 +154,19 @@ var routing = (function ($) {
 			return _waypoints.findIndex (function (thisWaypoint) {
 				return (thisWaypoint.uuid == uuid)
 			});
+		},
+		
+		
+		// Function to update a waypoint location
+		updateWaypoint: function (location, waypointIndex)
+		{
+			// Set the values
+			_waypoints[waypointIndex].locationString = location.locationString;
+			_waypoints[waypointIndex].lon = location.lng;
+			_waypoints[waypointIndex].lat = location.lat;
+			
+			// Dispatch event that waypoints updated
+			document.dispatchEvent (new Event ('@waypoints/update', {bubbles: true}));
 		},
 		
 		
