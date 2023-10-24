@@ -7,8 +7,6 @@
 </head>
 <body>
 	
-	<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-	
 	<!-- Mapbox GL JS -->
 	<link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
 	<script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
@@ -21,7 +19,7 @@
 	<script src="/.config.js"></script>
 	<script src="routing-ui.js"></script>
 	<script>
-		$(function() {
+		document.addEventListener ('DOMContentLoaded', function (event) {
 			
 			// Create map
 			mapboxgl.accessToken = config.mapboxApiKey;

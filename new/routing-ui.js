@@ -3,7 +3,7 @@
 /*jslint browser: true, white: true, single: true, for: true, long: true, unordered: true */
 /*global alert, console, window, confirm, prompt, mapboxgl, autocomplete */
 
-var routing = (function ($) {
+const routing = (function () {
 	
 	'use strict';
 	
@@ -47,11 +47,11 @@ var routing = (function ($) {
 		initialise: function (config, map)
 		{
 			// Merge the configuration into the settings
-			$.each (_settings, function (setting, value) {
+			for (const [setting, value] of Object.entries (_settings)) {
 				if (config.hasOwnProperty (setting)) {
 					_settings[setting] = config[setting];
 				}
-			});
+			}
 			
 			// Set initial route, if supplied; a null point will create the slot but with no value, which is useful for a preset destination
 			_settings.initialRoute.forEach (function (initialPoint, waypointIndex) {
@@ -500,7 +500,4 @@ var routing = (function ($) {
 		}
 
 	};
-	
-} (jQuery));
-
-
+} ());
