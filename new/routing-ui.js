@@ -203,9 +203,6 @@ const routing = (function () {
 						locationString: item.label,
 						resolved: false
 					}, waypointIndex);
-					
-					// Pan map to waypoint
-					_map.fitBounds (feature.properties.bbox.split (','), {duration: _settings.panDuration, maxZoom: _settings.maxZoom});	// WSEN order
 				}
 			});
 		},
