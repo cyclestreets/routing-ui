@@ -65,6 +65,15 @@ var routing = (function ($) {
 		},
 		
 		
+		// Function to create and manage route retrieval and display
+		router: function ()
+		{
+			document.addEventListener ('@waypoints/update', function () {
+				document.querySelector (_settings.resultsContainerDivPath + ' #waypointsdebug').innerText = JSON.stringify (_waypoints).replaceAll ('},{"uuid"', "},\n\n" + '{"uuid"').replaceAll (',"', ',' + "\n" + '"');
+			});
+		},
+		
+		
 		// Function to create and manage geocoders
 		geocoders: function ()
 		{
@@ -294,15 +303,6 @@ var routing = (function ($) {
 			for (let popup of popups) {
 				popup.remove ();
 			};
-		},
-		
-		
-		// Function to create and manage route retrieval and display
-		router: function ()
-		{
-			document.addEventListener ('@waypoints/update', function () {
-				document.querySelector (_settings.resultsContainerDivPath + ' #waypointsdebug').innerText = JSON.stringify (_waypoints).replaceAll ('},{"uuid"', "},\n\n" + '{"uuid"').replaceAll (',"', ',' + "\n" + '"');
-			});
 		},
 		
 		
