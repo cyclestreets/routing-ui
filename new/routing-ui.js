@@ -109,7 +109,8 @@ var routing = (function ($) {
 				uuid: (updateIndex == null ? routing.uuidv4 () : _waypoints[updateIndex].uuid),
 				locationString: (location.hasOwnProperty ('locationString') ? location.locationString : 'Waypoint'),
 				lon: location.lng.toFixed (5),
-				lat: location.lat.toFixed (5)
+				lat: location.lat.toFixed (5),
+				resolved: location.resolved
 			};
 			
 			// Add the waypoint, either addition or replace
@@ -123,7 +124,9 @@ var routing = (function ($) {
 			document.dispatchEvent (new Event ('@waypoints/update', {bubbles: true}));
 			
 			// Resolve waypoint to nearest point, asyncronously
-			routing.resolveNearestpoint (waypoint);
+			if (!waypoint.resolved) {	// May be known to be resolved already
+				routing.resolveNearestpoint (waypoint);
+			}
 		},
 		
 		
@@ -151,7 +154,8 @@ var routing = (function ($) {
 					routing.updateWaypoint ({
 						lng: feature.geometry.coordinates[0],
 						lat: feature.geometry.coordinates[1],
-						locationString: feature.properties.name
+						locationString: feature.properties.name,
+						resolved: true
 					}, waypointIndex);
 				});
 		},
@@ -174,6 +178,7 @@ var routing = (function ($) {
 			_waypoints[waypointIndex].locationString = location.locationString;
 			_waypoints[waypointIndex].lon = location.lng.toFixed (5);
 			_waypoints[waypointIndex].lat = location.lat.toFixed (5);
+			_waypoints[waypointIndex].resolved = location.resolved;
 			
 			// Dispatch event that waypoints updated
 			document.dispatchEvent (new Event ('@waypoints/update', {bubbles: true}));
@@ -204,7 +209,7 @@ var routing = (function ($) {
 			_waypoints.forEach (function (waypoint, index) {
 				
 				// Create the marker
-				_markers[index] = new mapboxgl.Marker ({draggable: true, color: routing.markerColour (index, _waypoints.length)})
+				_markers[index] = new mapboxgl.Marker ({draggable: true, color: routing.markerColour (index, _waypoints.length, waypoint.resolved)})
 					.setLngLat ([waypoint.lon, waypoint.lat])
 					.setPopup (new mapboxgl.Popup ({closeOnClick: true}).setHTML ('<p>' + routing.htmlspecialchars (waypoint.locationString) + "</p>\n" + '<p><a href="#" class="removewaypoint" data-uuid="' + waypoint.uuid + '">Remove?</a></p>'))
 					.addTo (_map);
@@ -230,8 +235,13 @@ var routing = (function ($) {
 		
 		
 		// Set marker colour
-		markerColour: function (index, totalWaypoints)
+		markerColour: function (index, totalWaypoints, resolved)
 		{
+			// If not yet resolved by nearestpoint, return gray
+			if (!resolved) {
+				return 'gray';
+			}
+			
 			// Set colour
 			switch (index) {
 				case 0:
