@@ -19,6 +19,7 @@ const routing = (function () {
 		// Zoom levels
 		maxZoom: 17,
 		minSetMarkerZoom: 13,
+		panDuration: 1500,	// ms
 		
 		// Geocoding API URL; re-use of settings values represented as placeholders {%apiBaseUrl}, {%apiKey}, {%autocompleteBbox}, are supported
 		geocoderApiUrl:        '{%apiBaseUrl}/v2/geocoder?key={%apiKey}&bounded=1&bbox={%autocompleteBbox}',
@@ -204,7 +205,7 @@ const routing = (function () {
 					}, waypointIndex);
 					
 					// Pan map to waypoint
-					_map.fitBounds (feature.properties.bbox.split (','), {duration: 1500, maxZoom: _settings.maxZoom});	// WSEN order
+					_map.fitBounds (feature.properties.bbox.split (','), {duration: _settings.panDuration, maxZoom: _settings.maxZoom});	// WSEN order
 				}
 			});
 		},
@@ -240,7 +241,7 @@ const routing = (function () {
 				const currentZoom = _map.getZoom ();
 				if (currentZoom < _settings.minSetMarkerZoom) {
 					const newZoom = Math.min ((currentZoom + 3), _settings.maxZoom);
-					map.flyTo ({center: event.lngLat, zoom: newZoom, duration: 1500});
+					map.flyTo ({center: event.lngLat, zoom: newZoom, duration: _settings.panDuration});
 				} else {
 					routing.setWaypoint (event.lngLat);
 				}
@@ -407,7 +408,7 @@ const routing = (function () {
 			
 			// Pan map to contain all waypoints, if any
 			if (routing.nonEmptyWaypoints ()) {
-				_map.fitBounds (routing.waypointsBounds (), {duration: 1500, maxZoom: _settings.maxZoom, padding: 50});
+				_map.fitBounds (routing.waypointsBounds (), {duration: _settings.panDuration, maxZoom: _settings.maxZoom, padding: 50});
 			}
 		},
 		
