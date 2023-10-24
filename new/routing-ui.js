@@ -107,7 +107,7 @@ var routing = (function ($) {
 			// Set clicked location initially, subject to later resolution by nearest point below
 			const waypoint = {
 				uuid: (updateIndex == null ? routing.uuidv4 () : _waypoints[updateIndex].uuid),
-				locationString: 'Waypoint',
+				locationString: (location.hasOwnProperty ('locationString') ? location.locationString : 'Waypoint'),
 				lon: location.lng.toFixed (5),
 				lat: location.lat.toFixed (5)
 			};
