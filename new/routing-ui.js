@@ -18,7 +18,10 @@ var routing = (function ($) {
 		
 		// Zoom levels
 		maxZoom: 17,
-		minSetMarkerZoom: 13
+		minSetMarkerZoom: 13,
+		
+		// Geocoding API URL; re-use of settings values represented as placeholders {%apiBaseUrl} and {%apiKey} are supported
+		reverseGeocoderApiUrl: '{%apiBaseUrl}/v2/nearestpoint?key={%apiKey}'
 	};
 	
 	// Properties
@@ -155,7 +158,8 @@ var routing = (function ($) {
 		resolveNearestpoint: function (waypoint)
 		{
 			// Look up the name and nearest point for this location from the geocoder, asyncronously, and attach it to the waypoints registry
-			const apiUrl = _settings.apiBaseUrl + '/v2/nearestpoint?key=' + _settings.apiKey + '&lonlat=' + waypoint.lon + ',' + waypoint.lat;
+			let apiUrl = routing.settingsPlaceholderSubstitution (_settings.reverseGeocoderApiUrl, ['apiBaseUrl', 'apiKey']);
+			apiUrl += '&lonlat=' + waypoint.lon + ',' + waypoint.lat;
 			fetch (apiUrl)
 				.then (function (response) { return response.json (); })
 				.then (function (json) {
@@ -318,6 +322,21 @@ var routing = (function ($) {
 			
 			// Return the result
 			return bounds;
+		},
+		
+		
+		// Helper function to implement settings placeholder substitution in a string
+		settingsPlaceholderSubstitution: function (string, supportedPlaceholders)
+		{
+			// Substitute each placeholder
+			let placeholder;
+			supportedPlaceholders.forEach (function (field) {
+				placeholder = '{%' + field + '}';
+				string = string.replace (placeholder, _settings[field]);
+			});
+			
+			// Return the modified string
+			return string;
 		},
 		
 		
