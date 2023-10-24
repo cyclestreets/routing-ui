@@ -301,7 +301,7 @@ var routing = (function ($) {
 		router: function ()
 		{
 			document.addEventListener ('@waypoints/update', function () {
-				document.querySelector (_settings.resultsContainerDivPath).innerText = JSON.stringify (_waypoints).replaceAll ('},{"uuid"', "},\n\n" + '{"uuid"').replaceAll (',"', ',' + "\n" + '"');
+				document.querySelector (_settings.resultsContainerDivPath + ' #waypointsdebug').innerText = JSON.stringify (_waypoints).replaceAll ('},{"uuid"', "},\n\n" + '{"uuid"').replaceAll (',"', ',' + "\n" + '"');
 			});
 		},
 		
