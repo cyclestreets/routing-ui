@@ -1,7 +1,7 @@
 // Route planning / satnav user interface
 
 /*jslint browser: true, white: true, single: true, for: true, long: true, unordered: true */
-/*global alert, console, window, confirm, prompt, mapboxgl */
+/*global alert, console, window, confirm, prompt, mapboxgl, autocomplete */
 
 var routing = (function ($) {
 	
@@ -20,15 +20,23 @@ var routing = (function ($) {
 		maxZoom: 17,
 		minSetMarkerZoom: 13,
 		
-		// Geocoding API URL; re-use of settings values represented as placeholders {%apiBaseUrl} and {%apiKey} are supported
-		reverseGeocoderApiUrl: '{%apiBaseUrl}/v2/nearestpoint?key={%apiKey}'
+		// Geocoding API URL; re-use of settings values represented as placeholders {%apiBaseUrl}, {%apiKey}, {%autocompleteBbox}, are supported
+		geocoderApiUrl:        '{%apiBaseUrl}/v2/geocoder?key={%apiKey}&bounded=1&bbox={%autocompleteBbox}',
+		reverseGeocoderApiUrl: '{%apiBaseUrl}/v2/nearestpoint?key={%apiKey}',
+		
+		// BBOX for autocomplete results biasing
+		autocompleteBbox: '-6.6577,49.9370,1.7797,57.6924'
 	};
 	
 	// Properties
 	let _map;
 	let _markers = [];
+	let _geocoders = [];
+	let _geocoderHtml = '';
+	let _geocoderFocus = 0;
 	
 	// Waypoints state; this is a list of objects containing uuid, locationString, lon, lat
+	const _requiredWaypoints = 2;
 	const _waypoints = [];
 	
 	
@@ -77,9 +85,140 @@ var routing = (function ($) {
 		},
 		
 		
-		// Function to create and manage geocoders
+		// Function to create and manage geocoder controls
 		geocoders: function ()
 		{
+			// Get the HTML for a geocoder, from the static HTML, to enable cloning
+			_geocoderHtml = document.querySelector ('#geocoders li:first-child');
+			
+			// When waypoints updated, redraw
+			document.addEventListener ('@waypoints/update', function () {
+				
+				// Remove all existing geocoders, both their handlers and then their HTML
+				for (let i = 0; i < _geocoders.length; i++) {
+					routing.removeGeocoderHandler (i);
+				}
+				_geocoders = [];
+				document.getElementById ('geocoders').innerHTML = '';
+				
+				// Initially, create as many geocoders as waypoints, but always the minimum number
+				const totalWaypoints = Math.max (_waypoints.length, _requiredWaypoints);
+				
+				// Create each geocoder
+				for (let j = 0; j < totalWaypoints; j++) {
+					routing.createGeocoder (j);
+				}
+				
+				// Set focus/selection
+				const nextGeocoder = '#geocoders li:nth-child(' + (_geocoderFocus + 1) + ') input';	// nth-child uses 1-indexing
+				if (document.querySelector (nextGeocoder)) {
+					document.querySelector (nextGeocoder).select ();
+				}
+			});
+			
+			// Handle X clearance link buttons; these are done as a single late-bound event, either removing the waypoint or, if that would leave too few, clearing it
+			document.querySelector ('#geocoders').addEventListener ('click', function (event) {
+				if (event.target.tagName.toLowerCase () == 'a' && event.target.href.split ('#')[1] == 'clear') {
+					const waypointIndex = event.target.parentElement.dataset.waypoint;
+					if (_waypoints.length > _requiredWaypoints) {
+						routing.removeWaypoint (waypointIndex);
+					} else {
+						routing.emptyWaypoint (waypointIndex);
+					}
+					event.preventDefault ();	// Avoid #clear in URL
+				}
+			});
+		},
+		
+		
+		// Function to create a single geocoder and handle the result
+		// See: https://github.com/kraaden/autocomplete#readme
+		createGeocoder: function (waypointIndex)
+		{
+			// Create the HTML
+			const newLi = _geocoderHtml.cloneNode (true);
+			newLi.dataset.waypoint = waypointIndex;
+			document.querySelector('#geocoders').appendChild (newLi);
+			
+			// Locate the input
+			const input = document.querySelector ('#geocoders li:nth-child(' + (waypointIndex + 1) + ') input');
+			
+			// Pre-fill text value
+			if (_waypoints[waypointIndex] != null) {
+				input.value = _waypoints[waypointIndex].locationString;
+			}
+			
+			// Attach autocomplete behaviour to the input
+			_geocoders[waypointIndex] = autocomplete ({
+				input: input,
+				minLength: 3,
+				debounceWaitMs: 300,
+				disableAutoSelect: true,
+				render: function (item, currentValue) {
+					const feature = item.value;
+					const div = document.createElement ('div');
+					div.innerHTML = feature.properties.name + '<br />' + '<span class="near">' + feature.properties.near + '</span>';
+					return div;
+				},
+				fetch: function (text, update) {
+					
+					// Show loading indicator
+					input.style.backgroundImage = "url('loading.svg')";
+					
+					// Assemble Geocoder URL
+					let apiUrl = routing.settingsPlaceholderSubstitution (_settings.geocoderApiUrl, ['apiBaseUrl', 'apiKey', 'autocompleteBbox']);
+					apiUrl += '&limit=12';
+					apiUrl += '&countrycodes=gb,ie';
+					apiUrl += '&q=' + text;
+
+					// Retrieve geocoder results and show
+					fetch (apiUrl)
+						.then (function (response) { return response.json (); })
+						.then (function (json) {
+							input.style.backgroundImage = 'none';
+							const suggestions = [];
+							json.features.forEach (function (feature) {
+								suggestions.push ({
+									label: feature.properties.name + ', ' + feature.properties.near,
+									value: feature
+								});
+							});
+							update (suggestions);
+						});
+				},
+				onSelect: function (item) {
+					
+					// Set focus to next, if present
+					_geocoderFocus = waypointIndex + 1;
+					
+					// Set the visible value
+					input.value = item.label;
+					
+					// Add the waypoint marker
+					const feature = item.value;
+					routing.setWaypoint ({
+						lng: feature.geometry.coordinates[0],
+						lat: feature.geometry.coordinates[1],
+						locationString: item.label,
+						resolved: false
+					}, waypointIndex);
+					
+					// Pan map to waypoint
+					_map.fitBounds (feature.properties.bbox.split (','), {duration: 1500, maxZoom: _settings.maxZoom});	// WSEN order
+				}
+			});
+		},
+		
+		
+		// Function to remove a geocoder's handler
+		// See: https://github.com/kraaden/autocomplete#unload-autocomplete
+		removeGeocoderHandler: function (waypointIndex)
+		{
+			// Destroy the handler
+			_geocoders[waypointIndex].destroy ();
+			
+			// Destroy the registry entry
+			delete _geocoders[waypointIndex];
 		},
 		
 		

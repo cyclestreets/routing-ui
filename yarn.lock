@@ -52,6 +52,11 @@
   resolved "https://registry.yarnpkg.com/@mapbox/whoots-js/-/whoots-js-3.1.0.tgz#497c67a1cef50d1a2459ba60f315e448d2ad87fe"
   integrity sha512-Es6WcD0nO5l+2BOQS4uLfNPYQaNDfbot3X1XUoloz+x0mPDS3eeORZJl06HXjwBG1fOGwCRnzK88LMdxKRrd6Q==
 
+autocompleter@^9.1.1:
+  version "9.1.1"
+  resolved "https://registry.yarnpkg.com/autocompleter/-/autocompleter-9.1.1.tgz#6ec0d71b051428ae051d0b876c03b371fdaf7054"
+  integrity sha512-tfgWn/koqy3fxRQR1IDJZPHmEifmICA/VIT3Aj7x8/CQddBXQ58hciYQ8n7Zfh1IVr9oyjMwvTDFXLDNTFyopg==
+
 chart.js@2.9.4:
   version "2.9.4"
   resolved "https://registry.yarnpkg.com/chart.js/-/chart.js-2.9.4.tgz#0827f9563faffb2dc5c06562f8eb10337d5b9684"

@@ -9,9 +9,15 @@
 	
 	<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 	
+	<!-- Mapbox GL JS -->
 	<link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
 	<script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
 	
+	<!-- Geocoder -->
+	<script src="../js/lib/autocompleter/autocomplete.js"></script>
+	<link href="../js/lib/autocompleter/autocomplete.css" rel="stylesheet" />
+	
+	<!-- Routing UI -->
 	<script src="/.config.js"></script>
 	<script src="routing-ui.js"></script>
 	<script>
@@ -40,6 +46,10 @@
 		<div id="routeplanning">
 			<h1>Journey planner</h1>
 			<div id="resultstabspanel">
+				<ul id="geocoders">
+					<li><input type="text" spellcheck="false" autocorrect="off" placeholder="Search or tap map" /> <a href="#clear">&#x2715;</a></li>
+					<li><input type="text" spellcheck="false" autocorrect="off" placeholder="Search or tap map" /> <a href="#clear">&#x2715;</a></li>
+				</ul>
 				<div id="waypointsdebug"></div>
 			</div>
 		</div>
