@@ -15,6 +15,10 @@ var routing = (function ($) {
 		plannerDivPath: '#routeplanning',
 		resultsContainerDivPath: '#resultstabspanel',
 		initialRoute: [],	// E.g. [[0.123902, 52.202968], [-0.127669, 51.507318]], as array of lon,lat pairs
+		
+		// Zoom levels
+		maxZoom: 17,
+		minSetMarkerZoom: 13
 	};
 	
 	// Properties
@@ -76,9 +80,15 @@ var routing = (function ($) {
 				document.dispatchEvent (new Event ('@waypoints/update', {bubbles: true}));
 			}
 			
-			// Handle waypoint addition, setting a click on the map to add to the end of the list
+			// Handle waypoint addition, setting a click on the map to add to the end of the list, ensuring sufficient zoom to set a marker accurately
 			_map.on ('click', function (event) {
-				routing.setWaypoint (event.lngLat);
+				const currentZoom = _map.getZoom ();
+				if (currentZoom < _settings.minSetMarkerZoom) {
+					const newZoom = Math.min ((currentZoom + 3), _settings.maxZoom);
+					map.flyTo ({center: event.lngLat, zoom: newZoom, duration: 1500});
+				} else {
+					routing.setWaypoint (event.lngLat);
+				}
 			});
 			
 			// Handle waypoint removal
