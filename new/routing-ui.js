@@ -162,8 +162,8 @@ var routing = (function ($) {
 		{
 			// Set the values
 			_waypoints[waypointIndex].locationString = location.locationString;
-			_waypoints[waypointIndex].lon = location.lng;
-			_waypoints[waypointIndex].lat = location.lat;
+			_waypoints[waypointIndex].lon = location.lng.toFixed (5);
+			_waypoints[waypointIndex].lat = location.lat.toFixed (5);
 			
 			// Dispatch event that waypoints updated
 			document.dispatchEvent (new Event ('@waypoints/update', {bubbles: true}));
