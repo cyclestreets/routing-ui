@@ -129,6 +129,13 @@ var routing = (function ($) {
 					// Find the feature to update
 					const waypointIndex = routing.findWaypointByUuid (waypoint.uuid);
 					
+					// If an error message is returned, e.g. due to a location in the sea, remove it
+					if (json.error) {
+						alert (json.error);
+						routing.removeWaypoint (waypointIndex);
+						return;
+					}
+					
 					// Update the feature
 					const feature = json.features[0];
 					_waypoints[waypointIndex].locationString = feature.properties.name;
