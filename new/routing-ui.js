@@ -102,14 +102,14 @@ var routing = (function ($) {
 		
 		
 		// Function to set a waypoint location
-		setWaypoint: function (lngLat, updateIndex)
+		setWaypoint: function (location, updateIndex)
 		{
 			// Set clicked location initially, subject to later resolution by nearest point below
 			const waypoint = {
 				uuid: (updateIndex == null ? routing.uuidv4 () : _waypoints[updateIndex].uuid),
 				locationString: 'Waypoint',
-				lon: lngLat.lng.toFixed (5),
-				lat: lngLat.lat.toFixed (5)
+				lon: location.lng.toFixed (5),
+				lat: location.lat.toFixed (5)
 			};
 			
 			// Add the waypoint, either addition or replace
