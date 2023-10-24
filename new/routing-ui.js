@@ -238,7 +238,7 @@ const routing = (function () {
 				const currentZoom = _map.getZoom ();
 				if (currentZoom < _settings.minSetMarkerZoom) {
 					const newZoom = Math.min ((currentZoom + 3), _settings.maxZoom);
-					map.flyTo ({center: event.lngLat, zoom: newZoom, duration: _settings.panDuration});
+					_map.flyTo ({center: event.lngLat, zoom: newZoom, duration: _settings.panDuration});
 				} else {
 					routing.setWaypoint (event.lngLat);
 				}
