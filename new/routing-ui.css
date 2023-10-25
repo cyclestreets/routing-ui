@@ -23,7 +23,9 @@ body .mapboxgl-map {line-height: 1.4;}
 /* Geocoders */
 ul#geocoders {margin: 0; padding: 0; list-style: none;}
 ul#geocoders li {margin-bottom: 12px;}
-ul#geocoders li input {padding: 5px; font-size: 1em; color: #603; width: 200px; background-position: center right; background-repeat: no-repeat; background-size: 28px;}
+ul#geocoders li input {padding: 5px; font-size: 1em; color: #603; width: 190px; background-position: center right; background-repeat: no-repeat; background-size: 28px;}
+ul#geocoders li .handle {color: #bbb; padding: 5px 10px 5px 2px;}
+ul#geocoders li .handle:hover {cursor: ns-resize;}
 body .autocomplete {font: inherit; color: #603;}
 body .autocomplete > div span.near {color: gray;}
 body .autocomplete > div {padding: 5px 6px;}

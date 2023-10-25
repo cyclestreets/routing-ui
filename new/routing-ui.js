@@ -1,7 +1,7 @@
 // Route planning / satnav user interface
 
 /*jslint browser: true, white: true, single: true, for: true, long: true, unordered: true */
-/*global alert, console, window, confirm, prompt, mapboxgl, autocomplete */
+/*global alert, console, window, confirm, prompt, mapboxgl, autocomplete, Sortable */
 
 const routing = (function () {
 	
@@ -127,6 +127,14 @@ const routing = (function () {
 						routing.emptyWaypoint (waypointIndex);
 					}
 					event.preventDefault ();	// Avoid #clear in URL
+				}
+			});
+			
+			// Make geocoders draggable; see: https://github.com/SortableJS/Sortable
+			new Sortable (document.getElementById ('geocoders'), {
+				handle: '.handle',
+				onEnd: function (event) {
+					routing.swapWaypoints (event.oldIndex, event.newIndex);
 				}
 			});
 		},
@@ -366,6 +374,17 @@ const routing = (function () {
 		{
 			// Clear the entry but retain indexing for all other waypoints
 			_waypoints[waypointIndex] = null;
+			
+			// Dispatch event that waypoints updated
+			document.dispatchEvent (new Event ('@waypoints/update', {bubbles: true}));
+		},
+		
+		
+		// Function to swap waypoints
+		swapWaypoints: function (a, b)
+		{
+			// Swap; see: https://stackoverflow.com/a/872317/
+			[_waypoints[a], _waypoints[b]] = [_waypoints[b], _waypoints[a]];
 			
 			// Dispatch event that waypoints updated
 			document.dispatchEvent (new Event ('@waypoints/update', {bubbles: true}));

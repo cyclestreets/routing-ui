@@ -15,6 +15,9 @@
 	<script src="../js/lib/autocompleter/autocomplete.js"></script>
 	<link href="../js/lib/autocompleter/autocomplete.css" rel="stylesheet" />
 	
+	<!-- Sortable -->
+	<script src="../js/lib/sortablejs/Sortable.js"></script>
+	
 	<!-- Routing UI -->
 	<script src="/.config.js"></script>
 	<script src="routing-ui.js"></script>
@@ -46,8 +49,8 @@
 			<h1>Journey planner</h1>
 			<div id="resultstabspanel">
 				<ul id="geocoders">
-					<li><input type="text" spellcheck="false" autocorrect="off" placeholder="Search or tap map" /> <a href="#clear">&#x2715;</a></li>
-					<li><input type="text" spellcheck="false" autocorrect="off" placeholder="Search or tap map" /> <a href="#clear">&#x2715;</a></li>
+					<li><span class="handle">||</span><input type="text" spellcheck="false" autocorrect="off" placeholder="Search or tap map" /> <a href="#clear">&#x2715;</a></li>
+					<li><span class="handle">||</span><input type="text" spellcheck="false" autocorrect="off" placeholder="Search or tap map" /> <a href="#clear">&#x2715;</a></li>
 				</ul>
 				<div id="waypointsdebug"></div>
 			</div>
