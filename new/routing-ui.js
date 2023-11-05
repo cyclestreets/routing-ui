@@ -152,8 +152,13 @@ const routing = (function () {
 			// Locate the input
 			const input = document.querySelector ('#geocoders li:nth-child(' + (waypointIndex + 1) + ') input');
 			
-			// Set colour for this geocoder's X button
-			document.querySelector ('#geocoders li:nth-child(' + (waypointIndex + 1) + ') a').style.color = routing.waypointColour (waypointIndex, true);
+			// Set colour for this geocoder's X button, or hide if no value
+			const xButtonSelector = '#geocoders li:nth-child(' + (waypointIndex + 1) + ') a';
+			if (_waypoints[waypointIndex] == null) {
+				document.querySelector (xButtonSelector).style.display = 'none';
+			} else {
+				document.querySelector (xButtonSelector).style.color = routing.waypointColour (waypointIndex, true);
+			}
 			
 			// Pre-fill text value
 			if (_waypoints[waypointIndex] != null) {
