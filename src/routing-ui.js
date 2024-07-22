@@ -1210,7 +1210,7 @@ var routing = (function ($) {
 				routing.addWaypointMarker (waypoint, addInput);
 				
 				// Load the route if it is plannable, i.e. once there are two waypoints
-				// Loading route on map click is a setting an can be disabled
+				// Loading route on map click is a setting and can be disabled
 				if (_settings.planRoutingOnMapClick) {
 					routing.plannable ();
 				}
@@ -1490,6 +1490,7 @@ var routing = (function ($) {
 			$('#results').remove ();
 			
 			// Add a link to clear the route
+			// #!# Needs to be re-enabled but currently this will also remove the whole panel
 			//var clearRouteHtml = '<p><a id="clearroute" href="#">Clear route &hellip;</a></p>';
 			
 			// Create tabs and content panes for each of the strategies
@@ -1750,7 +1751,7 @@ var routing = (function ($) {
 			
 			html += '<ul class="journeyStats">';
 			html += '<li><img src="' + _settings.images.distance + '" alt="Distance" /><p> ' + distanceFormatted + '</p>';
-			html += '<li><img src="' + _settings.images.time     + '" alt="Time" /><p> ' + timeFormatted + 'in</p></li>';
+			html += '<li><img src="' + _settings.images.time     + '" alt="Time" /><p> ' + timeFormatted + '</p></li>';
 			if (geojson.properties.plans[strategy.id].kiloCaloriesBurned !== null) {
 				html += '<li><img src="' + _settings.images.calories + '" alt="Calories" /><p> ' + geojson.properties.plans[strategy.id].kiloCaloriesBurned + ' calories</p></li>';
 			}
