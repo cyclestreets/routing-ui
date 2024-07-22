@@ -165,6 +165,9 @@ var routing = (function ($) {
 		// Whether to plan routes the moment the map is clicked rather than wait until a routing button is pressed
 		planRoutingOnMapClick: true,
 		
+		// Distance unit: kilometers/miles
+		distanceUnit: 'kilometers',
+		
 		// Whether to show the basic Mapbox toolbox
 		showToolBox: true,
 		
@@ -204,7 +207,6 @@ var routing = (function ($) {
 	var _recentSearches = []; // Store recent searches, used to populate the JP card
 	var _disableMapClicks = false; // Whether to ignore clicks on the map, useful for certain program states
 	var _showPlannedRoute = false; // Don't display planned routes when we are not in itinerary mode, useful if the AJAX call takes a while and user has exited itinerary mode in the meantime
-	var _distanceUnit = 'kilometers'; // Store the distance unit
 	var _speedKmph = '16'; // The maximum cycling speed for the journey, in km/h.
 	var _inputDragActive = false; // Used to avoid conflict with swipe-down event on card
 	var _loadingRouteFromId = false; // Used to publicly discern the routing mode
@@ -2254,7 +2256,7 @@ var routing = (function ($) {
 		// Accepts 'miles' or 'kilometers'
 		setDistanceUnit: function (unitAsString)
 		{
-			_distanceUnit = unitAsString;
+			_settings.distanceUnit = unitAsString;
 		},
 		
 		
@@ -2270,7 +2272,7 @@ var routing = (function ($) {
 		formatDistance: function (metres)
 		{
 			var result;
-			if (_distanceUnit == 'kilometers') {
+			if (_settings.distanceUnit == 'kilometers') {
 				
 				// Convert to km
 				if (metres >= 1000) {
@@ -2282,7 +2284,7 @@ var routing = (function ($) {
 				// Round metres
 				result = Number (metres.toFixed ()) + 'm';
 				return result;
-			} else if (_distanceUnit == 'miles') {
+			} else if (_settings.distanceUnit == 'miles') {
 				var miles = metres / 1000 / 1.6;
 				result = Number (miles.toFixed(1)) + ' miles';
 				return result;
