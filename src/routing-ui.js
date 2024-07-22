@@ -1789,6 +1789,7 @@ var routing = (function ($) {
 				}
 			}
 			tableHtml += tableStart;
+			const lastIndex = geojson.features.length - 1;
 			$.each (geojson.features, function (index, feature) {
 				
 				// Skip non-streets
@@ -1813,7 +1814,7 @@ var routing = (function ($) {
 				
 				// Break the table if setting travelleable hours per day
 				if (_settings.travellableHoursPerDay != 24) {
-					if ((cumulativeSeconds / (60*60)) > _settings.travellableHoursPerDay) {
+					if (((cumulativeSeconds / (60*60)) > _settings.travellableHoursPerDay) && (index != lastIndex)) {
 						tableHtml += '</table>';
 						dayNumber++;
 						cumulativeSeconds = 0;	// Reset to new day's seconds
