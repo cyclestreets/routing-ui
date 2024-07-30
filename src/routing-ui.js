@@ -1,7 +1,7 @@
 // Route planning / satnav user interface
 
 /*jslint browser: true, white: true, single: true, for: true, long: true, unordered: true */
-/*global $, jQuery, alert, console, window, confirm, prompt, mapboxgl, Chart, autocomplete, satnav */
+/*global $, jQuery, alert, console, window, history, confirm, prompt, mapboxgl, Chart, vex, autocomplete, satnav, layerviewer, cyclestreetsui */
 
 
 /*
@@ -641,7 +641,7 @@ const routing = (function ($) {
 			
 			// Have we already got this location?
 			// If so, we will move this location up the search stack up to first index
-			const savedLocationIndex = _recentSearches.findIndex (obj => obj.location == waypoint.location);
+			const savedLocationIndex = _recentSearches.findIndex ((obj) => obj.location == waypoint.location);
 			if (savedLocationIndex > -1) {
 				const element = _recentSearches[savedLocationIndex];
 				_recentSearches.splice(savedLocationIndex, 1);
@@ -805,7 +805,7 @@ const routing = (function ($) {
 				},
 				stop: function (event, ui) {
 					_inputDragActive = false;
-				},
+				}
 			});
 			
 			// Disable the waypoints when list item is moved
@@ -825,7 +825,7 @@ const routing = (function ($) {
 		{
 			// Save a copy of the old waypoints, and start a fresh _waypoints
 			const oldWaypoints = _waypoints;
-			_waypoints = []
+			_waypoints = [];
 			
 			// Get all the input divs in their new order
 			let inputDivs = $('.inputDiv');
@@ -837,7 +837,7 @@ const routing = (function ($) {
 				
 				// Get the matching waypoint
 				// If this geocoder has contributed to a waypoint, find it
-				const waypointIndex = oldWaypoints.findIndex(wp => wp.label == inputWaypointName);
+				const waypointIndex = oldWaypoints.findIndex((wp) => wp.label == inputWaypointName);
 				if (waypointIndex > -1) {
 					const waypoint = oldWaypoints[waypointIndex];
 					
@@ -845,7 +845,7 @@ const routing = (function ($) {
 					_waypoints.push(waypoint);
 					
 					// Get a matching marker by lat and long, and change it to the appropriate colour
-					const markerIndex = _markers.findIndex(marker => marker._lngLat.lng == waypoint.lng && marker._lngLat.lat == waypoint.lat);
+					const markerIndex = _markers.findIndex((marker) => marker._lngLat.lng == waypoint.lng && marker._lngLat.lat == waypoint.lat);
 					if (markerIndex > -1) {
 						const markerElement = _markers[markerIndex]._element;
 						let markerImage;
@@ -900,9 +900,9 @@ const routing = (function ($) {
 		{			
 			// Increment current waypoint index
 			_currentWaypointIndex += 1;
-			const inputName = 'waypoint' + _currentWaypointIndex
+			const inputName = 'waypoint' + _currentWaypointIndex;
 			
-			const divHtml = routing.getInputHtml (inputName)
+			const divHtml = routing.getInputHtml (inputName);
 			
 			// Append this HTML to the waypoint element div
 			$(waypointElement).parent().parent().after(divHtml);
@@ -917,6 +917,7 @@ const routing = (function ($) {
 			}, {_currentWaypointIndex: _currentWaypointIndex});
 			
 			// Resize map element
+			// #!# Global object not supplied - should use a handle instead
 			cyclestreetsui.fitMap ();
 			
 			// Rescan and fix colour
@@ -939,7 +940,7 @@ const routing = (function ($) {
 			newInputHtml += '<span class="loader"></span>';
 			
 			// Add a remove waypoint button
-			const removeWaypointButtonHtml = '<a class="removeWaypoint zoom" href="#" ><img src="/images/btn-clear-field-amber.svg" alt="Remove waypoint" /></a>'
+			const removeWaypointButtonHtml = '<a class="removeWaypoint zoom" href="#" ><img src="/images/btn-clear-field-amber.svg" alt="Remove waypoint" /></a>';
 			newInputHtml += removeWaypointButtonHtml;
 			
 			// Add a add waypoint button
@@ -975,12 +976,12 @@ const routing = (function ($) {
 			}
 			
 			// If this geocoder has a contributed to a waypoint, find it
-			const waypointIndex = _waypoints.findIndex (wp => wp.label == inputElementName);
+			const waypointIndex = _waypoints.findIndex ((wp) => wp.label == inputElementName);
 			const waypoint = _waypoints[waypointIndex];
 			
 			// Remove any markers with the lngLat of the _waypoint
 			if (waypointIndex > -1) {
-				const markerIndex = _markers.findIndex(marker => marker._lngLat.lng == waypoint.lng && marker._lngLat.lat == waypoint.lat);
+				const markerIndex = _markers.findIndex((marker) => marker._lngLat.lng == waypoint.lng && marker._lngLat.lat == waypoint.lat);
 				if (markerIndex > -1) {
 					_markers[markerIndex].remove();
 				}
@@ -996,6 +997,7 @@ const routing = (function ($) {
 			routing.sortWaypoints ();
 			
 			// Resize map element
+			// #!# Global object not supplied - should use a handle instead
 			cyclestreetsui.fitMap ();
 		},
 		
@@ -1197,6 +1199,7 @@ const routing = (function ($) {
 				
 				// If we are in singleMarkerMode, i.e., setting a home/work location, redirect to the function
 				if (_singleMarkerMode) {
+					// #!# Global object not supplied - should use a handle instead
 					const locationName = cyclestreetsui.getSettingLocationName (); // i.e., 'home', 'work'
 					routing.setFrequentLocation (waypoint, locationName);
 					return;
@@ -1220,6 +1223,7 @@ const routing = (function ($) {
 		setMarkerAtUserLocation: function ()
 		{
 			// We can not do this if user geolocation isn't available
+			// #!# Global object not supplied - should use a handle instead
 			if (!layerviewer.getGeolocationAvailability ()) {return;}
 			
 			// Immediately set the value of the input box to mark it as occupied
@@ -1227,6 +1231,7 @@ const routing = (function ($) {
 			$(_settings.plannerDivPath + ' input.locationTracking').first ().val ('Finding your location…');
 			
 			// Retrieve the geolocation from layerviewer
+			// #!# Global object not supplied - should use a handle instead
 			const geolocation = layerviewer.getGeolocation ();
 			const geolocationLngLat = geolocation._accuracyCircleMarker._lngLat;
 			
@@ -1235,6 +1240,7 @@ const routing = (function ($) {
 			routing.addWaypointMarker (waypoint);
 			
 			/*
+			// #!# Global object not supplied - should use a handle instead
 			const geolocation = layerviewer.checkForGeolocationStatus (function (position) {
 				// Build the waypoint to be "dropped" into map
 				const waypoint = {lng: position.coords.longitude, lat: position.coords.latitude, label: 'waypoint0'};
@@ -1311,7 +1317,7 @@ const routing = (function ($) {
 			if (_settings.multiplexedStrategies) {
 				
 				// Assemble the composite url for all plans
-				let plans = []
+				let plans = [];
 				$.each (_settings.strategies, function (indexInArray, strategy) {
 					// Combine plans (N.B. combining other parameters is not supported as this time)
 					plans.push (strategy.parameters.plans);
@@ -1394,11 +1400,11 @@ const routing = (function ($) {
 			// Split the multiplexedResult.features into 3 parts, keeping the properties the same for each one
 			
 			// Find the planIndex to start off each route
-			const strategies = []
+			const strategies = [];
 			$.each(_settings.strategies, function (indexInArray, strategy) {
 				strategies.push ({
 						id: strategy.parameters.plans,
-						planIndex: routing.findPlanIndex (multiplexedResult, strategy.parameters.plans),
+						planIndex: routing.findPlanIndex (multiplexedResult, strategy.parameters.plans)
 					}
 				);
 			});
@@ -1423,7 +1429,7 @@ const routing = (function ($) {
 					type: multiplexedResult.type, // i.e., same for all strategies
 					properties: multiplexedResult.properties, // i.e., same for all strategies
 					features: combinedFeatures // different for each strategy
-				}
+				};
 				strategies[indexInArray].routeGeoJson = routeGeoJson;
 				
 				// Append the relevant _settings strategy object, as this is used by processRoute and showRoute functions
@@ -1889,11 +1895,11 @@ const routing = (function ($) {
 						center: [coordinateObject.coordinates[0], coordinateObject.coordinates[1]],
 						animate: true,
 						essential: true,
-						duration: 500,
+						duration: 500
 					});
 					
 					// Add a cycle marker to the map to show where we are currently scrolling
-					const cycleMarkerIndex = _markers.findIndex (marker => marker.__satnavMarker == true);
+					const cycleMarkerIndex = _markers.findIndex ((marker) => marker.__satnavMarker == true);
 					if (cycleMarkerIndex > -1) {
 						
 						// We already have a cyclist marker, update the location
@@ -1923,7 +1929,7 @@ const routing = (function ($) {
 				// Set the elevation label to a debounce function to disappear after a timeout
 				stop: routing.debounce (function() {
 					$('span.elevation').fadeToggle (500);
-				}, 2000),
+				}, 2000)
 			});
 		},
 		
@@ -1939,16 +1945,20 @@ const routing = (function ($) {
 				
 				const later = function () {
 					timeout = null;
-					if (!immediate) func.apply(context, args);
+					if (!immediate) {
+						func.apply (context, args);
+					}
 				};
 				
 				const callNow = immediate && !timeout;
 				
-				clearTimeout(timeout);
+				clearTimeout (timeout);
 				
-				timeout = setTimeout(later, wait);
+				timeout = setTimeout (later, wait);
 				
-				if (callNow) func.apply(context, args);
+				if (callNow) {
+					func.apply (context, args);
+				}
 			};
 		},
 		
@@ -1965,15 +1975,15 @@ const routing = (function ($) {
 					func.apply (context, args);
 					lastRan = Date.now ();
 				} else {
-					clearTimeout(lastFunc)
+					clearTimeout(lastFunc);
 					lastFunc = setTimeout (function () {
 						if ((Date.now () - lastRan) >= limit) {
 							func.apply (context, args);
 							lastRan = Date.now ();
 						}
-					}, limit - (Date.now () - lastRan))
+					}, limit - (Date.now () - lastRan));
 				}
-			}
+			};
 		},
 		
 		
@@ -2021,7 +2031,7 @@ const routing = (function ($) {
 						'x': geojson.features[planIndex].properties.elevationProfile.cumulativeMetres[overallCoordinateIndex],
 						'y': geojson.features[planIndex].properties.elevationProfile.elevationsMetres[overallCoordinateIndex],
 						'journeySegment': featureIndex
-					}
+					};
 					
 					// Push it to the array
 					dataArray.push(coordinateDataObject);
@@ -2065,10 +2075,10 @@ const routing = (function ($) {
 				},
 				options: {
 					tooltips: {
-						enabled: false,
+						enabled: false
 					},
 					legend: {
-						display: false,
+						display: false
 					},
 					scales: {
 						xAxes: [{
@@ -2437,7 +2447,7 @@ const routing = (function ($) {
 			$.each (osrm.routes[0].legs[0].steps, function (index, step) {
 				
 				// Skip final arrival node
-				if (step.maneuver.type == 'arrive') {return 'continue;'}
+				if (step.maneuver.type == 'arrive') {return 'continue;';}
 				
 				// Add the feature
 				features.push ({
@@ -2520,7 +2530,7 @@ const routing = (function ($) {
 				length: result.features[planIndex].properties.lengthMetres,
 				time: result.features[planIndex].properties.timeSeconds,
 				grammesCO2saved: result.features[planIndex].properties.grammesCO2saved,
-				kiloCaloriesBurned: result.features[planIndex].properties.kiloCaloriesBurned,
+				kiloCaloriesBurned: result.features[planIndex].properties.kiloCaloriesBurned
 			};
 			result.properties.plans = plans;
 			
@@ -2915,6 +2925,7 @@ const routing = (function ($) {
 				// Our click will therefore populate the second input. However, this should only happen when the JP card is close.
 				// If it is open, clicking on the map should always add to the first empty input
 				if ($(_settings.plannerDivPath + ' input:empty').length == 2 && !$(_settings.plannerDivPath).hasClass ('open')) {
+					// #!# Global object not supplied - should use a handle instead
 					if (layerviewer.getGeolocationAvailability ()) {
 						routing.setMarkerAtUserLocation ();
 					}
@@ -2945,7 +2956,7 @@ const routing = (function ($) {
 			
 			// Are we replacing a current waypoint, or registering a new one?
 			// Search for a waypoint with label matching our new candidate
-			const waypointIndex = _waypoints.findIndex(wp => wp.label == waypoint.label);
+			const waypointIndex = _waypoints.findIndex((wp) => wp.label == waypoint.label);
 			
 			// Get the final waypoint number
 			let waypointNumber;
@@ -2963,7 +2974,7 @@ const routing = (function ($) {
 				_waypoints[waypointIndex] = waypoint;
 				
 				// Locate the previous marker, and setLngLat to new waypoint coordinates
-				const markerIndex = _markers.findIndex(marker => marker._lngLat.lng == oldWaypoint.lng && marker._lngLat.lat == oldWaypoint.lat);
+				const markerIndex = _markers.findIndex((marker) => marker._lngLat.lng == oldWaypoint.lng && marker._lngLat.lat == oldWaypoint.lat);
 				if (markerIndex > -1) {
 					_markers[markerIndex].setLngLat ([waypoint.lng, waypoint.lat]);
 				}
@@ -3080,7 +3091,7 @@ const routing = (function ($) {
 			_singleMarkerLocation.push (waypoint);
 
 			// #!# Add custom work/home markers?
-			const image = _settings.images.start
+			const image = _settings.images.start;
 			
 			// Assemble the image as a DOM element
 			const itinerarymarker = document.createElement('div');
