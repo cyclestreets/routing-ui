@@ -2101,7 +2101,7 @@ const routing = (function ($) {
 								display: false,
 								beginAtZero: false,
 								min: geojson.features[planIndex].properties.elevationProfile.min,
-								min: geojson.features[planIndex].properties.elevationProfile.max,
+								max: geojson.features[planIndex].properties.elevationProfile.max
 							}
 						}]
 					},
