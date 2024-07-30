@@ -43,13 +43,13 @@
 */
 
 
-var routing = (function ($) {
+const routing = (function ($) {
 	
 	'use strict';
 	
 	
 	// Settings defaults
-	var _settings = {
+	const _settings = {
 		
 		// Title
 		title: 'CycleStreets',
@@ -185,31 +185,31 @@ var routing = (function ($) {
 	};
 	
 	// Internal class properties
-	var _map = null;
-	var _isMobileDevice = false;
-	var _urlParameters = {};
-	var _itineraryId = null;
-	var _waypoints = [];	// Ordered stack of waypoints, each with lng/lat/label
-	var _markers = [];
-	var _routeGeojson = {};
-	var _panningEnabled = false;
-	var _routeIndexes = {};
-	var _popups = {};
-	var _selectedStrategy = false;
-	var _plannerDivId = null;
-	var _keyboardFeaturePosition = {};
-	var _currentWaypointIndex = 0; // We start with no waypoints in our index
-	var _elevationCharts = {}; // Store the elevation charts as global, so we can access them through the scrubber
-	var _elevationChartArray = {}; // Store the elevation data for different routing strategies
-	var _singleMarkerMode = false; // Set when only one waypoint should be clickable on the map, i.e., when setting home/work location
-	var _singleMarkerLocation = []; // Store the coordinates of a single waypoint, when setting work/home location
-	var _recentJourneys = []; // Store the latest planned routes
-	var _recentSearches = []; // Store recent searches, used to populate the JP card
-	var _disableMapClicks = false; // Whether to ignore clicks on the map, useful for certain program states
-	var _showPlannedRoute = false; // Don't display planned routes when we are not in itinerary mode, useful if the AJAX call takes a while and user has exited itinerary mode in the meantime
-	var _speedKmph = '16'; // The maximum cycling speed for the journey, in km/h.
-	var _inputDragActive = false; // Used to avoid conflict with swipe-down event on card
-	var _loadingRouteFromId = false; // Used to publicly discern the routing mode
+	let _map = null;
+	let _isMobileDevice = false;
+	let _urlParameters = {};
+	let _itineraryId = null;
+	let _waypoints = [];	// Ordered stack of waypoints, each with lng/lat/label
+	let _markers = [];
+	let _routeGeojson = {};
+	let _panningEnabled = false;
+	const _routeIndexes = {};
+	const _popups = {};
+	let _selectedStrategy = false;
+	let _plannerDivId = null;
+	const _keyboardFeaturePosition = {};
+	let _currentWaypointIndex = 0; // We start with no waypoints in our index
+	const _elevationCharts = {}; // Store the elevation charts as global, so we can access them through the scrubber
+	const _elevationChartArray = {}; // Store the elevation data for different routing strategies
+	let _singleMarkerMode = false; // Set when only one waypoint should be clickable on the map, i.e., when setting home/work location
+	let _singleMarkerLocation = []; // Store the coordinates of a single waypoint, when setting work/home location
+	let _recentJourneys = []; // Store the latest planned routes
+	let _recentSearches = []; // Store recent searches, used to populate the JP card
+	let _disableMapClicks = false; // Whether to ignore clicks on the map, useful for certain program states
+	let _showPlannedRoute = false; // Don't display planned routes when we are not in itinerary mode, useful if the AJAX call takes a while and user has exited itinerary mode in the meantime
+	let _speedKmph = '16'; // The maximum cycling speed for the journey, in km/h.
+	let _inputDragActive = false; // Used to avoid conflict with swipe-down event on card
+	let _loadingRouteFromId = false; // Used to publicly discern the routing mode
 	
 	return {
 		
@@ -246,7 +246,7 @@ var routing = (function ($) {
 			routing.parseUrl ();
 			
 			// Set the initial default strategy, checking for a cookie from a previous page load
-			var strategyCookie = routing.getCookie ('selectedstrategy');
+			const strategyCookie = routing.getCookie ('selectedstrategy');
 			_selectedStrategy = strategyCookie || _settings.defaultStrategy;
 			
 			// Add toolbox (pending implementation of overall UI)
@@ -304,7 +304,8 @@ var routing = (function ($) {
 		
 		
 		// Get drag status of inputs
-		getInputDragStatus: function () {
+		getInputDragStatus: function ()
+		{
 			return _inputDragActive;
 		},
 		
@@ -313,7 +314,7 @@ var routing = (function ($) {
 		// See: https://www.mapbox.com/mapbox-gl-js/api/#icontrol
 		createControl: function (id, position)
 		{
-			var myControl = function () {};
+			const myControl = function () {};
 			
 			myControl.prototype.onAdd = function () {
 				this.container = document.createElement('div');
@@ -338,13 +339,13 @@ var routing = (function ($) {
 		geocoder: function (addTo, callbackFunction, callbackData)
 		{
 			// Geocoder URL; re-use of settings values is supported, represented as placeholders {%apiBaseUrl}, {%apiKey}, {%autocompleteBbox}
-			var geocoderApiUrl = routing.settingsPlaceholderSubstitution (_settings.geocoderApiUrl, ['apiBaseUrl', 'apiKey', 'autocompleteBbox']);
+			const geocoderApiUrl = routing.settingsPlaceholderSubstitution (_settings.geocoderApiUrl, ['apiBaseUrl', 'apiKey', 'autocompleteBbox']);
 			
 			// Attach the autocomplete library behaviour to the location control
 			autocomplete.addTo (addTo, {
 				sourceUrl: geocoderApiUrl,
 				select: function (event, ui) {
-					var bbox = ui.item.feature.properties.bbox.split(',');
+					const bbox = ui.item.feature.properties.bbox.split(',');
 					_map.setMaxZoom (17);	// Prevent excessive zoom to give context
 					_map.fitBounds([[bbox[0], bbox[1]], [bbox[2], bbox[3]]], {duration: 1500});	// Note that Mapbox GL JS uses sw,ne rather than ws,en as in Leaflet.js
 					_map.setMaxZoom (_settings.maxZoom);	// Reset
@@ -362,9 +363,8 @@ var routing = (function ($) {
 		settingsPlaceholderSubstitution: function (string, supportedPlaceholders)
 		{
 			// Substitute each placeholder
-			var placeholder;
 			$.each (supportedPlaceholders, function (index, field) {
-				placeholder = '{%' + field + '}';
+				const placeholder = '{%' + field + '}';
 				string = string.replace (placeholder, _settings[field]);
 			});
 			
@@ -377,26 +377,25 @@ var routing = (function ($) {
 		parseUrl: function ()
 		{
 			// Start a list of parameters
-			var urlParameters = {};
+			const urlParameters = {};
 			
 			// Extract journey URL
 			urlParameters.itineraryId = false;
-			var matchesItinerary = window.location.pathname.match (/^\/journey\/([0-9]+)\/$/);
+			const matchesItinerary = window.location.pathname.match (/^\/journey\/([0-9]+)\/$/);
 			if (matchesItinerary) {
 				urlParameters.itineraryId = matchesItinerary[1];
 			}
 			
 			// Extract journey URL
 			urlParameters.waypoints = [];
-			var matchesWaypoints = window.location.pathname.match (/^\/journey\/([-.0-9]+,[-.,\/0-9]+)\/$/);
+			const matchesWaypoints = window.location.pathname.match (/^\/journey\/([-.0-9]+,[-.,\/0-9]+)\/$/);
 			if (matchesWaypoints) {
-				var waypointPairs = matchesWaypoints[1].split ('/');
-				var waypoints = [];
-				var waypointLatLon;
+				const waypointPairs = matchesWaypoints[1].split ('/');
+				const waypoints = [];
 				$.each (waypointPairs, function (index, waypointPair) {
-					var matches = waypointPair.match (/^([-.0-9]+),([-.0-9]+)$/);
+					const matches = waypointPair.match (/^([-.0-9]+),([-.0-9]+)$/);
 					if (matches) {
-						waypointLatLon = waypointPair.split (',');
+						const waypointLatLon = waypointPair.split (',');
 						waypoints.push ({lng: waypointLatLon[1], lat: waypointLatLon[0], label: null});
 					}
 				});
@@ -417,10 +416,10 @@ var routing = (function ($) {
 			if (!_settings.showToolBox) {return;}
 			
 			// Add layer switcher UI
-			var control = routing.createControl ('toolbox', 'bottom-left');
+			routing.createControl ('toolbox', 'bottom-left');
 			
 			// Determine whether route loading from ID is supported; for this, all engines need to be native CycleStreets type
-			var routeLoadingSupported = true;
+			let routeLoadingSupported = true;
 			$.each (_settings.strategies, function (index, strategy) {
 				if (strategy.implementation != 'cyclestreets') {
 					routeLoadingSupported = false;
@@ -429,7 +428,7 @@ var routing = (function ($) {
 			});
 			
 			// Construct HTML for layer switcher
-			var html = '<ul id="toolbox">';
+			let html = '<ul id="toolbox">';
 			if (routeLoadingSupported) {
 				html += '<li><a id="loadrouteid" href="#">Load route ID &hellip;</a></li>';
 			}
@@ -469,7 +468,7 @@ var routing = (function ($) {
 		// Set text for panning control
 		setPanningIndicator: function ()
 		{
-			var text = (_panningEnabled ? 'Panning: enabled' : 'Panning: disabled');
+			const text = (_panningEnabled ? 'Panning: enabled' : 'Panning: disabled');
 			$('#panning').text (text);
 		},
 		
@@ -605,8 +604,8 @@ var routing = (function ($) {
 		// Function run at launch to hook inputs up to geocoder
 		connectGeocoders: function ()
 		{
-			var journeyplannerInputs = $(_settings.plannerDivPath + ' input');
-			var totalWaypoints = 2; // Default amount of waypoints, i.e. (0) Start and (1) Finish
+			const journeyplannerInputs = $(_settings.plannerDivPath + ' input');
+			const totalWaypoints = 2; // Default amount of waypoints, i.e. (0) Start and (1) Finish
 			
 			$.each (journeyplannerInputs, function (index, input) {
 				
@@ -614,7 +613,7 @@ var routing = (function ($) {
 				routing.geocoder (_settings.plannerDivPath + ' input[name="' + input.name + '"]', function (item, callbackData) {
 					
 					// Add the waypoint marker
-					var waypoint = {lng: item.lon, lat: item.lat, label: input.name};
+					const waypoint = {lng: item.lon, lat: item.lat, label: input.name};
 					routing.addWaypointMarker (waypoint);
 					
 					// Add this item to recent searches
@@ -642,9 +641,9 @@ var routing = (function ($) {
 			
 			// Have we already got this location?
 			// If so, we will move this location up the search stack up to first index
-			var savedLocationIndex = _recentSearches.findIndex (obj => obj.location == waypoint.location);
-			if (savedLocationIndex > -1 ) {
-				var element = _recentSearches[savedLocationIndex];
+			const savedLocationIndex = _recentSearches.findIndex (obj => obj.location == waypoint.location);
+			if (savedLocationIndex > -1) {
+				const element = _recentSearches[savedLocationIndex];
 				_recentSearches.splice(savedLocationIndex, 1);
 				_recentSearches.splice(0, 0, element);
 			} else {
@@ -686,7 +685,7 @@ var routing = (function ($) {
 			// Read the recent searches from a cookie, or initialise a new array if none are saved
 			_recentSearches = ($.cookie ('recentSearches') ? $.parseJSON($.cookie('recentSearches')) : []);
 			
-			var html = '';
+			let html = '';
 			if (_recentSearches.length) { // If there are recent searches
 				$.each (_recentSearches, function (index, searchObject) {
 					html += '<li class="recentSearch"><a href="#" title="Add this waypoint to your journey"><img src="/images/icon-add-waypoint.svg" alt="Add this to your journey" /></a>';
@@ -712,16 +711,15 @@ var routing = (function ($) {
 			_recentJourneys = ($.cookie ('recentJourneys') ? $.parseJSON($.cookie('recentJourneys')) : []);
 			
 			// Find the first and last input values, which contains the geocoded destination
-			var origin = $(_settings.plannerDivPath + ' input').first().val();
-			var destination = $(_settings.plannerDivPath + ' input').last().val();
-			var waypoints = routing.getWaypoints ();
+			const origin = $(_settings.plannerDivPath + ' input').first().val();
+			const destination = $(_settings.plannerDivPath + ' input').last().val();
+			const waypoints = routing.getWaypoints ();
 			
 			// Build the journey object
-			var journey =
-			{
-				'origin': origin,
-				'destination': destination,
-				'waypoints': waypoints
+			const journey = {
+				origin: origin,
+				destination: destination,
+				waypoints: waypoints
 			};
 			
 			// Add this to the _recentJourneys array, and update the cookie
@@ -762,7 +760,7 @@ var routing = (function ($) {
 			_recentJourneys = ($.cookie ('recentJourneys') ? $.parseJSON($.cookie('recentJourneys')) : []);
 			
 			// Construct HTML for each journey
-			var html = '';
+			let html = '';
 			if (_recentJourneys.length) { // If there are recent journeys
 				$.each (_recentJourneys, function (index, journeyObject) {
 					html += '<li class="getRecentJourneyDirections"><a href="#" title="Get directions to here"><img src="/images/btn-get-directions-small.svg" alt="Arrow pointing to the right" /></a>';
@@ -826,31 +824,31 @@ var routing = (function ($) {
 		sortWaypoints: function ()
 		{
 			// Save a copy of the old waypoints, and start a fresh _waypoints
-			var oldWaypoints = _waypoints;
+			const oldWaypoints = _waypoints;
 			_waypoints = []
 			
 			// Get all the input divs in their new order
-			var inputDivs = $('.inputDiv');
-			var arrayPosition = 0 // Keep track of where we are in the new waypoints array, i.e., for traffic light colours
+			let inputDivs = $('.inputDiv');
+			let arrayPosition = 0; // Keep track of where we are in the new waypoints array, i.e., for traffic light colours
 			
 			$(inputDivs).each (function (index, inputDiv) {
 				// Get the input child of each div
-				var inputWaypointName = $(inputDiv).children('input').attr('name');
+				const inputWaypointName = $(inputDiv).children('input').attr('name');
 				
 				// Get the matching waypoint
 				// If this geocoder has contributed to a waypoint, find it
-				var waypointIndex = oldWaypoints.findIndex(wp => wp.label == inputWaypointName);
+				const waypointIndex = oldWaypoints.findIndex(wp => wp.label == inputWaypointName);
 				if (waypointIndex > -1) {
-					var waypoint = oldWaypoints[waypointIndex];
+					const waypoint = oldWaypoints[waypointIndex];
 					
 					// Add new waypoint to our waypoints array
 					_waypoints.push(waypoint);
 					
 					// Get a matching marker by lat and long, and change it to the appropriate colour
-					var markerIndex = _markers.findIndex(marker => marker._lngLat.lng == waypoint.lng && marker._lngLat.lat == waypoint.lat);
+					const markerIndex = _markers.findIndex(marker => marker._lngLat.lng == waypoint.lng && marker._lngLat.lat == waypoint.lat);
 					if (markerIndex > -1) {
-						var markerElement = _markers[markerIndex]._element;
-						var markerImage;
+						const markerElement = _markers[markerIndex]._element;
+						let markerImage;
 						switch (arrayPosition) {
 							case 0:
 								markerImage = _settings.images.start;
@@ -870,8 +868,8 @@ var routing = (function ($) {
 			});
 			
 			// Update traffic light remove buttons and rebuild the waypoint add buttons (attach to all inputs except end)
-			var inputDivs = $('.inputDiv');
-			var totalDivs = inputDivs.length;
+			inputDivs = $('.inputDiv');
+			const totalDivs = inputDivs.length;
 			$('.addWaypoint').hide ();
 			$(inputDivs).each (function (index, div) {
 				// Set the appropriate traffic light colour and show add waypoint
@@ -902,9 +900,9 @@ var routing = (function ($) {
 		{			
 			// Increment current waypoint index
 			_currentWaypointIndex += 1;
-			var inputName = 'waypoint' + _currentWaypointIndex
+			const inputName = 'waypoint' + _currentWaypointIndex
 			
-			var divHtml = routing.getInputHtml (inputName)
+			const divHtml = routing.getInputHtml (inputName)
 			
 			// Append this HTML to the waypoint element div
 			$(waypointElement).parent().parent().after(divHtml);
@@ -913,7 +911,7 @@ var routing = (function ($) {
 			routing.geocoder (_settings.plannerDivPath + ' input[name="' + inputName + '"]', function (item, callbackData) {
 				
 				// Add the waypoint marker
-				var waypoint = {lng: item.lon, lat: item.lat, label: inputName};
+				const waypoint = {lng: item.lon, lat: item.lat, label: inputName};
 				routing.addWaypointMarker (waypoint);
 				
 			}, {_currentWaypointIndex: _currentWaypointIndex});
@@ -930,7 +928,7 @@ var routing = (function ($) {
 		getInputHtml: function (inputName, inputHasDefaultValue = false)
 		{
 			// Append the new input
-			var newInputHtml = '';
+			let newInputHtml = '';
 			if (inputHasDefaultValue) {
 				newInputHtml += '<input name="' + inputName +'" type="text" spellcheck="false" value="Finding location..." class="geocoder" placeholder="Add a waypoint, or click the map" value="" />';
 			} else {
@@ -941,19 +939,19 @@ var routing = (function ($) {
 			newInputHtml += '<span class="loader"></span>';
 			
 			// Add a remove waypoint button
-			var removeWaypointButtonHtml = '<a class="removeWaypoint zoom" href="#" ><img src="/images/btn-clear-field-amber.svg" alt="Remove waypoint" /></a>'
-			newInputHtml += removeWaypointButtonHtml
+			const removeWaypointButtonHtml = '<a class="removeWaypoint zoom" href="#" ><img src="/images/btn-clear-field-amber.svg" alt="Remove waypoint" /></a>'
+			newInputHtml += removeWaypointButtonHtml;
 			
 			// Add a add waypoint button
-			var addWaypointButtonHtml = '<a class="addWaypoint zoom" href="#" title="Add waypoint"><img src="/images/icon-add-waypoint.svg" alt="Add waypoint" /></a>';
+			const addWaypointButtonHtml = '<a class="addWaypoint zoom" href="#" title="Add waypoint"><img src="/images/icon-add-waypoint.svg" alt="Add waypoint" /></a>';
 			newInputHtml += addWaypointButtonHtml;
 			
 			// Add a reorder handle	
-			var reorderWaypointHtml = '<a class="reorderWaypoint zoom" href="#" title="Reorder waypoint"><img src="/images/icon-reorder.svg" /></a>';
+			const reorderWaypointHtml = '<a class="reorderWaypoint zoom" href="#" title="Reorder waypoint"><img src="/images/icon-reorder.svg" /></a>';
 			newInputHtml += reorderWaypointHtml;
 			
 			// Wrap this in a inputDiv div
-			var divHtml = '<div class="inputDiv">' + newInputHtml + '</div>';
+			const divHtml = '<div class="inputDiv">' + newInputHtml + '</div>';
 			
 			return divHtml;
 		},
@@ -963,10 +961,10 @@ var routing = (function ($) {
 		removeWaypointGeocoder: function (waypointElement)
 		{
 			// Get the container of this input (img> a.removeWaypoint > div.inputDiv)
-			var divContainer = $(waypointElement).parent().parent();
+			const divContainer = $(waypointElement).parent().parent();
 			
 			// Get the waypoint name from the input
-			var inputElementName = $(waypointElement).parent().siblings('input').first().attr('name');
+			const inputElementName = $(waypointElement).parent().siblings('input').first().attr('name');
 			
 			// Only delete the actual input if we have > 2 inputs left
 			if ($('.inputDiv').length > 2) {
@@ -977,12 +975,12 @@ var routing = (function ($) {
 			}
 			
 			// If this geocoder has a contributed to a waypoint, find it
-			var waypointIndex = _waypoints.findIndex (wp => wp.label == inputElementName);
-			var waypoint = _waypoints[waypointIndex];
+			const waypointIndex = _waypoints.findIndex (wp => wp.label == inputElementName);
+			const waypoint = _waypoints[waypointIndex];
 			
 			// Remove any markers with the lngLat of the _waypoint
 			if (waypointIndex > -1) {
-				var markerIndex = _markers.findIndex(marker => marker._lngLat.lng == waypoint.lng && marker._lngLat.lat == waypoint.lat);
+				const markerIndex = _markers.findIndex(marker => marker._lngLat.lng == waypoint.lng && marker._lngLat.lat == waypoint.lat);
 				if (markerIndex > -1) {
 					_markers[markerIndex].remove();
 				}
@@ -1006,7 +1004,7 @@ var routing = (function ($) {
 		createRoutePlanningControls: function (createHtml)
 		{
 			// Ensure the plannerDivPath is a simple div ID; at present other structures are not supported
-			var matches = _settings.plannerDivPath.match (/^#([A-Za-z][-_A-Za-z0-9]*)$/);
+			let matches = _settings.plannerDivPath.match (/^#([A-Za-z][-_A-Za-z0-9]*)$/);
 			if (!matches) {
 				console.log ('ERROR: createRoutePlanningControls has been enabled, but the specified plannerDivPath (' + _settings.plannerDivPath + ') is not a simple ID, which is currently all that is supported.');
 			}
@@ -1017,26 +1015,25 @@ var routing = (function ($) {
 			if (!matches) {
 				console.log ('ERROR: createRoutePlanningControls has been enabled, but the specified resultsContainerDivPath (' + _settings.resultsContainerDivPath + ') is not a simple ID, which is currently all that is supported.');
 			}
-			var resultsContainerDivId = matches[1];
+			const resultsContainerDivId = matches[1];
 			
 			// Attach the route planning UI either to the Card UI (for mobile) or to the bottom-right of the map (for desktop)
 			if (_isMobileDevice) {
 				$('#cardcontent').append ('<div id="' + _plannerDivId + '"></div>');
 			} else {
-				var control = routing.createControl (_plannerDivId, 'bottom-right');
+				routing.createControl (_plannerDivId, 'bottom-right');
 			}
 			
 			// Add title
-			var html = '<h2>Route planner</h2>';
+			const html = '<h2>Route planner</h2>';
 			$('#' + _plannerDivId).append (html);
 			
 			// Add or assign input widgets
-			var totalWaypoints = 2;
-			var waypointName;
-			var label;
-			var waypointNumber;
-			var input;
-			var point;
+			const totalWaypoints = 2;
+			let waypointName;
+			let label;
+			let waypointNumber;
+			let input;
 			for (waypointNumber = 0; waypointNumber < totalWaypoints; waypointNumber++) {
 				
 				// Set the label
@@ -1054,7 +1051,7 @@ var routing = (function ($) {
 			
 			// Add Submit button
 			// #!# Should be a proper submit button
-			var submitButton = '<p><a id="getRoutes" href="#" title="Plan route">Plan route</a></p>';
+			const submitButton = '<p><a id="getRoutes" href="#" title="Plan route">Plan route</a></p>';
 			$('#' + _plannerDivId).append (submitButton);
 			
 			// Put focus on the first available geocoder
@@ -1071,9 +1068,9 @@ var routing = (function ($) {
 		focusFirstAvailableGeocoder: function (totalWaypoints)
 		{
 			// Loop through each available slot
-			var waypointName;
-			var element;
-			var waypointNumber;
+			let waypointName;
+			let element;
+			let waypointNumber;
 			for (waypointNumber = 0; waypointNumber < totalWaypoints; waypointNumber++) {
 				
 				// Check if this geocoder input exists
@@ -1100,8 +1097,8 @@ var routing = (function ($) {
 			}
 			
 			// Set the value if the input box is present
-			var waypointName = 'waypoint' + (waypointNumber);
-			var element = _settings.plannerDivPath + ' input[name="' + waypointName + '"]';
+			const waypointName = 'waypoint' + (waypointNumber);
+			const element = _settings.plannerDivPath + ' input[name="' + waypointName + '"]';
 			if ($(element).length) {
 				$(element).val (name);
 			}
@@ -1134,11 +1131,11 @@ var routing = (function ($) {
 		// Add a pin to the map center, used only at start when clicking to open the map card to initialise JP
 		addMapCenter: function ()
 		{
-			var center = _map.getCenter();
+			const center = _map.getCenter();
 			
 			// Register the waypoint
 			// This overwrites any existing waypoints
-			var waypoint = {lng: center.lng, lat: center.lat, label: 'waypoint0'};
+			const waypoint = {lng: center.lng, lat: center.lat, label: 'waypoint0'};
 			
 			// Add the waypoint marker
 			routing.addWaypointMarker (waypoint);
@@ -1150,7 +1147,7 @@ var routing = (function ($) {
 		// Accepts a boolean: true will disable map click listening, false will enable it
 		disableMapClickListening: function (disabled)
 		{
-			_disableMapClicks = disabled
+			_disableMapClicks = disabled;
 		},
 		
 		
@@ -1160,8 +1157,8 @@ var routing = (function ($) {
 			// If the route is already loaded, show it
 			if (!$.isEmptyObject (_routeGeojson)) {
 				// Clear any existing route
-				var retainWaypoints = true;
-				var keepMarkers = true;
+				const retainWaypoints = true;
+				const keepMarkers = true;
 				routing.removeRoute (retainWaypoints, keepMarkers);
 				
 				// Add the route for each strategy, and end
@@ -1188,27 +1185,26 @@ var routing = (function ($) {
 				if (!$.isEmptyObject (_routeGeojson)) {return;}
 				
 				// Ensure sufficiently zoomed in
-				var currentZoom = _map.getZoom ();
-				currentZoom = Math.round(currentZoom * 10) / 10;	// Round to 1dp; flyTo can end up with rounding errors, e.g. 13 goes to 12.9999931 or 13.0000042
+				const currentZoom = Math.round(_map.getZoom () * 10) / 10;	// Round to 1dp; flyTo can end up with rounding errors, e.g. 13 goes to 12.9999931 or 13.0000042
 				if (currentZoom < _settings.minimumZoomForStreetSelection) {
-					var newZoom = Math.min((currentZoom + 3), _settings.minimumZoomForStreetSelection);
+					const newZoom = Math.min((currentZoom + 3), _settings.minimumZoomForStreetSelection);
 					_map.flyTo ({center: [e.lngLat.lng, e.lngLat.lat], zoom: newZoom});
 					return;
 				}
 				
 				// Build the waypoint
-				var waypoint = {lng: e.lngLat.lng, lat: e.lngLat.lat, label: null /* i.e., autodetermine label */};
+				const waypoint = {lng: e.lngLat.lng, lat: e.lngLat.lat, label: null /* i.e., autodetermine label */};
 				
 				// If we are in singleMarkerMode, i.e., setting a home/work location, redirect to the function
 				if (_singleMarkerMode) {
-					var locationName = cyclestreetsui.getSettingLocationName (); // i.e., 'home', 'work'
+					const locationName = cyclestreetsui.getSettingLocationName (); // i.e., 'home', 'work'
 					routing.setFrequentLocation (waypoint, locationName);
 					return;
 				}
 				
 				// Add the waypoint marker
 				// This will fill the first empty inputs, then if none are empty, add an input
-				var addInput = true
+				const addInput = true;
 				routing.addWaypointMarker (waypoint, addInput);
 				
 				// Load the route if it is plannable, i.e. once there are two waypoints
@@ -1231,17 +1227,17 @@ var routing = (function ($) {
 			$(_settings.plannerDivPath + ' input.locationTracking').first ().val ('Finding your location…');
 			
 			// Retrieve the geolocation from layerviewer
-			var geolocation = layerviewer.getGeolocation ();
-			var geolocationLngLat = geolocation._accuracyCircleMarker._lngLat;
+			const geolocation = layerviewer.getGeolocation ();
+			const geolocationLngLat = geolocation._accuracyCircleMarker._lngLat;
 			
 			// Build the waypoint to be "dropped" into map
-			var waypoint = {lng: geolocationLngLat.lng, lat: geolocationLngLat.lat, label: 'waypoint0'};
+			const waypoint = {lng: geolocationLngLat.lng, lat: geolocationLngLat.lat, label: 'waypoint0'};
 			routing.addWaypointMarker (waypoint);
 			
 			/*
-			var geolocation = layerviewer.checkForGeolocationStatus (function (position) {
+			const geolocation = layerviewer.checkForGeolocationStatus (function (position) {
 				// Build the waypoint to be "dropped" into map
-				var waypoint = {lng: position.coords.longitude, lat: position.coords.latitude, label: 'waypoint0'};
+				const waypoint = {lng: position.coords.longitude, lat: position.coords.latitude, label: 'waypoint0'};
 				routing.addWaypointMarker (waypoint);
 			});
 			*/
@@ -1259,7 +1255,7 @@ var routing = (function ($) {
 					marker.setDraggable(false);
 					
 					// Set the marker as grayscale
-					var markerElement = marker.getElement ();
+					const markerElement = marker.getElement ();
 					$(markerElement).addClass ('grayscale');
 				});
 			} else {
@@ -1271,7 +1267,7 @@ var routing = (function ($) {
 					if (!marker.hasOwnProperty('waypointNumber')) {marker.remove ();}
 					
 					// Remove grayscale effect
-					var markerElement = marker.getElement ();
+					const markerElement = marker.getElement ();
 					$(markerElement).removeClass ('grayscale');
 				});
 			}
@@ -1304,35 +1300,35 @@ var routing = (function ($) {
 			routing.plannedRouteShouldBeShown (true);
 			
 			// Convert waypoints to strings
-			var waypointStrings = routing.waypointStrings (_waypoints, 'lng,lat');
+			const waypointStrings = routing.waypointStrings (_waypoints, 'lng,lat');
 			
 			// Add results tabs
 			routing.resultsTabs ();
 			
 			// Construct the URL and load
-			var url;
+			let url;
+			let constructUrlFromStrategyFunction;
 			if (_settings.multiplexedStrategies) {
 				
 				// Assemble the composite url for all plans
-				var plans = []
+				let plans = []
 				$.each (_settings.strategies, function (indexInArray, strategy) {
 					// Combine plans (N.B. combining other parameters is not supported as this time)
 					plans.push (strategy.parameters.plans);
 				});
 				plans = plans.join (',');
-				var constructUrlFromStrategyFunction = 'constructUrlFromStrategy_' + _settings.strategies[0].implementation;
+				constructUrlFromStrategyFunction = 'constructUrlFromStrategy_' + _settings.strategies[0].implementation;
 				url = routing[constructUrlFromStrategyFunction] (_settings.strategies[0].baseUrl, {plans: plans}, waypointStrings);
 				
 				routing.loadRoute (url, _settings.strategies[0], function (strategy_ignored, multiplexedResult) {
 					// De-multiplex route
-					var routes = routing.demultiplexRoute (multiplexedResult);
-					var route;
+					const routes = routing.demultiplexRoute (multiplexedResult);
 					
 					// Process each route individually
 					$.each (routes, function (index, routeInfo) { 						
 						// Emulate /properties/plans present in the multipart route
 						// #!# Vestigial structure left over from the single-route v1 API class structure
-						route = routing.emulatePropertiesPlans (routeInfo.routeGeoJson, routeInfo.id);
+						const route = routing.emulatePropertiesPlans (routeInfo.routeGeoJson, routeInfo.id);
 						routing.processRoute (routeInfo.strategyObject, route);
 					});
 				});
@@ -1340,7 +1336,6 @@ var routing = (function ($) {
 			} else {
 				
 				// Load routes from URL collection
-				var constructUrlFromStrategyFunction;
 				$.each (_settings.strategies, function (index, strategy) {
 					constructUrlFromStrategyFunction = 'constructUrlFromStrategy_' + strategy.implementation;
 					url = routing[constructUrlFromStrategyFunction] (strategy.baseUrl, strategy.parameters, waypointStrings);
@@ -1354,7 +1349,7 @@ var routing = (function ($) {
 		constructUrlFromStrategy_cyclestreets: function (baseUrl_ignored, parameters, waypointStrings)
 		{
 			// Start with the strategy-specific parameters in the strategy definitions above
-			var parameters = $.extend (true, {}, parameters);	// i.e. clone
+			parameters = $.extend (true, {}, parameters);	// i.e. clone
 			
 			// Add additional parameters
 			parameters.key = _settings.apiKey;
@@ -1365,7 +1360,7 @@ var routing = (function ($) {
 			parameters.journeyFields = 'path,plan,lengthMetres,timeSeconds,grammesCO2saved,kiloCaloriesBurned,elevationProfile';
 			
 			// Assemble URL
-			var url = _settings.apiBaseUrl + '/v2/journey.plan' + '?' + $.param (parameters, false);	
+			const url = _settings.apiBaseUrl + '/v2/journey.plan' + '?' + $.param (parameters, false);	
 			
 			// Return the URL
 			return url;
@@ -1376,17 +1371,17 @@ var routing = (function ($) {
 		constructUrlFromStrategy_osrm: function (baseUrl, parameters, waypointStrings)
 		{
 			// Start with the strategy-specific parameters in the strategy definitions above
-			var parameters = $.extend (true, {}, parameters);	// i.e. clone
+			parameters = $.extend (true, {}, parameters);	// i.e. clone
 			
 			// Add additional parameters
 			parameters.alternatives = 'false';
 			parameters.overview = 'full';
 			parameters.steps = 'true';
 			parameters.geometries = 'geojson';
-			var waypoints = waypointStrings.join (';');
+			const waypoints = waypointStrings.join (';');
 			
 			// Construct the URL
-			var url = baseUrl + '/' + waypoints + '?' + $.param (parameters, false);
+			const url = baseUrl + '/' + waypoints + '?' + $.param (parameters, false);
 			
 			// Return the result
 			return url;
@@ -1399,7 +1394,7 @@ var routing = (function ($) {
 			// Split the multiplexedResult.features into 3 parts, keeping the properties the same for each one
 			
 			// Find the planIndex to start off each route
-			var strategies = []
+			const strategies = []
 			$.each(_settings.strategies, function (indexInArray, strategy) {
 				strategies.push ({
 						id: strategy.parameters.plans,
@@ -1409,27 +1404,22 @@ var routing = (function ($) {
 			});
 			
 			// Copy the relevant parts to a new array
-			var waypointFeatures;
-			var journeyPlanFeatures;
-			var indexEndOfFeature;
-			var combinedFeatures;
-			var routeGeoJson;
 			$.each(strategies, function (indexInArray, strategyInfo) {
 				
 				// Get the waypoint features (same for each strategy)
-				waypointFeatures = multiplexedResult.features.slice(0, strategies[0].planIndex); // i.e., the start of the first plan index
+				const waypointFeatures = multiplexedResult.features.slice(0, strategies[0].planIndex); // i.e., the start of the first plan index
 				
 				// Get the index where this feature ends, by scrying the start of the following strategy features, or if this is the last strategy, slicing to the end of the array
-				indexEndOfFeature = (indexInArray == (strategies.length - 1) ? multiplexedResult.features.length : strategies[indexInArray + 1].planIndex);
+				const indexEndOfFeature = (indexInArray == (strategies.length - 1) ? multiplexedResult.features.length : strategies[indexInArray + 1].planIndex);
 				
 				// Slice features to the results that we want
-				journeyPlanFeatures = multiplexedResult.features.slice(strategyInfo.planIndex, indexEndOfFeature);
+				const journeyPlanFeatures = multiplexedResult.features.slice(strategyInfo.planIndex, indexEndOfFeature);
 				
 				// Add the two arrays together
-				combinedFeatures = waypointFeatures.concat(journeyPlanFeatures);
+				const combinedFeatures = waypointFeatures.concat(journeyPlanFeatures);
 				
 				// Append this to the strategies array
-				routeGeoJson = {
+				const routeGeoJson = {
 					type: multiplexedResult.type, // i.e., same for all strategies
 					properties: multiplexedResult.properties, // i.e., same for all strategies
 					features: combinedFeatures // different for each strategy
@@ -1460,7 +1450,7 @@ var routing = (function ($) {
 			routing.showRoute (_routeGeojson[strategy.id], strategy);
 			
 			// Set the itinerary number permalink in the URL
-			var itineraryId = _routeGeojson[strategy.id].properties.id;
+			const itineraryId = _routeGeojson[strategy.id].properties.id;
 			routing.updateUrl (itineraryId, _waypoints);
 			
 			// Fit bounds
@@ -1471,9 +1461,9 @@ var routing = (function ($) {
 		// Function to convert waypoints to strings
 		waypointStrings: function (waypoints, order)
 		{
-			var waypointStrings = [];
-			var waypointString;
+			const waypointStrings = [];
 			$.each (waypoints, function (index, waypoint) {
+				let waypointString;
 				if (order == 'lng,lat') {
 					waypointString = parseFloat (waypoint.lng).toFixed(6) + ',' + parseFloat (waypoint.lat).toFixed(6);
 				} else {
@@ -1493,14 +1483,13 @@ var routing = (function ($) {
 			
 			// Add a link to clear the route
 			// #!# Needs to be re-enabled but currently this will also remove the whole panel
-			//var clearRouteHtml = '<p><a id="clearroute" href="#">Clear route &hellip;</a></p>';
+			//const clearRouteHtml = '<p><a id="clearroute" href="#">Clear route &hellip;</a></p>';
 			
 			// Create tabs and content panes for each of the strategies
-			var tabsHtml = '<ul id="strategies">';
-			var contentPanesHtml = '<div id="itineraries">';
-			var rgb;
+			let tabsHtml = '<ul id="strategies">';
+			let contentPanesHtml = '<div id="itineraries">';
 			$.each (_settings.strategies, function (index, strategy) {
-				rgb = routing.hexToRgb (strategy.lineColour);
+				const rgb = routing.hexToRgb (strategy.lineColour);
 				tabsHtml += '<li><a data-strategy="' + strategy.id + '" href="#' + strategy.id + '" style="background-color: rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',' + '0.3' + ');"><label>' + routing.htmlspecialchars (strategy.label).replace('route', '') + '</label></a></li>';
 				contentPanesHtml += '<div id="' + strategy.id + '"><span class="loader" style="border-bottom-color:#e54124;"></span></div>';
 			});
@@ -1508,8 +1497,8 @@ var routing = (function ($) {
 			contentPanesHtml += '</div>';
 			
 			// Assemble the HTML
-			//var html = clearRouteHtml + tabsHtml + contentPanesHtml;
-			var html = tabsHtml + contentPanesHtml;
+			//let html = clearRouteHtml + tabsHtml + contentPanesHtml;
+			let html = tabsHtml + contentPanesHtml;
 			
 			// Surround with a div for styling
 			html = '<div id="results">' + html + '</div>';
@@ -1530,13 +1519,13 @@ var routing = (function ($) {
 			
 			// On switching tabs, change the line thickness; see: https://stackoverflow.com/a/43165165/180733
 			$('#results').on ('tabsactivate', function (event, ui) {
-				var newStrategyId = ui.newTab.attr ('li', 'innerHTML')[0].getElementsByTagName ('a')[0].dataset.strategy;	// https://stackoverflow.com/a/21114766/180733
+				const newStrategyId = ui.newTab.attr ('li', 'innerHTML')[0].getElementsByTagName ('a')[0].dataset.strategy;	// https://stackoverflow.com/a/21114766/180733
 				_map.setPaintProperty (newStrategyId, 'line-width', _settings.lineThickness.selected);
 				if (_settings.lineOutlines) {
 					_map.setPaintProperty (newStrategyId + '-outline', 'line-width', _settings.lineThickness.selectedOutline);
 				}
 				routing.setSelectedStrategy (newStrategyId);
-				var oldStrategyId = ui.oldTab.attr ('li', 'innerHTML')[0].getElementsByTagName ('a')[0].dataset.strategy;
+				const oldStrategyId = ui.oldTab.attr ('li', 'innerHTML')[0].getElementsByTagName ('a')[0].dataset.strategy;
 				_map.setPaintProperty (oldStrategyId, 'line-width', _settings.lineThickness.unselected);
 				if (_settings.lineOutlines) {
 					_map.setPaintProperty (oldStrategyId + '-outline', 'line-width', _settings.lineThickness.unselected);
@@ -1564,16 +1553,16 @@ var routing = (function ($) {
 		hexToRgb: function (colour)
 		{
 			// If the colour is a name, convert to Hex
-			var hex = routing.colourNameToHex (colour);
+			let hex = routing.colourNameToHex (colour);
 			
 			// Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
-			var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+			const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
 			hex = hex.replace (shorthandRegex, function (m, r, g, b) {
 				return r + r + g + g + b + b;
 			});
 			
 			// Assemble the result
-			var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+			const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
 			return (result ? {
 				r: parseInt (result[1], 16),
 				g: parseInt (result[2], 16),
@@ -1585,7 +1574,7 @@ var routing = (function ($) {
 		// Function to convert HTML colour names to Hex; see: https://stackoverflow.com/a/1573141/180733
 		colourNameToHex: function (colour)
 		{
-			var colours = {
+			const colours = {
 				'aliceblue': '#f0f8ff',
 				'antiquewhite': '#faebd7',
 				'aqua': '#00ffff',
@@ -1743,11 +1732,11 @@ var routing = (function ($) {
 		itineraryListing: function (strategy, geojson)
 		{
 			// Start the HTML
-			var html = '';
+			let html = '';
 			
 			// Add the journey stats, like distance, calories, etc
-			var timeFormatted = routing.formatDuration (geojson.properties.plans[strategy.id].time);
-			var distanceFormatted = routing.formatDistance (geojson.properties.plans[strategy.id].length);
+			const timeFormatted = routing.formatDuration (geojson.properties.plans[strategy.id].time);
+			const distanceFormatted = routing.formatDistance (geojson.properties.plans[strategy.id].length);
 			
 			html += '<p class="location">' + (geojson.properties.start || '[Unknown name]') + ' to ' + (geojson.properties.finish || '[Unknown name]') + '</p>';
 			
@@ -1762,8 +1751,8 @@ var routing = (function ($) {
 			}
 			if (_settings.strategies[ _routeIndexes[strategy.id] ].gpx) {
 				// #!# Currently hard-coded to specific service
-				var journeyId = geojson.properties.id;
-				var gpxLink = 'https://www.cyclestreets.net/journey/' + journeyId + '/cyclestreets' + journeyId + strategy.id + '.gpx';
+				const journeyId = geojson.properties.id;
+				const gpxLink = 'https://www.cyclestreets.net/journey/' + journeyId + '/cyclestreets' + journeyId + strategy.id + '.gpx';
 				html += '<li><img src="' + _settings.images.gpx      + '" alt="GPX link" width="12" height="12" /><p><a href="' + gpxLink + '">GPX</a></p></li>';
 			}
 			html += '</ul>';
@@ -1775,13 +1764,13 @@ var routing = (function ($) {
 			html += '<a href="#" class="elevation-scrubber"><img src="/images/elevation-dragger.svg" alt="Dragger icon" /></a>';
 			
 			// Loop through each feature to create the table; if setting non-default travelleable hours per day, split by day
-			var segmentsIndex = {};
-			var segment = 0;
-			var cumulativeSeconds = 0;
-			var dayNumber = 1;
-			var daysJumplist = [];
-			var tableHtml = '';
-			var tableStart = '<table class="itinerary lines strategy-' + strategy.id + '">';
+			const segmentsIndex = {};
+			let segment = 0;
+			let cumulativeSeconds = 0;
+			let dayNumber = 1;
+			const daysJumplist = [];
+			let tableHtml = '';
+			const tableStart = '<table class="itinerary lines strategy-' + strategy.id + '">';
 			if (_settings.travellableHoursPerDay != 24) {
 				if ((geojson.properties.plans[strategy.id].time / (60*60)) > _settings.travellableHoursPerDay) {
 					tableHtml += '<p id="' + strategy.id + '-day' + dayNumber + '" class="daynumber">Day ' + dayNumber + ':</p>';
@@ -1835,18 +1824,18 @@ var routing = (function ($) {
 			html += tableHtml;
 			
 			// Save the last segment number
-			var lastSegment = segment;
+			const lastSegment = segment;
 			
 			// Set the content in the tab pane, overwriting any previous content
 			$('#itineraries #' + strategy.id).html (html);
 			
 			// Add a tooltip to the tab, giving the main route details
-			var title = strategy.label + ':\nDistance: ' + distanceFormatted + '\nTime: ' + timeFormatted;
+			const title = strategy.label + ':\nDistance: ' + distanceFormatted + '\nTime: ' + timeFormatted;
 			$('#strategies li a[data-strategy="' + strategy.id + '"]').attr ('title', title);
 			
 			// If a table row is clicked on, zoom to that section of the route (for that strategy)
 			$('#itineraries table.strategy-' + strategy.id).on('click', 'tr', function (e) {
-				var zoomToSegment = segmentsIndex[e.currentTarget.dataset.segment];
+				const zoomToSegment = segmentsIndex[e.currentTarget.dataset.segment];
 				routing.zoomToSegment (geojson, zoomToSegment);
 				_keyboardFeaturePosition[strategy.id] = zoomToSegment;
 			});
@@ -1872,18 +1861,18 @@ var routing = (function ($) {
 				drag: routing.throttle (function (event) {
 					
 					// Which chart are we dragging on, i.e., quietest, balanced
-					var chartStrategyName = $(event.target).siblings ('div').children ('canvas').attr ('id').replace ('elevationChart', '');
+					const chartStrategyName = $(event.target).siblings ('div').children ('canvas').attr ('id').replace ('elevationChart', '');
 					
 					// Get the approximate index in that chart
-					var xAxisPercentage = (100 * parseFloat ($(this).position().left / parseFloat ($(this).parent().width())) );
+					const xAxisPercentage = (100 * parseFloat ($(this).position().left / parseFloat ($(this).parent().width())) );
 					
 					// Find what percentage of the total journey distance we are at
-					var planIndex = routing.findPlanIndex (_elevationChartArray[chartStrategyName].geojson, chartStrategyName);
-					var totalJourneyDistanceMetres = _elevationChartArray[chartStrategyName].geojson.features[planIndex].properties.lengthMetres;
-					var approximateJourneyDistanceMetres = totalJourneyDistanceMetres * xAxisPercentage / 100;
+					const planIndex = routing.findPlanIndex (_elevationChartArray[chartStrategyName].geojson, chartStrategyName);
+					const totalJourneyDistanceMetres = _elevationChartArray[chartStrategyName].geojson.features[planIndex].properties.lengthMetres;
+					const approximateJourneyDistanceMetres = totalJourneyDistanceMetres * xAxisPercentage / 100;
 					
 					// Loop through the features until we find we a coordinate object with cumulativeMetres > approximateJourneyDistanceMetres
-					var coordinateObject = null;
+					let coordinateObject = null;
 					$.each (_elevationChartArray[chartStrategyName].dataArray, function (indexInArray, coordinates) {
 						if (coordinates.x > approximateJourneyDistanceMetres) {
 							coordinateObject = coordinates;
@@ -1904,7 +1893,7 @@ var routing = (function ($) {
 					});
 					
 					// Add a cycle marker to the map to show where we are currently scrolling
-					var cycleMarkerIndex = _markers.findIndex (marker => marker.__satnavMarker == true);
+					const cycleMarkerIndex = _markers.findIndex (marker => marker.__satnavMarker == true);
 					if (cycleMarkerIndex > -1) {
 						
 						// We already have a cyclist marker, update the location
@@ -1912,12 +1901,12 @@ var routing = (function ($) {
 					} else {
 						
 						// Place a cycle marker at this location
-						var cyclistMarker = document.createElement('div');
+						const cyclistMarker = document.createElement('div');
 						cyclistMarker.className = 'itinerarymarker cyclistmarker';
 						cyclistMarker.style.backgroundImage = "url('" + '/images/sat-nav-positional-marker.svg' + "')";
 						
 						// Add the marker
-						var marker = new mapboxgl.Marker({element: cyclistMarker, offset: [0, 0], draggable: false})	// See: https://www.mapbox.com/mapbox-gl-js/api/#marker
+						const marker = new mapboxgl.Marker({element: cyclistMarker, offset: [0, 0], draggable: false})	// See: https://www.mapbox.com/mapbox-gl-js/api/#marker
 							.setLngLat({lng: coordinateObject.coordinates[0], lat: coordinateObject.coordinates[1]})
 							.setPopup( new mapboxgl.Popup({offset: 25}).setHTML('Your position') )
 							.addTo(_map);
@@ -1931,7 +1920,7 @@ var routing = (function ($) {
 					
 				}, 200),	// Throttling delay
 				
-				// Set the elevation label to a debounce function to dissapear after a timeout
+				// Set the elevation label to a debounce function to disappear after a timeout
 				stop: routing.debounce (function() {
 					$('span.elevation').fadeToggle (500);
 				}, 2000),
@@ -1942,18 +1931,18 @@ var routing = (function ($) {
 		// Debounce function
 		debounce: function (func, wait, immediate)
 		{
-			var timeout;
+			let timeout;
 			
 			return function executedFunction() {
-				var context = this;
-				var args = arguments;
+				let context = this;
+				const args = arguments;
 				
-				var later = function () {
+				const later = function () {
 					timeout = null;
 					if (!immediate) func.apply(context, args);
 				};
 				
-				var callNow = immediate && !timeout;
+				const callNow = immediate && !timeout;
 				
 				clearTimeout(timeout);
 				
@@ -1967,8 +1956,8 @@ var routing = (function ($) {
 		// Throttler function
 		throttle: function (func, limit)
 		{
-			var lastFunc;
-			var lastRan;
+			let lastFunc;
+			let lastRan;
 			return function () {
 				const context = this;
 				const args = arguments;
@@ -1993,19 +1982,19 @@ var routing = (function ($) {
 		{
 			// Build an alternative data array with [cumulativeMetres, elevationMetres, coordinates, journeySegments]
 			// Although the first three variables are available in the route overview (object 2 in geojson), journeySegments have to be extracted individually
-			var dataArray = [];
+			const dataArray = [];
 			
 			// Start at the first feature after the plan index
-			var planIndex = routing.findPlanIndex (geojson, strategyId);
-			var featureIndex = planIndex + 1; // Start iterator
-			var featuresLength = geojson.features.length;
+			const planIndex = routing.findPlanIndex (geojson, strategyId);
+			let featureIndex = planIndex + 1; // Start iterator
+			const featuresLength = geojson.features.length;
 			
 			// Initialise counters and iterators we will use
-			var overallCoordinateIndex = 0; // Track the total amount of coordinates
-			var featureCoordinateIndex = 0; // Track which coordinate we are in in each feature, reset after iterating through each feature
-			var coordinatesLength = 0; // Track how many coordinates are in each feature, reset after iterating through each feature
-			var lastDesiredCoordinateIndex = 0; // Used to ignore the last coordinate of journey segments
-			var coordinateDataObject = {}; // Used to store data in [cumulativeMetres, elevationMetres, coordinates, journeySegments] format
+			let overallCoordinateIndex = 0; // Track the total amount of coordinates
+			let featureCoordinateIndex = 0; // Track which coordinate we are in in each feature, reset after iterating through each feature
+			let coordinatesLength = 0; // Track how many coordinates are in each feature, reset after iterating through each feature
+			let lastDesiredCoordinateIndex = 0; // Used to ignore the last coordinate of journey segments
+			let coordinateDataObject = {}; // Used to store data in [cumulativeMetres, elevationMetres, coordinates, journeySegments] format
 			
 			// Loop through all the features, and build a geometry array
 			for (featureIndex; featureIndex < featuresLength; featureIndex++) {
@@ -2052,17 +2041,17 @@ var routing = (function ($) {
 		generateElevationGraph: function (strategyId, geojson)
 		{
 			// Obtain the element to load the chart into, or end
-			var canvas = document.getElementById (strategyId + 'elevationChart');
+			const canvas = document.getElementById (strategyId + 'elevationChart');
 			if (!canvas) {return;}
 			
 			// Generate the elevation array
-			var graphData = routing.generateElevationArray (strategyId, geojson);
+			const graphData = routing.generateElevationArray (strategyId, geojson);
 			
 			// Search geojson.features array for an object containing properties: {path: plan/{strategyId}}
-			var planIndex = routing.findPlanIndex (geojson, strategyId);
+			const planIndex = routing.findPlanIndex (geojson, strategyId);
 			
 			// Display the elevation graph
-			var ctx = canvas.getContext ('2d');		
+			const ctx = canvas.getContext ('2d');		
 			_elevationCharts[strategyId] = new Chart(ctx, {
 				type: 'scatter',
 				data: {
@@ -2122,9 +2111,9 @@ var routing = (function ($) {
 				options: {
 					// On click, find the respective journey segment and zoom to that
 					onClick: function (evt) {
-						var activePoints = _elevationCharts[strategyId].getElementsAtXAxis(evt);
-						var chartIndex = activePoints[0]._index;
-						var journeySegment = activePoints[0]._xScale.ticks[chartIndex];
+						const activePoints = _elevationCharts[strategyId].getElementsAtXAxis(evt);
+						const chartIndex = activePoints[0]._index;
+						const journeySegment = activePoints[0]._xScale.ticks[chartIndex];
 						
 						// Jump to segment
 						routing.zoomToSegment(geojson, journeySegment);
@@ -2136,7 +2125,7 @@ var routing = (function ($) {
 		// Function to zoom to a specified feature
 		zoomToSegment: function (geojson, segment)
 		{
-			var boundingBox = routing.getBoundingBox (geojson.features[segment].geometry.coordinates);
+			const boundingBox = routing.getBoundingBox (geojson.features[segment].geometry.coordinates);
 			_map.fitBounds (boundingBox, {maxZoom: _settings.maxZoomToSegment, animate: true, essential: true, duration: 500});	// Bounding box version of flyTo
 		},
 		
@@ -2145,10 +2134,10 @@ var routing = (function ($) {
 		getBoundingBox: function (coordinates)
 		{
 			// Loop through the coordinates
-			var bounds = {};
-			var latitude;
-			var longitude;
-			var j;
+			const bounds = {};
+			let latitude;
+			let longitude;
+			let j;
 			for (j = 0; j < coordinates.length; j++) {
 				longitude = coordinates[j][0];
 				latitude = coordinates[j][1];
@@ -2179,7 +2168,7 @@ var routing = (function ($) {
 					if (strategyId == _selectedStrategy) {
 						
 						// Detect keyboard key
-						var key = event.which;
+						const key = event.which;
 						if (key == 39 || key == 40) {	// right/down - move forward along the route
 							_keyboardFeaturePosition[strategyId]++;
 							if (_keyboardFeaturePosition[strategyId] > lastSegment) {_keyboardFeaturePosition[strategyId] = 0;}	// Wrap around to start if after end
@@ -2209,7 +2198,7 @@ var routing = (function ($) {
 		travelModeIcon: function (travelMode, strategy)
 		{
 			// Define the icons, using Unicode emojis
-			var icons = {
+			const icons = {
 				'walking':    '&#x1f6b6',	// https://emojipedia.org/pedestrian/
 				'dismounted': '&#x1f6b6',	// https://emojipedia.org/pedestrian/
 				'cycling':    '&#x1f6b2',	// https://emojipedia.org/bicycle/
@@ -2227,7 +2216,7 @@ var routing = (function ($) {
 		turnsIcon: function (bearing)
 		{
 			// Define the turns for each snapped bearing
-			var turns = {
+			const turns = {
 				'0':	'continue',
 				'45':	'bear-right',
 				'90':	'turn-right',
@@ -2240,13 +2229,13 @@ var routing = (function ($) {
 			};
 			
 			// Find the closest; see: https://stackoverflow.com/a/19277804/180733
-			var bearings = Object.keys (turns);
-			var closest = bearings.reduce (function (prev, curr) {
+			const bearings = Object.keys (turns);
+			const closest = bearings.reduce (function (prev, curr) {
 				return (Math.abs (curr - bearing) < Math.abs (prev - bearing) ? curr : prev);
 			});
 			
 			// Set the icon
-			var icon = turns[closest];
+			const icon = turns[closest];
 			
 			// Assemble and return the HTML
 			return '<span class="turnsicons turnsicon-' + icon + '"></span>';
@@ -2272,12 +2261,12 @@ var routing = (function ($) {
 		// Function to format a distance
 		formatDistance: function (metres)
 		{
-			var result;
+			let result;
 			if (_settings.distanceUnit == 'kilometers') {
 				
 				// Convert to km
 				if (metres >= 1000) {
-					var km = metres / 1000;
+					const km = metres / 1000;
 					result = Number (km.toFixed(1)) + 'km';
 					return result;
 				}
@@ -2286,7 +2275,7 @@ var routing = (function ($) {
 				result = Number (metres.toFixed ()) + 'm';
 				return result;
 			} else if (_settings.distanceUnit == 'miles') {
-				var miles = metres / 1000 / 1.6;
+				const miles = metres / 1000 / 1.6;
 				result = Number (miles.toFixed(1)) + ' miles';
 				return result;
 			}
@@ -2297,14 +2286,14 @@ var routing = (function ($) {
 		formatDuration: function (seconds)
 		{
 			// Calculate values; see: https://stackoverflow.com/a/16057667/180733
-			var travellableSecondsPerDay = (60 * 60 * _settings.travellableHoursPerDay);
-			var days = Math.floor (seconds / travellableSecondsPerDay);
-			var hours = Math.floor (((seconds / travellableSecondsPerDay) % 1) * _settings.travellableHoursPerDay);
-			var minutes = Math.floor (((seconds / 3600) % 1) * 60);
+			const travellableSecondsPerDay = (60 * 60 * _settings.travellableHoursPerDay);
+			const days = Math.floor (seconds / travellableSecondsPerDay);
+			const hours = Math.floor (((seconds / travellableSecondsPerDay) % 1) * _settings.travellableHoursPerDay);
+			const minutes = Math.floor (((seconds / 3600) % 1) * 60);
 			seconds = Math.round (((seconds / 60) % 1) * 60);
 			
 			// Assemble the components
-			var components = [];
+			const components = [];
 			if (days) {components.push (days + ' ' + (_settings.travellableHoursPerDay == 24 ? '' : _settings.travellableHoursPerDay + '-hour ') + (days == 1 ? 'day' : 'days'));}
 			if (hours) {components.push (hours + 'h');}
 			if (minutes) {components.push (minutes + 'm');}
@@ -2313,7 +2302,7 @@ var routing = (function ($) {
 			}
 			
 			// Assemble the string
-			var result = components.join (', ');
+			const result = components.join (', ');
 			
 			// Return the result
 			return result;
@@ -2327,17 +2316,15 @@ var routing = (function ($) {
 			routing.plannedRouteShouldBeShown (true);
 			
 			// Load the route for each strategy
-			var parameters = {};
-			var url;
 			$.each (_settings.strategies, function (index, strategy) {
 				
 				// Construct the route request
-				parameters = $.extend (true, {}, strategy.parameters);	// i.e. clone
+				const parameters = $.extend (true, {}, strategy.parameters);	// i.e. clone
 				parameters.key = _settings.apiKey;
 				parameters.id = itineraryId;
 				parameters.itineraryFields = 'id,start,finish,waypointCount';
 				parameters.journeyFields = 'path,plan,lengthMetres,timeSeconds,grammesCO2saved,kiloCaloriesBurned,elevationProfile';
-				url = _settings.apiBaseUrl + '/v2/journey.retrieve' + '?' + $.param (parameters, false);
+				const url = _settings.apiBaseUrl + '/v2/journey.retrieve' + '?' + $.param (parameters, false);
 				
 				// Load the route
 				_loadingRouteFromId = true;
@@ -2372,7 +2359,7 @@ var routing = (function ($) {
 					}
 					
 					// Convert request to GeoJSON; CycleStreets is treated as the native GeoJSON format, and other engines (e.g. OSRM) are emulated to that
-					var geojsonConversionFunction = 'geojsonConversion_' + strategy.implementation;
+					const geojsonConversionFunction = 'geojsonConversion_' + strategy.implementation;
 					result = routing[geojsonConversionFunction] (result, strategy.id);
 					
 					// For a single CycleStreets route, emulate /properties/plans present in the multiple route type
@@ -2406,14 +2393,14 @@ var routing = (function ($) {
 		geojsonConversion_osrm: function (osrm, strategy)
 		{
 			// Determine the number of waypoints
-			var totalWaypoints = osrm.waypoints.length;
-			var lastWaypoint = totalWaypoints - 1;
+			const totalWaypoints = osrm.waypoints.length;
+			const lastWaypoint = totalWaypoints - 1;
 			
 			// Start the features list
-			var features = [];
+			const features = [];
 			
 			// First, add each waypoint as a feature
-			var waypointNumber;
+			let waypointNumber;
 			$.each (osrm.waypoints, function (index, waypoint) {
 				waypointNumber = index + 1;
 				features.push ({
@@ -2473,7 +2460,7 @@ var routing = (function ($) {
 			});
 			
 			// Assemble the plan summaries
-			var plans = {};
+			const plans = {};
 			plans[strategy] = {		// Cannot be assigned directly in the array below; see https://stackoverflow.com/questions/11508463/javascript-set-object-key-by-variable
 				length: osrm.routes[0].distance,
 				time: osrm.routes[0].duration,
@@ -2483,7 +2470,7 @@ var routing = (function ($) {
 			};
 			
 			// Assemble the GeoJSON structure
-			var geojson = {
+			const geojson = {
 				type: 'FeatureCollection',
 				properties: {
 					id: null,							// Not available in OSRM
@@ -2507,8 +2494,8 @@ var routing = (function ($) {
 		findPlanIndex: function (result, strategyId)
 		{
 			// Find the relevant feature
-			var findPath = 'plan/' + strategyId;
-			var planIndex = false;
+			const findPath = 'plan/' + strategyId;
+			let planIndex = false;
 			$.each (result.features, function (index, feature) {
 				if (feature.properties.path == findPath) {
 					planIndex = index;
@@ -2525,10 +2512,10 @@ var routing = (function ($) {
 		emulatePropertiesPlans: function (result, strategyId)
 		{
 			// Find the relevant feature
-			var planIndex = routing.findPlanIndex (result, strategyId);
+			const planIndex = routing.findPlanIndex (result, strategyId);
 			
 			// Assemble the plan summaries
-			var plans = {};
+			const plans = {};
 			plans[strategyId] = {		// Cannot be assigned directly in the array below; see https://stackoverflow.com/questions/11508463/javascript-set-object-key-by-variable
 				length: result.features[planIndex].properties.lengthMetres,
 				time: result.features[planIndex].properties.timeSeconds,
@@ -2547,7 +2534,7 @@ var routing = (function ($) {
 		fitBoundsGeojson: function (geojson, plan)
 		{
 			// Find the coordinates in the result
-			var coordinates;
+			let coordinates;
 			$.each (geojson.features, function (index, feature) {
 				if (feature.properties.plan == plan && feature.geometry.type == 'LineString') {
 					coordinates = feature.geometry.coordinates;
@@ -2556,7 +2543,7 @@ var routing = (function ($) {
 			});
 			
 			// Obtain the bounds
-			var bounds = coordinates.reduce (function (bounds, coord) {
+			const bounds = coordinates.reduce (function (bounds, coord) {
 				return bounds.extend (coord);
 			}, new mapboxgl.LngLatBounds (coordinates[0], coordinates[0]));
 			
@@ -2571,7 +2558,7 @@ var routing = (function ($) {
 		// This boolean acts as a flag which blocks the route from being displayed if we are not in itinerary mode
 		plannedRouteShouldBeShown: function (boolean)
 		{
-			_showPlannedRoute = boolean
+			_showPlannedRoute = boolean;
 		},
 		
 		
@@ -2590,7 +2577,7 @@ var routing = (function ($) {
 			
 			// https://www.mapbox.com/mapbox-gl-js/example/geojson-line/
 			// Data-driven styling support shown at: https://www.mapbox.com/mapbox-gl-js/style-spec/#layers-line
-			var layer = {
+			const layer = {
 				'id': strategy.id,
 				'type': 'line',
 				'source': {
@@ -2611,7 +2598,7 @@ var routing = (function ($) {
 			
 			// Add an outline for the line under the layer
 			if (_settings.lineOutlines) {
-				var outline = $.extend (true, {}, layer);	// i.e. clone
+				const outline = $.extend (true, {}, layer);	// i.e. clone
 				outline.id += '-outline';
 				outline.paint['line-color'] = (strategy.lineColourOutline || '#999');
 				outline.paint['line-width'] = (strategy.id == _selectedStrategy ? _settings.lineThickness.selectedOutline : _settings.lineThickness.unselected);
@@ -2662,7 +2649,7 @@ var routing = (function ($) {
 			_waypoints = [];
 			
 			// Determine the number of waypoints
-			var totalWaypoints = 0;
+			let totalWaypoints = 0;
 			$.each (geojson.features, function (index, feature) {
 				if (feature.properties.path.match (/^waypoint/)) {
 					totalWaypoints++;
@@ -2675,13 +2662,13 @@ var routing = (function ($) {
 				if (feature.properties.path.match (/^waypoint/)) {
 					
 					// Construct the marker attributes
-					var label;
+					let label;
 					switch (feature.properties.markerTag) {
 						case 'start'       : label = 'waypoint0'; break;
 						case 'finish'      : label = 'waypoint1'; break;
 						case 'intermediate': label = false; break;
 					}
-					var waypoint = {lng: feature.geometry.coordinates[0], lat: feature.geometry.coordinates[1], label: label};
+					const waypoint = {lng: feature.geometry.coordinates[0], lat: feature.geometry.coordinates[1], label: label};
 					
 					// Add the marker
 					routing.addWaypointMarker (waypoint);
@@ -2715,14 +2702,14 @@ var routing = (function ($) {
 		routeSummaryPopups: function (strategy, plan, geojson)
 		{
 			// Determine the location along the route to place the marker (e.g. if three strategies, place in the midpoint of the thirds of each route)
-			var index = _routeIndexes[strategy.id];
-			var totalStrategies = _settings.strategies.length;
-			var fractionOfRoutePoint = (((index + (index + 1)) * 0.5) / totalStrategies);	// e.g. first strategy should be 1/6th of the way along the route
-			var lengthUntilPoint = plan.length * fractionOfRoutePoint;
+			const routeIndex = _routeIndexes[strategy.id];
+			const totalStrategies = _settings.strategies.length;
+			const fractionOfRoutePoint = (((routeIndex + (routeIndex + 1)) * 0.5) / totalStrategies);	// e.g. first strategy should be 1/6th of the way along the route
+			const lengthUntilPoint = plan.length * fractionOfRoutePoint;
 			
 			// Iterate through the route to find the point along the route
-			var length = 0;		// Start
-			var coordinates;
+			let length = 0;		// Start
+			let coordinates;
 			$.each (geojson.features, function (index, feature) {
 				if (!feature.properties.path.match (/street/)) {return 'continue';}
 				length += feature.properties.lengthMetres;
@@ -2733,13 +2720,13 @@ var routing = (function ($) {
 			});
 			
 			// Construct the HTML for the popup
-			var html = '<div class="details" style="border-color: ' + strategy.lineColour + '">';
+			let html = '<div class="details" style="border-color: ' + strategy.lineColour + '">';
 			html += '<ul><li><img src="/images/icon-clock.svg" alt="Clock icon" /><p>' + routing.formatDuration (plan.time) + '</p></li>';
 			html += '<li><img src="/images/icon-cyclist.svg" alt="Cyclist icon" /><p>' + routing.formatDistance (plan.length) + '</p></li></ul>';
 			html += '</div>';
 			
 			// Create the popup, set its coordinates, and add its HTML
-			var popup = new mapboxgl.Popup ({
+			const popup = new mapboxgl.Popup ({
 				closeButton: false,
 				closeOnClick: false,
 				className: 'strategypopup ' + strategy.id
@@ -2803,11 +2790,11 @@ var routing = (function ($) {
 			if (!history.pushState) {return;}
 			
 			// Default URL slug
-			var urlSlug = '/';
+			let urlSlug = '/';
 			
 			// Construct the URL slug from waypoints, if any
 			if (waypoints) {
-				var waypointStrings = routing.waypointStrings (waypoints, 'lat,lng');	// Lat,lng order is as used historically and is as per OSM, Google Maps
+				const waypointStrings = routing.waypointStrings (waypoints, 'lat,lng');	// Lat,lng order is as used historically and is as per OSM, Google Maps
 				urlSlug = '/journey/' + waypointStrings.join ('/') + '/';
 			}
 			
@@ -2817,12 +2804,12 @@ var routing = (function ($) {
 			}
 			
 			// Construct the URL
-			var url = '';
+			let url = '';
 			url += urlSlug;
 			url += window.location.hash;
 			
 			// Construct the page title, based on the enabled layers
-			var title = _settings.title;
+			let title = _settings.title;
 			if (itineraryId) {
 				title += ': journey #' + itineraryId;
 			}
@@ -2870,14 +2857,14 @@ var routing = (function ($) {
 				
 				// Redraw the markers from the waypoints
 				// Save a copy of the waypoints index, as this will be rebuilt and matched to the new markers
-				var routeWaypoints = _waypoints;
+				const routeWaypoints = _waypoints;
 				_waypoints = [];
 				_currentWaypointIndex = 0;
 				$.each(routeWaypoints, function (indexInArray, waypoint) {
 					// Rename the label so it matches with the geocoder input name
 					waypoint.label = 'waypoint' + _currentWaypointIndex;
-					var addInput = true;
-					var inputHasDefaultValue = true;
+					const addInput = true;
+					const inputHasDefaultValue = true;
 					routing.addWaypointMarker (waypoint, addInput, inputHasDefaultValue);
 				});
 			}
@@ -2907,7 +2894,7 @@ var routing = (function ($) {
 		// Function to remove all JP inputs
 		resetJPGeocoderInputs: function ()
 		{
-			var inputElements = $(_settings.plannerDivPath + ' input');
+			const inputElements = $(_settings.plannerDivPath + ' input');
 			$.each (inputElements, function (index, inputElement) {
 				$(inputElement).parent().remove();
 			});
@@ -2921,6 +2908,7 @@ var routing = (function ($) {
 		addWaypointMarker: function (waypoint, addInput = false, inputHasDefaultValue = false)
 		{
 			// Auto assign label if required; any map clicks, or externally added waypoints (e.g. from POI panel) will be received as label = null, as in these cases we don't have knowledge of the internal state of the JP panel
+			let inputElements;
 			if (waypoint.label == null) {
 				
 				// If this is the first click on the map, we want to quickly add the user's location to the first input
@@ -2934,8 +2922,8 @@ var routing = (function ($) {
 				
 				// Is there an empty waypoint? If so, we want to associate this waypoint
 				// Loop through all the inputs and find if there's an empty one
-				var isEmptyInput = false
-				var inputElements = $(_settings.plannerDivPath + ' input');
+				let isEmptyInput = false;
+				inputElements = $(_settings.plannerDivPath + ' input');
 				$.each (inputElements, function (index, inputElement) {
 					if (!$(inputElement).val()) {
 						isEmptyInput = true;
@@ -2957,24 +2945,25 @@ var routing = (function ($) {
 			
 			// Are we replacing a current waypoint, or registering a new one?
 			// Search for a waypoint with label matching our new candidate
-			var waypointIndex = _waypoints.findIndex(wp => wp.label == waypoint.label);
+			const waypointIndex = _waypoints.findIndex(wp => wp.label == waypoint.label);
 			
 			// Get the final waypoint number
+			let waypointNumber;
 			if (waypoint.label) {
-				var waypointNumber = Number(waypoint.label.replace('waypoint',''));
+				waypointNumber = Number(waypoint.label.replace('waypoint',''));
 			}
 			
-			// var waypointIndex will be -1 if not matched, or else returns index of match
+			// waypointIndex will be -1 if not matched, or else returns index of match
 			if (waypointIndex > -1) {
 				
 				// Store old waypoint
-				var oldWaypoint = _waypoints[waypointIndex];
+				const oldWaypoint = _waypoints[waypointIndex];
 				
 				// Replace the waypoint
 				_waypoints[waypointIndex] = waypoint;
 				
 				// Locate the previous marker, and setLngLat to new waypoint coordinates
-				var markerIndex = _markers.findIndex(marker => marker._lngLat.lng == oldWaypoint.lng && marker._lngLat.lat == oldWaypoint.lat);
+				const markerIndex = _markers.findIndex(marker => marker._lngLat.lng == oldWaypoint.lng && marker._lngLat.lat == oldWaypoint.lat);
 				if (markerIndex > -1) {
 					_markers[markerIndex].setLngLat ([waypoint.lng, waypoint.lat]);
 				}
@@ -2984,8 +2973,7 @@ var routing = (function ($) {
 				_waypoints.push (waypoint);
 				
 				// Determine the image and text to use
-				var image;
-				var text;
+				let image;
 				switch (waypointNumber) {
 					case 0:
 						image = _settings.images.start;
@@ -2996,16 +2984,16 @@ var routing = (function ($) {
 					default:
 						image = _settings.images.waypoint;
 				}
-				text = waypoint.label;
+				const text = waypoint.label;
 				
 				// Assemble the image as a DOM element
 				// Unfortunately Mapbox GL makes image markers more difficult than Leaflet.js and has to be done at DOM level; see: https://github.com/mapbox/mapbox-gl-js/issues/656
-				var itinerarymarker = document.createElement('div');
+				const itinerarymarker = document.createElement('div');
 				itinerarymarker.className = 'itinerarymarker';
 				itinerarymarker.style.backgroundImage = "url('" + image + "')";
 				
 				// Add the marker
-				var marker = new mapboxgl.Marker({element: itinerarymarker, offset: [0, -22], draggable: true})	// See: https://www.mapbox.com/mapbox-gl-js/api/#marker
+				const marker = new mapboxgl.Marker({element: itinerarymarker, offset: [0, -22], draggable: true})	// See: https://www.mapbox.com/mapbox-gl-js/api/#marker
 					.setLngLat(waypoint)
 					.setPopup( new mapboxgl.Popup({offset: 25}).setHTML(text) )
 					.addTo(_map);
@@ -3018,19 +3006,19 @@ var routing = (function ($) {
 					// If this is the waypoint0, dragging means we are now not at the user location
 					// Turn off (grayscale) the location button to show this
 					if (marker.__waypointNumber == 0) {
-						var inputElement = $(_settings.plannerDivPath + ' input[name=waypoint' + waypointNumber + ']').first();
+						const inputElement = $(_settings.plannerDivPath + ' input[name=waypoint' + waypointNumber + ']').first();
 						$(inputElement).siblings ('a.locationTracking').addClass ('grayscale');
 					}
 					
 					// Build waypoint
-					var label = 'waypoint' + (waypointNumber);
-					var waypoint = {lng: e.target._lngLat.lng, lat: e.target._lngLat.lat, label: label};
+					const label = 'waypoint' + (waypointNumber);
+					const markerWaypoint = {lng: e.target._lngLat.lng, lat: e.target._lngLat.lat, label: label};
 					
 					// Find waypoint index
-					var waypointIndex = _waypoints.findIndex(wp => wp.label == label);
+					const markerWaypointIndex = _waypoints.findIndex((wp) => wp.label == label);
 					
 					// Replace waypoint in _waypoints index
-					_waypoints[waypointIndex] = waypoint;
+					_waypoints[markerWaypointIndex] = markerWaypoint;
 					
 					// Reverse geocode to fill input box
 					routing.reverseGeocode (e.target._lngLat, waypointNumber);
@@ -3047,25 +3035,25 @@ var routing = (function ($) {
 				if (addInput) {
 					
 					// Is there an empty input? Add to this, instead
-					var inputElements = $(_settings.plannerDivPath + ' input');
-					var emptyInputExists = false;
+					inputElements = $(_settings.plannerDivPath + ' input');
+					let emptyInputExists = false;
 					$.each (inputElements, function (index, inputElement) {
 						if (!$(inputElement).val()) {
-							emptyInputExists = true
+							emptyInputExists = true;
 							return false;
 						}
 					});
 					
 					if (!emptyInputExists) {
-						var inputName = 'waypoint' + (waypointNumber) ;
+						const inputName = 'waypoint' + (waypointNumber) ;
 						$('#journeyPlannerInputs').append (routing.getInputHtml (inputName, inputHasDefaultValue));
 						
 						// Register a handler for geocoding, attachable to any input
 						routing.geocoder (_settings.plannerDivPath + ' input[name="' + inputName + '"]', function (item, callbackData) {
 							
 							// Add the waypoint marker
-							var waypoint = {lng: item.lon, lat: item.lat, label: inputName};
-							routing.addToRecentSearches (waypoint);
+							const waypointMarker = {lng: item.lon, lat: item.lat, label: inputName};
+							routing.addToRecentSearches (waypointMarker);
 							routing.addWaypointMarker (waypoint);
 							
 						}, {_currentWaypointIndex: _currentWaypointIndex});
@@ -3092,15 +3080,15 @@ var routing = (function ($) {
 			_singleMarkerLocation.push (waypoint);
 
 			// #!# Add custom work/home markers?
-			var image = _settings.images.start
+			const image = _settings.images.start
 			
 			// Assemble the image as a DOM element
-			var itinerarymarker = document.createElement('div');
+			const itinerarymarker = document.createElement('div');
 			itinerarymarker.className = 'itinerarymarker';
 			itinerarymarker.style.backgroundImage = "url('" + image + "')";
 			
 			// Add the marker
-			var marker = new mapboxgl.Marker({element: itinerarymarker, offset: [0, -22], draggable: true})	// See: https://www.mapbox.com/mapbox-gl-js/api/#marker
+			const marker = new mapboxgl.Marker({element: itinerarymarker, offset: [0, -22], draggable: true})	// See: https://www.mapbox.com/mapbox-gl-js/api/#marker
 				.setLngLat(waypoint)
 				.addTo(_map);
 			
@@ -3110,10 +3098,10 @@ var routing = (function ($) {
 			// When marker is dragged, perform reverseGeocode and also update the waypoints
 			marker.on ('dragend', function (e) {
 				// Build waypoint
-				var waypoint = {lng: e.target._lngLat.lng, lat: e.target._lngLat.lat, label: null};
+				const waypointDragged = {lng: e.target._lngLat.lng, lat: e.target._lngLat.lat, label: null};
 				
 				// Update the location of the single marker
-				routing.setFrequentLocation (waypoint, type)
+				routing.setFrequentLocation (waypointDragged, type);
 				
 				// Reverse geocode to fill input box
 				routing.reverseGeocode (e.target._lngLat, 'FrequentLocation'); // This overloads the reversegeocoder, which ties to input name 'waypoint' + waypointNumber
@@ -3145,11 +3133,11 @@ var routing = (function ($) {
 		reverseGeocode: function (coordinates, waypointNumber)
 		{
 			// Assemble API URL; see: https://www.cyclestreets.net/api/v2/nearestpoint/
-			var reverseGeocoderApiUrl = routing.settingsPlaceholderSubstitution (_settings.reverseGeocoderApiUrl, ['apiBaseUrl', 'apiKey']);
+			let reverseGeocoderApiUrl = routing.settingsPlaceholderSubstitution (_settings.reverseGeocoderApiUrl, ['apiBaseUrl', 'apiKey']);
 			reverseGeocoderApiUrl += '&lonlat=' + coordinates.lng + ',' + coordinates.lat;
 			
 			// Divine the input element, which will be used to control the spinner loader
-			var inputElement = $(_settings.plannerDivPath + ' input[name=waypoint' + waypointNumber + ']').first();
+			const inputElement = $(_settings.plannerDivPath + ' input[name=waypoint' + waypointNumber + ']').first();
 			
 			// Fetch the result
 			$.ajax ({
@@ -3207,9 +3195,9 @@ var routing = (function ($) {
 		// Function to set a cookie; see: https://www.w3schools.com/js/js_cookies.asp
 		setCookie: function (name, value, days)
 		{
-			var d = new Date ();
+			const d = new Date ();
 			d.setTime (d.getTime () + (days * 24 * 60 * 60 * 1000));
-			var expires = 'expires=' + d.toUTCString();
+			const expires = 'expires=' + d.toUTCString();
 			document.cookie = name + '=' + value + ';' + expires + ';path=/';
 		},
 		
@@ -3217,11 +3205,11 @@ var routing = (function ($) {
 		// Function to get a cookie's value; see: https://www.w3schools.com/js/js_cookies.asp
 		getCookie: function (name)
 		{
-			var cname = name + '=';
-			var decodedCookie = decodeURIComponent (document.cookie);
-			var ca = decodedCookie.split (';');
-			var i;
-			var c;
+			const cname = name + '=';
+			const decodedCookie = decodeURIComponent (document.cookie);
+			const ca = decodedCookie.split (';');
+			let i;
+			let c;
 			for (i = 0; i <ca.length; i++) {
 				c = ca[i];
 				while (c.charAt(0) == ' ') {
